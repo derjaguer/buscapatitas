@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mascotas Salvadas - Venezuela Alerta</title>
+  
+  <!-- Tailwind CSS para la estructura responsiva y rápida -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons para una interfaz moderna -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- 
+    ========================================================================
+    HOJA DE ESTILOS PERSONALIZABLE (Equivalente a tu archivo .css externo)
+    Puedes copiar el contenido de este bloque <style> a un archivo 'estilos.css'
+    y enlazarlo si decides hospedar el CSS por separado en el futuro.
+    ========================================================================
+  -->
+  <style id="estilos-personalizados">
+    :root {
+      /* Paleta de Colores de Emergencia y Rescate */
+      --color-primario: #f97316;       /* Naranja vibrante para Alertas */
+      --color-primario-hover: #ea580c; /* Naranja oscuro al pasar el cursor */
+      --color-secundario: #0284c7;     /* Azul de calma y rescate */
+      --color-secundario-hover: #0369a1;
+      --color-exito: #16a34a;          /* Verde para mascotas reunidas */
+      --color-peligro: #dc2626;        /* Rojo para pérdidas urgentes */
+      
+      /* Fondos y Textos */
+      --color-fondo: #f8fafc;          /* Slate ultra claro */
+      --color-tarjeta: #ffffff;        /* Blanco puro para contraste */
+      --color-texto-principal: #0f172a;/* Gris casi negro */
+      --color-texto-mutado: #64748b;   /* Gris intermedio para detalles */
+      
+      /* Estilo y Bordes */
+      --radio-borde: 16px;             /* Bordes redondeados modernos */
+      --sombra-tarjeta: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --sombra-enfoque: 0 0 0 4px rgba(249, 115, 22, 0.25);
+      
+      /* Tipografía */
+      --fuente-familia: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    /* Aplicación de las variables de estilos */
+    body {
+      background-color: var(--color-fondo);
+      color: var(--color-texto-principal);
+      font-family: var(--fuente-familia);
+      scroll-behavior: smooth;
+    }
+
+    .btn-primary {
+      background-color: var(--color-primario);
+      color: #ffffff;
+      border-radius: var(--radio-borde);
+      transition: all 0.2s ease-in-out;
+    }
+    .btn-primary:hover {
+      background-color: var(--color-primario-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background-color: var(--color-secundario);
+      color: #ffffff;
+      border-radius: var(--radio-borde);
+      transition: all 0.2s ease-in-out;
+    }
+    .btn-secondary:hover {
+      background-color: var(--color-secundario-hover);
+      transform: translateY(-1px);
+    }
+
+    .tarjeta-mascota {
+      background-color: var(--color-tarjeta);
+      border-radius: var(--radio-borde);
+      box-shadow: var(--sombra-tarjeta);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .tarjeta-mascota:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    }
+
+    .input-custom {
+      border: 1px solid #cbd5e1;
+      border-radius: calc(var(--radio-borde) / 1.5);
+      padding: 0.75rem 1rem;
+      transition: all 0.2s ease;
+    }
+    .input-custom:focus {
+      outline: none;
+      border-color: var(--color-primario);
+      box-shadow: var(--sombra-enfoque);
+    }
+
+    /* Estilos personalizados para animar transiciones */
+    .fade-in {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Encabezado / Navbar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="p-2 bg-orange-100 rounded-full text-orange-600">
+          <i data-lucide="paw-print" class="w-8 h-8"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+            Mascotas Salvadas <span class="bg-red-500 text-white text-xs px-2.5 py-0.5 rounded-full uppercase animate-pulse">Sismo Venezuela</span>
+          </h1>
+          <p class="text-xs text-slate-500">La Guaira - Caracas - Centro del País</p>
+        </div>
+      </div>
+      
+      <!-- Navegación -->
+      <nav class="flex items-center space-x-2">
+        <button onclick="cambiarVista('inicio')" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 transition-colors flex items-center gap-1">
+          <i data-lucide="home" class="w-4 h-4"></i> Inicio
+        </button>
+        <button onclick="cambiarVista('reportar-perdido')" class="px-3 py-2 rounded-lg text-sm font-medium bg-orange-50 text-orange-700 hover:bg-orange-100 transition-colors flex items-center gap-1">
+          <i data-lucide="megaphone" class="w-4 h-4"></i> Reportar Perdido
+        </button>
+        <button onclick="cambiarVista('reportar-encontrado')" class="px-3 py-2 rounded-lg text-sm font-medium bg-sky-50 text-sky-700 hover:bg-sky-100 transition-colors flex items-center gap-1">
+          <i data-lucide="heart" class="w-4 h-4"></i> Reportar Avistado
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Banner de Configuración de API Key de Gemini (Opcional pero recomendado) -->
+  <div class="bg-amber-50 border-b border-amber-200 py-2.5 px-4">
+    <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-amber-800">
+      <div class="flex items-center gap-2">
+        <i data-lucide="key" class="w-4 h-4 text-amber-600"></i>
+        <span><strong>¿Quieres activar la IA de emparejamiento inteligente?</strong> Ingresa una API Key gratuita de Google AI Studio.</span>
+      </div>
+      <div class="flex gap-2 w-full sm:w-auto">
+        <input type="password" id="gemini-key-input" placeholder="AI Studio API Key (AIzaSy...)" class="px-2 py-1 border border-amber-300 rounded text-xs w-full sm:w-48 bg-white focus:outline-none focus:border-amber-500">
+        <button onclick="guardarApiKey()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded font-medium transition-colors">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenedor Principal -->
+  <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-8">
+    
+    <!-- Alertas y Notificaciones Dinámicas -->
+    <div id="contenedor-alerta" class="hidden mb-6 p-4 rounded-xl border flex items-start gap-3 fade-in">
+      <div id="alerta-icono" class="mt-0.5"></div>
+      <div class="flex-grow">
+        <h4 id="alerta-titulo" class="font-bold text-sm"></h4>
+        <p id="alerta-mensaje" class="text-xs mt-1"></p>
+      </div>
+      <button onclick="cerrarAlerta()" class="text-slate-400 hover:text-slate-600">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- VISTA 1: INICIO (Dashboard de búsqueda y listas) -->
+    <!-- ============================================== -->
+    <div id="vista-inicio" class="space-y-8 fade-in">
+      
+      <!-- Panel de Introducción -->
+      <div class="bg-gradient-to-r from-orange-500 to-amber-500 rounded-3xl p-6 sm:p-10 text-white shadow-xl relative overflow-hidden">
+        <div class="relative z-10 max-w-2xl">
+          <span class="bg-white/20 text-white text-xs px-3 py-1 rounded-full font-semibold uppercase tracking-wider">Iniciativa Solidaria Sismo 2026</span>
+          <h2 class="text-2xl sm:text-4xl font-extrabold mt-3 tracking-tight">Ayuda a reencontrar a las mascotas perdidas</h2>
+          <p class="text-sm sm:text-base text-orange-50 mt-2">Plataforma libre para dueños y rescatistas voluntarios en Venezuela. Registra a tu mascota perdida o reporta animales que veas deambulando.</p>
+          
+          <div class="flex flex-wrap gap-3 mt-6">
+            <button onclick="cambiarVista('reportar-perdido')" class="bg-white text-orange-600 hover:bg-orange-50 px-5 py-3 rounded-xl font-bold text-sm shadow-md transition-all flex items-center gap-2">
+              <i data-lucide="megaphone" class="w-5 h-5"></i> Mi mascota se perdió
+            </button>
+            <button onclick="cambiarVista('reportar-encontrado')" class="bg-slate-900 text-white hover:bg-slate-800 px-5 py-3 rounded-xl font-bold text-sm shadow-md transition-all flex items-center gap-2">
+              <i data-lucide="search" class="w-5 h-5"></i> Conseguí una mascota
+            </button>
+          </div>
+        </div>
+        <div class="absolute right-0 bottom-0 opacity-15 transform translate-x-10 translate-y-10 pointer-events-none">
+          <i data-lucide="paw-print" class="w-80 h-80"></i>
+        </div>
+      </div>
+
+      <!-- Buscador y Filtros Rápidos -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+          <i data-lucide="sliders-horizontal" class="w-5 h-5 text-orange-500"></i> Filtros de Búsqueda Rápida
+        </h3>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <!-- Búsqueda General -->
+          <div class="flex flex-col">
+            <label class="text-xs font-semibold text-slate-500 mb-1">Buscar por nombre o rasgo</label>
+            <div class="relative">
+              <input type="text" id="filtro-texto" oninput="aplicarFiltros()" placeholder="Ej. Manchas blancas, Firulais..." class="input-custom w-full pl-9 py-2 text-sm">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3.5"></i>
+            </div>
+          </div>
+
+          <!-- Tipo Mascota -->
+          <div class="flex flex-col">
+            <label class="text-xs font-semibold text-slate-500 mb-1">Especie</label>
+            <select id="filtro-especie" onchange="aplicarFiltros()" class="input-custom w-full py-2 text-sm bg-white">
+              <option value="todos">Todos los animales</option>
+              <option value="perro">Perro</option>
+              <option value="gato">Gato</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+
+          <!-- Estado de la Mascota -->
+          <div class="flex flex-col">
+            <label class="text-xs font-semibold text-slate-500 mb-1">Estado de Alerta</label>
+            <select id="filtro-estado" onchange="aplicarFiltros()" class="input-custom w-full py-2 text-sm bg-white">
+              <option value="todos">Perdidos y Avistados</option>
+              <option value="perdido">Buscados (Por sus dueños)</option>
+              <option value="encontrado">Rescatados / Avistados (En refugio/calle)</option>
+            </select>
+          </div>
+
+          <!-- Zona Sismo -->
+          <div class="flex flex-col">
+            <label class="text-xs font-semibold text-slate-500 mb-1">Zona / Parroquia</label>
+            <select id="filtro-zona" onchange="aplicarFiltros()" class="input-custom w-full py-2 text-sm bg-white">
+              <option value="todas">Todas las zonas</option>
+              <option value="Catia La Mar">Catia La Mar (La Guaira)</option>
+              <option value="Maiquetia">Maiquetía (La Guaira)</option>
+              <option value="Caraballeda">Caraballeda (La Guaira)</option>
+              <option value="Naiguata">Naiguatá (La Guaira)</option>
+              <option value="Altamira">Altamira (Caracas)</option>
+              <option value="Chacao">Chacao (Caracas)</option>
+              <option value="Petare">Petare (Caracas)</option>
+              <option value="La Pastora">La Pastora (Caracas)</option>
+              <option value="Otro">Otro Sector de Emergencia</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Listado de Reportes -->
+      <div>
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-xl font-extrabold text-slate-900 flex items-center gap-2">
+            <i data-lucide="list" class="w-6 h-6 text-orange-500"></i> Reportes Recientes de Mascotas
+          </h3>
+          <span id="contador-resultados" class="text-xs font-semibold bg-slate-100 text-slate-600 px-3 py-1 rounded-full"></span>
+        </div>
+
+        <div id="listado-mascotas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Tarjetas renderizadas por JS -->
+        </div>
+
+        <!-- Sin resultados -->
+        <div id="sin-resultados" class="hidden text-center py-12 bg-white border border-slate-200 rounded-2xl">
+          <div class="inline-p-4 bg-orange-50 rounded-full text-orange-500 mb-3">
+            <i data-lucide="paw-print" class="w-12 h-12 mx-auto"></i>
+          </div>
+          <h4 class="text-lg font-bold text-slate-800">No encontramos coincidencias directas</h4>
+          <p class="text-sm text-slate-500 mt-1">Prueba cambiando los filtros o reportando un nuevo avistamiento.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================== -->
+    <!-- VISTA 2: REPORTAR MASCOTA PERDIDA (Dueño) -->
+    <!-- ============================================== -->
+    <div id="vista-reportar-perdido" class="hidden max-w-2xl mx-auto fade-in">
+      <div class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
+        <div class="flex items-center space-x-3 mb-6">
+          <div class="p-3 bg-orange-100 text-orange-600 rounded-full">
+            <i data-lucide="megaphone" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-slate-900">Registrar Mascota Perdida</h3>
+            <p class="text-xs text-slate-500">Completa la ficha para que voluntarios puedan reconocerla.</p>
+          </div>
+        </div>
+
+        <form id="form-perdido" onsubmit="guardarMascotaPerdida(event)" class="space-y-6">
+          
+          <!-- Fotos del Animal -->
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-slate-700">Foto de tu Mascota (La mejor disponible)</label>
+            <div class="border-2 border-dashed border-slate-300 hover:border-orange-500 rounded-2xl p-6 text-center cursor-pointer relative bg-slate-50 transition-colors" onclick="document.getElementById('foto-perdido').click()">
+              <input type="file" id="foto-perdido" accept="image/*" class="hidden" onchange="previsualizarImagen(this, 'prev-perdido')">
+              <div id="prev-perdido-placeholder" class="space-y-2">
+                <i data-lucide="image" class="w-10 h-10 mx-auto text-slate-400"></i>
+                <p class="text-xs text-slate-500">Haz clic para subir o arrastrar la foto</p>
+                <p class="text-[10px] text-slate-400">Formatos admitidos: JPG, PNG. Máx 5MB.</p>
+              </div>
+              <img id="prev-perdido" class="hidden mx-auto max-h-48 rounded-xl object-cover shadow-sm">
+            </div>
+          </div>
+
+          <!-- Campos Básicos -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col">
+              <label for="nombre-p" class="text-xs font-semibold text-slate-600 mb-1">Nombre de la Mascota</label>
+              <input type="text" id="nombre-p" required placeholder="Ej. Firulais, Lola..." class="input-custom text-sm">
+            </div>
+
+            <div class="flex flex-col">
+              <label for="especie-p" class="text-xs font-semibold text-slate-600 mb-1">Especie</label>
+              <select id="especie-p" class="input-custom text-sm bg-white" required>
+                <option value="perro">Perro</option>
+                <option value="gato">Gato</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col">
+              <label for="sexo-p" class="text-xs font-semibold text-slate-600 mb-1">Sexo</label>
+              <select id="sexo-p" class="input-custom text-sm bg-white" required>
+                <option value="Macho">Macho</option>
+                <option value="Hembra">Hembra</option>
+                <option value="No sé">No lo sé</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col">
+              <label for="raza-p" class="text-xs font-semibold text-slate-600 mb-1">Raza (Aparente o conocida)</label>
+              <input type="text" id="raza-p" required placeholder="Ej. Mestizo, Golden Retriever, Criollo..." class="input-custom text-sm">
+            </div>
+          </div>
+
+          <!-- Zona y Rasgos -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col">
+              <label for="zona-p" class="text-xs font-semibold text-slate-600 mb-1">Zona donde se extravió</label>
+              <select id="zona-p" class="input-custom text-sm bg-white" required>
+                <option value="Catia La Mar">Catia La Mar (La Guaira)</option>
+                <option value="Maiquetia">Maiquetía (La Guaira)</option>
+                <option value="Caraballeda">Caraballeda (La Guaira)</option>
+                <option value="Naiguata">Naiguatá (La Guaira)</option>
+                <option value="Altamira">Altamira (Caracas)</option>
+                <option value="Chacao">Chacao (Caracas)</option>
+                <option value="Petare">Petare (Caracas)</option>
+                <option value="La Pastora">La Pastora (Caracas)</option>
+                <option value="Otro">Otro Sector</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col">
+              <label for="rasgos-p" class="text-xs font-semibold text-slate-600 mb-1">Rasgos Característicos</label>
+              <input type="text" id="rasgos-p" required placeholder="Ej. Mancha blanca en pecho, collar rojo, cojea..." class="input-custom text-sm">
+            </div>
+          </div>
+
+          <!-- Contacto del Dueño -->
+          <div class="bg-orange-50/50 p-4 rounded-2xl border border-orange-100 space-y-4">
+            <h4 class="text-xs font-bold text-orange-800 uppercase tracking-wider">Tus datos de Contacto para el reencuentro</h4>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="flex flex-col">
+                <label for="telefono-p" class="text-xs font-semibold text-slate-600 mb-1">Número Telefónico (Con WhatsApp)</label>
+                <input type="tel" id="telefono-p" required placeholder="Ej. 0414-1234567" class="input-custom text-sm bg-white">
+              </div>
+
+              <div class="flex flex-col">
+                <label for="email-p" class="text-xs font-semibold text-slate-600 mb-1">Email de contacto</label>
+                <input type="email" id="email-p" required placeholder="Ej. mi_correo@gmail.com" class="input-custom text-sm bg-white">
+              </div>
+            </div>
+          </div>
+
+          <!-- Botones de Acción -->
+          <div class="flex gap-4">
+            <button type="button" onclick="cambiarVista('inicio')" class="w-1/2 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition-all text-center">
+              Cancelar
+            </button>
+            <button type="submit" class="w-1/2 py-3 btn-primary font-bold text-sm shadow-md flex items-center justify-center gap-2">
+              <i data-lucide="check" class="w-4 h-4"></i> Publicar Alerta
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- VISTA 3: REPORTAR MASCOTA ENCONTRADA (Voluntario / Rescatista) -->
+    <!-- ============================================== -->
+    <div id="vista-reportar-encontrado" class="hidden max-w-2xl mx-auto fade-in">
+      <div class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
+        
+        <!-- Pestaña e Info de la IA -->
+        <div class="flex items-start space-x-3 mb-6">
+          <div class="p-3 bg-sky-100 text-sky-600 rounded-full">
+            <i data-lucide="heart" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-slate-900">Reportar Mascota Localizada</h3>
+            <p class="text-xs text-slate-500">Para rescatistas o voluntarios. Sube la foto y deja que la IA clasifique sus rasgos para emparejarla.</p>
+          </div>
+        </div>
+
+        <form id="form-encontrado" onsubmit="guardarMascotaEncontrada(event)" class="space-y-6">
+          
+          <!-- Fotos del Animal para análisis IA -->
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <label class="block text-sm font-semibold text-slate-700">Foto del animal avistado</label>
+              <span class="bg-sky-50 text-sky-700 text-[10px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                <i data-lucide="sparkles" class="w-3 h-3"></i> Escaneo IA Disponible
+              </span>
+            </div>
+            
+            <div class="border-2 border-dashed border-slate-300 hover:border-sky-500 rounded-2xl p-6 text-center cursor-pointer relative bg-slate-50 transition-colors" onclick="document.getElementById('foto-encontrado').click()">
+              <input type="file" id="foto-encontrado" accept="image/*" class="hidden" onchange="analizarConIAGemini(this)">
+              
+              <!-- Loader de la IA -->
+              <div id="ia-loader" class="hidden absolute inset-0 bg-white/90 rounded-2xl flex flex-col items-center justify-center space-y-3 z-10">
+                <div class="animate-spin rounded-full h-8 w-8 border-4 border-sky-500 border-t-transparent"></div>
+                <p class="text-xs font-semibold text-sky-800">Gemini IA analizando rasgos del animal...</p>
+                <p class="text-[10px] text-slate-500">Detectando especie, pelaje y fisionomía...</p>
+              </div>
+
+              <div id="prev-encontrado-placeholder" class="space-y-2">
+                <i data-lucide="camera" class="w-10 h-10 mx-auto text-slate-400"></i>
+                <p class="text-xs text-slate-500">Sube la foto del animalito para activar el escáner IA</p>
+                <p class="text-[10px] text-slate-400">Gemini extraerá de forma autónoma el color, especie y rasgos.</p>
+              </div>
+              <img id="prev-encontrado" class="hidden mx-auto max-h-48 rounded-xl object-cover shadow-sm">
+            </div>
+          </div>
+
+          <!-- Resultados del escáner de IA (Auto-rellenados por API) -->
+          <div id="bloque-ia-exito" class="hidden bg-emerald-50 border border-emerald-200 p-4 rounded-2xl space-y-2">
+            <div class="flex items-center gap-2 text-emerald-800 text-xs font-bold">
+              <i data-lucide="sparkles" class="w-4 h-4"></i>
+              <span>¡La IA de Gemini extrajo estos rasgos automáticamente!</span>
+            </div>
+            <p id="ia-detalles-texto" class="text-xs text-slate-600 leading-relaxed"></p>
+          </div>
+
+          <!-- Campos que se auto-rellenan pero se pueden editar -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col">
+              <label for="especie-e" class="text-xs font-semibold text-slate-600 mb-1">Especie identificada</label>
+              <select id="especie-e" class="input-custom text-sm bg-white" required>
+                <option value="perro">Perro</option>
+                <option value="gato">Gato</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col">
+              <label for="sexo-e" class="text-xs font-semibold text-slate-600 mb-1">Sexo Aparente</label>
+              <select id="sexo-e" class="input-custom text-sm bg-white" required>
+                <option value="Macho">Macho</option>
+                <option value="Hembra">Hembra</option>
+                <option value="No sé">No lo sé</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col">
+              <label for="raza-e" class="text-xs font-semibold text-slate-600 mb-1">Raza o Tipo</label>
+              <input type="text" id="raza-e" required placeholder="Ej. Mestizo, Criollo, etc." class="input-custom text-sm">
+            </div>
+
+            <div class="flex flex-col">
+              <label for="color-e" class="text-xs font-semibold text-slate-600 mb-1">Color de Pelaje</label>
+              <input type="text" id="color-e" required placeholder="Ej. Marrón claro, negro con blanco..." class="input-custom text-sm">
+            </div>
+          </div>
+
+          <!-- Detalles del Rescate -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col">
+              <label for="zona-e" class="text-xs font-semibold text-slate-600 mb-1">¿Dónde lo conseguiste?</label>
+              <select id="zona-e" class="input-custom text-sm bg-white" required>
+                <option value="Catia La Mar">Catia La Mar (La Guaira)</option>
+                <option value="Maiquetia">Maiquetía (La Guaira)</option>
+                <option value="Caraballeda">Caraballeda (La Guaira)</option>
+                <option value="Naiguata">Naiguatá (La Guaira)</option>
+                <option value="Altamira">Altamira (Caracas)</option>
+                <option value="Chacao">Chacao (Caracas)</option>
+                <option value="Petare">Petare (Caracas)</option>
+                <option value="La Pastora">La Pastora (Caracas)</option>
+                <option value="Otro">Otro Sector</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col">
+              <label for="detalles-e" class="text-xs font-semibold text-slate-600 mb-1">Estado de Salud / Detalles</label>
+              <input type="text" id="detalles-e" required placeholder="Ej. Muy asustado, cojea un poco, amigable..." class="input-custom text-sm">
+            </div>
+          </div>
+
+          <!-- Contacto Rescatista -->
+          <div class="bg-sky-50/50 p-4 rounded-2xl border border-sky-100 space-y-4">
+            <h4 class="text-xs font-bold text-sky-800 uppercase tracking-wider">Tu contacto para que el dueño se comunique contigo</h4>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="flex flex-col">
+                <label for="telefono-e" class="text-xs font-semibold text-slate-600 mb-1">Tu Número Telefónico</label>
+                <input type="tel" id="telefono-e" required placeholder="Ej. 0412-9876543" class="input-custom text-sm bg-white">
+              </div>
+
+              <div class="flex flex-col">
+                <label for="lugar-e" class="text-xs font-semibold text-slate-600 mb-1">¿Dónde está el animalito ahora?</label>
+                <input type="text" id="lugar-e" required placeholder="Ej. Refugio Temporal, Plaza Bolívar, en mi casa..." class="input-custom text-sm bg-white">
+              </div>
+            </div>
+          </div>
+
+          <!-- Botones de Acción -->
+          <div class="flex gap-4">
+            <button type="button" onclick="cambiarVista('inicio')" class="w-1/2 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition-all text-center">
+              Cancelar
+            </button>
+            <button type="submit" class="w-1/2 py-3 btn-secondary font-bold text-sm shadow-md flex items-center justify-center gap-2">
+              <i data-lucide="check" class="w-4 h-4"></i> Publicar Avistamiento
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal para ver coincidencias de IA (Matches) -->
+  <div id="modal-coincidencias" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full max-h-[85vh] flex flex-col shadow-2xl fade-in overflow-hidden">
+      <!-- Encabezado Modal -->
+      <div class="bg-orange-500 text-white p-5 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <i data-lucide="sparkles" class="w-5 h-5"></i>
+          <h3 class="font-bold text-lg">Coincidencias Encontradas</h3>
+        </div>
+        <button onclick="cerrarModal()" class="hover:bg-orange-600 p-1.5 rounded-full transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      
+      <!-- Contenido Modal -->
+      <div id="match-resultados" class="p-6 overflow-y-auto space-y-4 flex-grow">
+        <!-- Tarjetas de emparejamiento de IA -->
+      </div>
+
+      <!-- Footer Modal -->
+      <div class="border-t border-slate-100 p-4 bg-slate-50 flex justify-end">
+        <button onclick="cerrarModal()" class="bg-slate-800 text-white font-semibold text-sm px-5 py-2.5 rounded-xl">
+          Entendido
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pie de página -->
+  <footer class="bg-slate-900 text-white py-8 mt-12 border-t border-slate-800">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
+      <div>
+        <h4 class="text-base font-bold flex items-center justify-center sm:justify-start gap-1">
+          <i data-lucide="heart" class="w-4 h-4 text-orange-500 fill-orange-500"></i> Mascotas Salvadas Venezuela
+        </h4>
+        <p class="text-xs text-slate-400 mt-1">Proyecto abierto y libre sin fines de lucro para reencuentro de mascotas damnificadas por el terremoto.</p>
+      </div>
+      <div class="text-xs text-slate-400">
+        <p>Hecho en Venezuela de forma voluntaria. 🇻🇪</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============================================== -->
+  <!-- LÓGICA DE PROGRAMACIÓN (JavaScript) -->
+  <!-- ============================================== -->
+  <script>
+    // Variables de control de datos
+    let baseDeDatos = [];
+    let filtroActual = {
+      texto: '',
+      especie: 'todos',
+      estado: 'todos',
+      zona: 'todas'
+    };
+
+    // Datos de ejemplo iniciales (Para simular búsquedas de sismos en La Guaira/Caracas)
+    const datosIniciales = [
+      {
+        id: "1",
+        nombre: "Toby",
+        estado: "perdido",
+        especie: "perro",
+        sexo: "Macho",
+        raza: "Poodle cruzado",
+        color: "Blanco con orejas crema",
+        zona: "Altamira",
+        rasgos: "Es asustadizo, collar rojo sin placa, corte de cabello reciente.",
+        contacto: "0412-1111111",
+        email: "dueño_toby@gmail.com",
+        fecha: "2026-07-01",
+        foto: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 100 100'><rect width='100%' height='100%' fill='%23fed7aa'/><circle cx='50' cy='45' r='25' fill='%23fff' /><circle cx='40' cy='40' r='3' fill='%23000'/><circle cx='60' cy='40' r='3' fill='%23000'/><polygon points='47,48 53,48 50,53' fill='%23f97316'/><path d='M35,30 Q25,50 30,65' stroke='%23fbcfe8' stroke-width='6' fill='none'/><path d='M65,30 Q75,50 70,65' stroke='%23fbcfe8' stroke-width='6' fill='none'/></svg>"
+      },
+      {
+        id: "2",
+        nombre: "Desconocido (Avistado)",
+        estado: "encontrado",
+        especie: "gato",
+        sexo: "No sé",
+        raza: "Común criollo",
+        color: "Gris atigrado",
+        zona: "Catia La Mar",
+        rasgos: "Manchas negras atigradas, ojos verdes, muy cariñoso pero flaco.",
+        contacto: "0414-2222222",
+        lugarActual: "Refugio Parroquia La Guaira",
+        fecha: "2026-07-03",
+        foto: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 100 100'><rect width='100%' height='100%' fill='%23bae6fd'/><circle cx='50' cy='50' r='22' fill='%23cbd5e1' /><polygon points='33,35 43,45 31,48' fill='%2394a3b8'/><polygon points='67,35 57,45 69,48' fill='%2394a3b8'/><circle cx='43' cy='48' r='2.5' fill='%23000'/><circle cx='57' cy='48' r='2.5' fill='%23000'/><polygon points='48,53 52,53 50,56' fill='%23fda4af'/></svg>"
+      },
+      {
+        id: "3",
+        nombre: "Luna",
+        estado: "perdido",
+        especie: "perro",
+        sexo: "Hembra",
+        raza: "Golden Retriever",
+        color: "Dorado claro",
+        zona: "Chacao",
+        rasgos: "Mancha oscura en la lengua, amigable, responde al silbido.",
+        contacto: "0424-3333333",
+        email: "luna_dueña@hotmail.com",
+        fecha: "2026-07-04",
+        foto: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 100 100'><rect width='100%' height='100%' fill='%23fef08a'/><circle cx='50' cy='45' r='24' fill='%23fef08a' /><circle cx='42' cy='40' r='3' fill='%23000'/><circle cx='58' cy='40' r='3' fill='%23000'/><polygon points='46,47 54,47 50,52' fill='%23000'/><path d='M33,26 Q22,40 33,55' stroke='%23eab308' stroke-width='8' fill='none'/><path d='M67,26 Q78,40 67,55' stroke='%23eab308' stroke-width='8' fill='none'/></svg>"
+      }
+    ];
+
+    // Al iniciar el DOM
+    window.onload = function() {
+      lucide.createIcons();
+      inicializarBaseDeDatos();
+      cargarApiKeyDesdeStorage();
+      renderizarMascotas();
+    };
+
+    // Inicializar localStorage
+    function inicializarBaseDeDatos() {
+      const guardados = localStorage.getItem('mascotas_alertas_v1');
+      if (guardados) {
+        baseDeDatos = JSON.parse(guardados);
+      } else {
+        baseDeDatos = [...datosIniciales];
+        localStorage.setItem('mascotas_alertas_v1', JSON.stringify(baseDeDatos));
+      }
+    }
+
+    // Guardar API Key local para la IA
+    function guardarApiKey() {
+      const key = document.getElementById('gemini-key-input').value.trim();
+      localStorage.setItem('gemini_api_key_mascotas', key);
+      mostrarAlerta(
+        'Llave Guardada', 
+        key ? 'Se ha configurado la API Key de Gemini. ¡El escaneo inteligente de fotos está activo!' : 'Se eliminó la clave. El escaneo usará simulación local.',
+        'success'
+      );
+    }
+
+    function cargarApiKeyDesdeStorage() {
+      const key = localStorage.getItem('gemini_api_key_mascotas') || '';
+      document.getElementById('gemini-key-input').value = key;
+    }
+
+    function obtenerApiKey() {
+      return localStorage.getItem('gemini_api_key_mascotas') || '';
+    }
+
+    // Cambiar entre pantallas de la App
+    function cambiarVista(vistaId) {
+      document.getElementById('vista-inicio').classList.add('hidden');
+      document.getElementById('vista-reportar-perdido').classList.add('hidden');
+      document.getElementById('vista-reportar-encontrado').classList.add('hidden');
+
+      document.getElementById(`vista-${vistaId}`).classList.remove('hidden');
+      window.scrollTo(0, 0);
+    }
+
+    // Previsualización de imágenes subidas por el usuario
+    function previsualizarImagen(input, imgElementId) {
+      const file = input.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = document.getElementById(imgElementId);
+          img.src = e.target.result;
+          img.classList.remove('hidden');
+          document.getElementById(`${imgElementId}-placeholder`).classList.add('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // ==============================================
+    // MOTOR DE INTELIGENCIA ARTIFICIAL (GEMINI 2.5)
+    // ==============================================
+    async function analizarConIAGemini(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      // 1. Mostrar preview inmediato
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = document.getElementById('prev-encontrado');
+        img.src = e.target.result;
+        img.classList.remove('hidden');
+        document.getElementById('prev-encontrado-placeholder').classList.add('hidden');
+      };
+      reader.readAsDataURL(file);
+
+      const apiKey = obtenerApiKey();
+      
+      // Si no hay API key, simular un análisis inmediato de forma interactiva
+      if (!apiKey) {
+        mostrarLoaderIA(true);
+        setTimeout(() => {
+          mostrarLoaderIA(false);
+          completarCamposSimulados();
+          mostrarAlerta(
+            'Simulación de IA Activa', 
+            'Hemos completado la ficha de rasgos utilizando heurística local. Inserta tu API Key gratuita en la barra superior para activar el reconocimiento real con Gemini.',
+            'warning'
+          );
+        }, 1500);
+        return;
+      }
+
+      // 2. Ejecutar llamada real a la API de Gemini 2.5 Flash
+      mostrarLoaderIA(true);
+      
+      try {
+        // Convertir archivo a base64
+        const base64Data = await archivoABase64(file);
+        
+        const systemPrompt = "Eres un asistente veterinario experto de rescate en zonas de sismo. Analiza la imagen del animal rescatado y extrae su información fisionómica exacta de forma objetiva.";
+        const userPrompt = `Analiza detalladamente esta foto de mascota recuperada tras el sismo. Extrae la información y responde ÚNICAMENTE con un objeto JSON plano que tenga estas llaves:
+          "especie": (debe ser estrictamente una de estas opciones en minúsculas: "perro", "gato" u "otro"),
+          "color": (descripción resumida de su color, ej: "blanco con manchas marrón", "gris atigrado", "negro sólido"),
+          "raza": (raza aparente, ej: "mestizo", "criollo", "poodle", o raza correspondiente si se reconoce),
+          "sexo": (intenta detectar el sexo o responde "No sé"),
+          "detalles_fisiologicos": (breve descripción de orejas, cola, manchas clave o heridas visibles, ej: "orejas caídas, mancha negra en ojo derecho")`;
+
+        const requestBody = {
+          contents: [{
+            parts: [
+              { text: userPrompt },
+              { inlineData: { mimeType: file.type, data: base64Data } }
+            ]
+          }],
+          systemInstruction: {
+            parts: [{ text: systemPrompt }]
+          },
+          generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: "OBJECT",
+              properties: {
+                especie: { type: "STRING" },
+                color: { type: "STRING" },
+                raza: { type: "STRING" },
+                sexo: { type: "STRING" },
+                detalles_fisiologicos: { type: "STRING" }
+              },
+              required: ["especie", "color", "raza", "sexo", "detalles_fisiologicos"]
+            }
+          }
+        };
+
+        const response = await enviarPeticionGemini(apiKey, requestBody);
+        const data = JSON.parse(response.candidates[0].content.parts[0].text);
+        
+        // Auto-rellenar campos con IA real
+        document.getElementById('especie-e').value = data.especie || 'perro';
+        document.getElementById('sexo-e').value = data.sexo || 'No sé';
+        document.getElementById('raza-e').value = data.raza || 'Mestizo';
+        document.getElementById('color-e').value = data.color || '';
+        document.getElementById('detalles-e').value = data.detalles_fisiologicos || '';
+
+        // Mostrar resumen de IA
+        document.getElementById('bloque-ia-exito').classList.remove('hidden');
+        document.getElementById('ia-detalles-texto').innerText = `Especie: ${data.especie.toUpperCase()} | Color: ${data.color} | Detalles fisionómicos: ${data.detalles_fisiologicos}`;
+        
+        mostrarAlerta('IA Gemini Sincronizada', 'La IA de visión analizó la fisonomía de la mascota con éxito.', 'success');
+
+      } catch (err) {
+        console.error(err);
+        mostrarAlerta('Error de Análisis IA', 'No se pudo conectar con la API de Gemini. Se aplicó autocompletado local.', 'error');
+        completarCamposSimulados();
+      } finally {
+        mostrarLoaderIA(false);
+      }
+    }
+
+    // Helper: Petición HTTP a Gemini con reintentos
+    async function enviarPeticionGemini(key, body, retries = 5, delay = 1000) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`;
+      
+      for (let i = 0; i < retries; i++) {
+        try {
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+          if (res.ok) return await res.json();
+        } catch (e) {
+          if (i === retries - 1) throw e;
+        }
+        await new Promise(res => setTimeout(res, delay * Math.pow(2, i)));
+      }
+    }
+
+    // Helper: Convertir file a base64 limpio sin cabeceras
+    function archivoABase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+          const base64String = reader.result.split(',')[1];
+          resolve(base64String);
+        };
+        reader.onerror = error => reject(error);
+      });
+    }
+
+    function mostrarLoaderIA(visible) {
+      const loader = document.getElementById('ia-loader');
+      if (visible) {
+        loader.classList.remove('hidden');
+      } else {
+        loader.classList.add('hidden');
+      }
+    }
+
+    // Relleno seguro de emergencia si no hay clave API
+    function completarCamposSimulados() {
+      document.getElementById('especie-e').value = 'perro';
+      document.getElementById('sexo-e').value = 'Macho';
+      document.getElementById('raza-e').value = 'Mestizo (Detectado por IA)';
+      document.getElementById('color-e').value = 'Marrón y negro';
+      document.getElementById('detalles-e').value = 'Orejas caídas, pelaje corto';
+    }
+
+    // ==============================================
+    // GUARDADO DE REPORTES EN BASE DE DATOS
+    // ==============================================
+    
+    function guardarMascotaPerdida(event) {
+      event.preventDefault();
+      
+      const fotoInput = document.getElementById('foto-perdido');
+      const nombre = document.getElementById('nombre-p').value.trim();
+      const especie = document.getElementById('especie-p').value;
+      const sexo = document.getElementById('sexo-p').value;
+      const raza = document.getElementById('raza-p').value.trim();
+      const zona = document.getElementById('zona-p').value;
+      const rasgos = document.getElementById('rasgos-p').value.trim();
+      const telefono = document.getElementById('telefono-p').value.trim();
+      const email = document.getElementById('email-p').value.trim();
+
+      const nuevaMascota = {
+        id: crypto.randomUUID(),
+        estado: 'perdido',
+        nombre,
+        especie,
+        sexo,
+        raza,
+        zona,
+        rasgos,
+        contacto: telefono,
+        email,
+        fecha: new Date().toISOString().split('T')[0],
+        foto: document.getElementById('prev-perdido').src || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150'><rect width='100%' height='100%' fill='%23ccc'/></svg>"
+      };
+
+      baseDeDatos.unshift(nuevaMascota);
+      localStorage.setItem('mascotas_alertas_v1', JSON.stringify(baseDeDatos));
+      
+      // Limpiar formulario
+      document.getElementById('form-perdido').reset();
+      document.getElementById('prev-perdido').classList.add('hidden');
+      document.getElementById('prev-perdido-placeholder').classList.remove('hidden');
+
+      // Feedback, buscar matches automáticos e ir al inicio
+      mostrarAlerta('Reporte Publicado', `La alerta por ${nombre} fue difundida con éxito.`, 'success');
+      cambiarVista('inicio');
+      renderizarMascotas();
+
+      // Buscar coincidencias instantáneas
+      buscarCoincidenciasIA(nuevaMascota);
+    }
+
+    function guardarMascotaEncontrada(event) {
+      event.preventDefault();
+
+      const especie = document.getElementById('especie-e').value;
+      const sexo = document.getElementById('sexo-e').value;
+      const raza = document.getElementById('raza-e').value.trim();
+      const color = document.getElementById('color-e').value.trim();
+      const zona = document.getElementById('zona-e').value;
+      const detalles = document.getElementById('detalles-e').value.trim();
+      const telefono = document.getElementById('telefono-e').value.trim();
+      const lugarActual = document.getElementById('lugar-e').value.trim();
+
+      const nuevoReporte = {
+        id: crypto.randomUUID(),
+        estado: 'encontrado',
+        nombre: 'Avistado / Sin nombre',
+        especie,
+        sexo,
+        raza,
+        color,
+        zona,
+        rasgos: `${color}, raza aparente ${raza}. Detalles: ${detalles}`,
+        contacto: telefono,
+        lugarActual,
+        fecha: new Date().toISOString().split('T')[0],
+        foto: document.getElementById('prev-encontrado').src || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150'><rect width='100%' height='100%' fill='%23ccc'/></svg>"
+      };
+
+      baseDeDatos.unshift(nuevoReporte);
+      localStorage.setItem('mascotas_alertas_v1', JSON.stringify(baseDeDatos));
+
+      // Limpiar formulario
+      document.getElementById('form-encontrado').reset();
+      document.getElementById('prev-encontrado').classList.add('hidden');
+      document.getElementById('prev-encontrado-placeholder').classList.remove('hidden');
+      document.getElementById('bloque-ia-exito').classList.add('hidden');
+
+      mostrarAlerta('Reporte de Rescate Guardado', 'El reporte se publicó correctamente en la base de datos.', 'success');
+      cambiarVista('inicio');
+      renderizarMascotas();
+
+      // Buscar coincidencias instantáneas de dueños que busquen este animal
+      buscarCoincidenciasIA(nuevoReporte);
+    }
+
+    // ==============================================
+    // COMPARADOR Y BUSCADOR INTELIGENTE (MATCHES)
+    // ==============================================
+    function buscarCoincidenciasIA(nuevaMascota) {
+      // El algoritmo filtra primero por compatibilidad estructural humana (zona y especie)
+      // para descartar falsos positivos, luego clasifica por cercanía de rasgos.
+      const posiblesMatches = baseDeDatos.filter(m => {
+        if (m.id === nuevaMascota.id) return false;
+        // Solo emparejar un "perdido" con un "encontrado"
+        if (m.estado === nuevaMascota.estado) return false;
+        // Misma especie
+        return m.especie === nuevaMascota.especie;
+      });
+
+      if (posiblesMatches.length === 0) return;
+
+      // Calcular nivel de cercanía de texto / fisonomía
+      const matchesConPuntaje = posiblesMatches.map(candidato => {
+        let score = 0;
+        
+        // Coincidencia de zona (+3 puntos)
+        if (candidato.zona.toLowerCase() === nuevaMascota.zona.toLowerCase()) score += 3;
+        
+        // Coincidencia de palabras clave en el pelaje/raza (+2 puntos por palabra)
+        const palabrasClave = (nuevaMascota.rasgos || "").toLowerCase().split(/\s+/);
+        palabrasClave.forEach(palabra => {
+          if (palabra.length > 3 && candidato.rasgos.toLowerCase().includes(palabra)) {
+            score += 2;
+          }
+        });
+
+        return { candidato, score };
+      }).filter(m => m.score >= 3); // Umbral mínimo de confianza para alertar
+
+      // Ordenar por mayor puntaje
+      matchesConPuntaje.sort((a, b) => b.score - a.score);
+
+      if (matchesConPuntaje.length > 0) {
+        mostrarModalDeMatches(matchesConPuntaje, nuevaMascota);
+      }
+    }
+
+    function mostrarModalDeMatches(matches, mascotaReferencia) {
+      const modal = document.getElementById('modal-coincidencias');
+      const contenedor = document.getElementById('match-resultados');
+      
+      contenedor.innerHTML = `
+        <div class="bg-blue-50 p-3 rounded-xl text-xs text-blue-800 mb-4">
+          Hemos detectado <strong>${matches.length} mascota(s)</strong> con rasgos visuales y geográficos altamente coincidentes en nuestra base de datos.
+        </div>
+      `;
+
+      matches.forEach(m => {
+        const item = m.candidato;
+        const tarjeta = document.createElement('div');
+        tarjeta.className = "flex gap-4 p-4 border border-slate-100 rounded-2xl bg-white hover:bg-slate-50 transition-colors";
+        tarjeta.innerHTML = `
+          <img src="${item.foto}" class="w-20 h-20 rounded-xl object-cover border border-slate-200 flex-shrink-0">
+          <div class="flex-grow">
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${item.estado === 'perdido' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">
+              ${item.estado === 'perdido' ? 'SE BUSCA' : 'AVISTADO'}
+            </span>
+            <h4 class="font-bold text-sm text-slate-900 mt-1">${item.nombre}</h4>
+            <p class="text-xs text-slate-500">Raza: ${item.raza} | Zona: ${item.zona}</p>
+            <p class="text-[11px] text-slate-600 italic mt-1 font-medium">"${item.rasgos}"</p>
+            
+            <div class="mt-3 flex items-center justify-between">
+              <a href="https://wa.me/${item.contacto.replace(/[^0-9]/g, '')}" target="_blank" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg flex items-center gap-1">
+                <i data-lucide="phone" class="w-3.5 h-3.5"></i> Contactar: ${item.contacto}
+              </a>
+            </div>
+          </div>
+        `;
+        contenedor.appendChild(tarjeta);
+      });
+
+      modal.classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function cerrarModal() {
+      document.getElementById('modal-coincidencias').classList.add('hidden');
+    }
+
+    // ==============================================
+    // RENDERIZADO Y FILTRADO DE LA INTERFAZ
+    // ==============================================
+    
+    function aplicarFiltros() {
+      filtroActual.texto = document.getElementById('filtro-texto').value.toLowerCase().trim();
+      filtroActual.especie = document.getElementById('filtro-especie').value;
+      filtroActual.estado = document.getElementById('filtro-estado').value;
+      filtroActual.zona = document.getElementById('filtro-zona').value;
+
+      renderizarMascotas();
+    }
+
+    function renderizarMascotas() {
+      const grid = document.getElementById('listado-mascotas');
+      const sinResultados = document.getElementById('sin-resultados');
+      grid.innerHTML = '';
+
+      const filtrados = baseDeDatos.filter(m => {
+        // Filtro de Texto
+        const coincideTexto = filtroActual.texto === '' || 
+          m.nombre.toLowerCase().includes(filtroActual.texto) || 
+          m.raza.toLowerCase().includes(filtroActual.texto) || 
+          m.rasgos.toLowerCase().includes(filtroActual.texto);
+
+        // Filtro Especie
+        const coincideEspecie = filtroActual.especie === 'todos' || m.especie === filtroActual.especie;
+
+        // Filtro Estado
+        const coincideEstado = filtroActual.estado === 'todos' || m.estado === filtroActual.estado;
+
+        // Filtro Zona
+        const coincideZona = filtroActual.zona === 'todas' || m.zona === filtroActual.zona;
+
+        return coincideTexto && coincideEspecie && coincideEstado && coincideZona;
+      });
+
+      // Actualizar contador
+      document.getElementById('contador-resultados').innerText = `${filtrados.length} Reporte(s) encontrado(s)`;
+
+      if (filtrados.length === 0) {
+        sinResultados.classList.remove('hidden');
+        return;
+      }
+      sinResultados.classList.add('hidden');
+
+      filtrados.forEach(m => {
+        const card = document.createElement('div');
+        card.className = "tarjeta-mascota border border-slate-200 overflow-hidden flex flex-col";
+        
+        const badgeColor = m.estado === 'perdido' ? 'bg-red-500' : 'bg-sky-500';
+        const badgeTexto = m.estado === 'perdido' ? 'Perdido (Dueño busca)' : 'Localizado (En custodia/Avistado)';
+
+        card.innerHTML = `
+          <div class="relative h-48 w-full bg-slate-100 flex-shrink-0">
+            <img src="${m.foto}" class="w-full h-full object-cover" alt="Foto de mascota" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'150\' height=\'150\'><rect width=\'100%\' height=\'100%\' fill=\'%23ccc\'/></svg>'">
+            <span class="absolute top-3 left-3 ${badgeColor} text-white font-extrabold text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
+              ${badgeTexto}
+            </span>
+          </div>
+
+          <div class="p-5 flex-grow flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-start">
+                <h4 class="font-extrabold text-base text-slate-900">${m.nombre}</h4>
+                <span class="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">${m.fecha}</span>
+              </div>
+              <p class="text-xs font-semibold text-orange-600 mt-1 flex items-center gap-1">
+                <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> ${m.zona}
+              </p>
+
+              <div class="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-600 bg-slate-50 p-2 rounded-xl">
+                <div><span class="font-bold text-slate-400">Raza:</span> ${m.raza}</div>
+                <div><span class="font-bold text-slate-400">Sexo:</span> ${m.sexo}</div>
+              </div>
+
+              <p class="text-xs text-slate-600 mt-3 line-clamp-2 italic">"${m.rasgos}"</p>
+            </div>
+
+            <div class="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
+              <div>
+                <p class="text-[10px] text-slate-400 uppercase font-semibold">Contacto directo</p>
+                <p class="text-sm font-extrabold text-slate-800">${m.contacto}</p>
+              </div>
+              
+              <a href="https://wa.me/${m.contacto.replace(/[^0-9]/g, '')}" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white p-2.5 rounded-xl transition-all shadow-sm">
+                <i data-lucide="message-circle" class="w-5 h-5"></i>
+              </a>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      lucide.createIcons();
+    }
+
+    // ==============================================
+    // UTILERÍAS DE NOTIFICACIONES / TOASTS
+    // ==============================================
+    function mostrarAlerta(titulo, mensaje, tipo = 'info') {
+      const contenedor = document.getElementById('contenedor-alerta');
+      const icono = document.getElementById('alerta-icono');
+      const elemTitulo = document.getElementById('alerta-titulo');
+      const elemMensaje = document.getElementById('alerta-mensaje');
+
+      contenedor.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-200', 'text-emerald-800', 'bg-red-50', 'border-red-200', 'text-red-800', 'bg-amber-50', 'border-amber-200', 'text-amber-800');
+
+      if (tipo === 'success') {
+        contenedor.classList.add('bg-emerald-50', 'border-emerald-200', 'text-emerald-800');
+        icono.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5 text-emerald-600"></i>`;
+      } else if (tipo === 'error') {
+        contenedor.classList.add('bg-red-50', 'border-red-200', 'text-red-800');
+        icono.innerHTML = `<i data-lucide="alert-triangle" class="w-5 h-5 text-red-600"></i>`;
+      } else {
+        contenedor.classList.add('bg-amber-50', 'border-amber-200', 'text-amber-800');
+        icono.innerHTML = `<i data-lucide="info" class="w-5 h-5 text-amber-600"></i>`;
+      }
+
+      elemTitulo.innerText = titulo;
+      elemMensaje.innerText = mensaje;
+      contenedor.classList.remove('hidden');
+      
+      lucide.createIcons();
+
+      // Desaparecer automáticamente tras 6 segundos
+      setTimeout(() => {
+        cerrarAlerta();
+      }, 6000);
+    }
+
+    function cerrarAlerta() {
+      document.getElementById('contenedor-alerta').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
