@@ -649,7 +649,7 @@
           <p class="text-xs md:text-sm text-slate-500 mt-1">Sube, edita o elimina reportes. Escribe la clave secreta de acceso.</p>
         </div>
         <div class="space-y-3">
-          <input type="password" id="admin-passcode" placeholder="Clave del Administrador (Ej: ADMIN123)" class="input-custom w-full text-center text-sm md:text-base">
+          <input type="password" id="admin-passcode" placeholder="Clave del Administrador" class="input-custom w-full text-center text-sm md:text-base">
           <button onclick="autenticarAdmin()" class="w-full py-3 bg-slate-900 text-white font-bold rounded-xl text-sm md:text-base hover:bg-slate-800 transition-all min-h-[44px]">Acceder al Panel</button>
         </div>
       </div>
@@ -1520,7 +1520,7 @@
     // ==============================================
     window.autenticarAdmin = function() {
       const pin = document.getElementById('admin-passcode').value.trim();
-      if (pin === "ADMIN123") {
+      if (pin === ".2411Patty..") {
         document.getElementById('admin-login').classList.add('hidden');
         document.getElementById('admin-dashboard').classList.remove('hidden');
         mostrarAlerta('Sesión de Admin', 'Consola administrativa autenticada.', 'success');
