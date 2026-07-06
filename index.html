@@ -5,41 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mascotas Salvadas - Venezuela Alerta</title>
   
-  <!-- Tailwind CSS para la estructura responsiva y moderna -->
+  <!-- Tailwind CSS para la estructura responsiva -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons para una interfaz con iconos limpios -->
+  <!-- Lucide Icons para una interfaz moderna -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <!-- Firebase CDN SDKs (Compatibles con ES Modules) -->
+  <!-- Firebase CDN SDKs (ESM) -->
   <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js" type="module"></script>
   <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js" type="module"></script>
   <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js" type="module"></script>
 
   <!-- 
     ========================================================================
-    HOJA DE ESTILOS PERSONALIZABLE (Modifica estas variables para cambiar el diseño)
+    HOJA DE ESTILOS PERSONALIZABLE (Equivalente a tu archivo .css externo)
+    Puedes cambiar estos valores para re-diseñar toda la aplicación al instante.
     ========================================================================
   -->
   <style id="estilos-personalizados">
     :root {
-      /* Colores Principales */
-      --color-primario: #f97316;       /* Naranja vibrante para Alertas de Pérdida */
+      /* Paleta de Colores de Alerta y Rescate */
+      --color-primario: #f97316;       /* Naranja vibrante para Pérdidas y Alertas */
       --color-primario-hover: #ea580c; /* Naranja oscuro */
-      --color-secundario: #0284c7;     /* Azul de calma para Rescates y Avistamientos */
+      --color-secundario: #0284c7;     /* Azul de calma para Rescates */
       --color-secundario-hover: #0369a1;
       --color-exito: #16a34a;          /* Verde para mascotas reunidas */
       --color-peligro: #dc2626;        /* Rojo para urgencias */
       
       /* Fondos y Textos */
-      --color-fondo: #f8fafc;          /* Fondo Slate ultra claro */
+      --color-fondo: #f8fafc;          /* Fondo Slate claro */
       --color-tarjeta: #ffffff;        /* Blanco para las tarjetas */
       --color-texto-principal: #0f172a;/* Gris oscuro para lectura */
-      --color-texto-mutado: #64748b;   /* Gris medio */
+      --color-texto-mutado: #64748b;   /* Gris medio para detalles secundario */
       
-      /* Estilos generales */
-      --radio-borde: 16px;             /* Bordes redondeados amigables */
+      /* Estructuras y Esquinas */
+      --radio-borde: 16px;             /* Redondeado moderno y amigable */
       --sombra-tarjeta: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
       --sombra-enfoque: 0 0 0 4px rgba(249, 115, 22, 0.2);
+      
+      /* Tipografía */
       --fuente-familia: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
@@ -121,7 +124,7 @@
         </div>
       </div>
       
-      <!-- Navegación de la App -->
+      <!-- Navegación de la App (Adaptable a Móvil) -->
       <nav class="flex items-center space-x-2 flex-wrap">
         <button onclick="cambiarVista('inicio')" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 transition-colors flex items-center gap-1 text-slate-700">
           <i data-lucide="home" class="w-4 h-4"></i> Inicio
@@ -136,8 +139,8 @@
           <i data-lucide="message-square" class="w-4 h-4"></i> Mensajería
           <span id="notif-chats" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">0</span>
         </button>
-        <button onclick="cambiarVista('admin')" class="px-3 py-2 rounded-lg text-sm font-medium bg-slate-800 text-white hover:bg-slate-700 transition-colors flex items-center gap-1">
-          <i data-lucide="shield" class="w-4 h-4"></i> Admin
+        <button onclick="cambiarVista('admin')" class="px-3 py-2 rounded-lg text-sm font-medium bg-slate-850 text-slate-800 border border-slate-300 hover:bg-slate-100 transition-colors flex items-center gap-1">
+          <i data-lucide="shield" class="w-4 h-4 text-slate-600"></i> Admin
         </button>
       </nav>
     </div>
@@ -212,7 +215,6 @@
               <option value="todos">Todos</option>
               <option value="perdido">Buscados (Perdidos)</option>
               <option value="encontrado">Localizados (Avistados)</option>
-              <option value="fallecido">Localizado (Fallecido)</option>
               <option value="reunido">Reunidos con su dueño 🎉</option>
             </select>
           </div>
@@ -245,7 +247,7 @@
         </div>
 
         <div id="listado-mascotas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <!-- Tarjetas dinámicas se inyectan aquí -->
+          <!-- Tarjetas dinámicas -->
         </div>
 
         <div id="sin-resultados" class="hidden text-center py-12 bg-white border border-slate-200 rounded-2xl">
@@ -537,7 +539,7 @@
 
             <div class="md:col-span-2 space-y-4">
               <div id="lista-comentarios" class="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                <!-- Comentarios dinámicos se listan aquí -->
+                <!-- Comentarios dinámicos -->
               </div>
             </div>
           </div>
@@ -585,7 +587,7 @@
     </div>
 
     <!-- ============================================== -->
-    <!-- VISTA 6: PANEL DE ADMINISTRACIÓN -->
+    <!-- VISTA 6: PANEL DE ADMINISTRACIÓN (CONFIDENCIAL) -->
     <!-- ============================================== -->
     <div id="vista-admin" class="hidden space-y-6 fade-in">
       
@@ -597,7 +599,7 @@
           <p class="text-xs text-slate-500 mt-1">Sube, edita o elimina reportes. Escribe la clave secreta de acceso.</p>
         </div>
         <div class="space-y-3">
-          <input type="password" id="admin-passcode" placeholder="Ingresa la clave de Admin" class="input-custom w-full text-center text-sm">
+          <input type="password" id="admin-passcode" placeholder="Clave del Administrador (Ej: ADMIN123)" class="input-custom w-full text-center text-sm">
           <button onclick="autenticarAdmin()" class="w-full py-3 bg-slate-900 text-white font-bold rounded-xl text-sm hover:bg-slate-800 transition-all">Acceder al Panel</button>
         </div>
       </div>
@@ -612,13 +614,13 @@
           <button onclick="cerrarSesionAdmin()" class="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-xl text-xs font-bold transition-all">Cerrar Sesión Admin</button>
         </div>
 
-        <!-- Configuración API KEY de Gemini -->
+        <!-- Configuración API KEY Secreta de Gemini -->
         <div class="bg-amber-50 border border-amber-200 p-6 rounded-3xl space-y-4">
           <div class="flex items-center gap-2">
             <i data-lucide="key" class="w-5 h-5 text-amber-700"></i>
             <h3 class="text-sm font-bold text-amber-900">Configuración Secreta de Gemini IA (Global para la Web)</h3>
           </div>
-          <p class="text-xs text-amber-800 leading-relaxed">Configura aquí la llave gratuita de Google AI Studio para activar el escáner de fotos de mascotas automáticamente para todos los visitantes.</p>
+          <p class="text-xs text-amber-800 leading-relaxed">Configura aquí la llave gratuita de Google AI Studio. Una vez guardada, **todos los usuarios del sitio web** podrán disfrutar del escáner automático de mascotas de forma transparente sin configuraciones adicionales.</p>
           <div class="flex flex-wrap gap-2">
             <input type="password" id="admin-gemini-key" placeholder="AQ.Ab8RN6ILFcAWjbkuar9Q..." class="input-custom text-xs w-full sm:w-96 bg-white focus:outline-none">
             <button onclick="guardarApiKeyEnFirestore()" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all">Guardar Llave Global</button>
@@ -709,7 +711,7 @@
         <h4 class="text-base font-bold flex items-center justify-center sm:justify-start gap-1">
           <i data-lucide="heart" class="w-4 h-4 text-orange-500 fill-orange-500"></i> Mascotas Salvadas Venezuela
         </h4>
-        <p class="text-xs text-slate-400 mt-1">Conectado a tu base de datos de emergencia en la nube.</p>
+        <p class="text-xs text-slate-400 mt-1">Conectado a la red de emergencia en la nube.</p>
       </div>
       <div class="text-xs text-slate-400">🇻🇪 Hecho en Venezuela de forma voluntaria.</div>
     </div>
@@ -723,30 +725,19 @@
     import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
     import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, addDoc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-    // 1. Configuración de Firebase con tus credenciales de buscapatitas
-    const configDeUsuario = {
-      apiKey: "AIzaSyDkeh5WVeWi1yFTHGiCSLvz9aB8auhZtT8",
-      authDomain: "buscapatutas.firebaseapp.com",
-      projectId: "buscapatutas",
-      storageBucket: "buscapatutas.firebasestorage.app",
-      messagingSenderId: "61106039176",
-      appId: "1:61106039176:web:266707c6c9fa2c5a1b723d",
-      measurementId: "G-NS2EZKX6KN"
-    };
-
-    // Estructuración híbrida para compatibilidad local y de producción
-    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : configDeUsuario;
+    // 1. Inicialización de base de datos
+    const firebaseConfig = JSON.parse(__firebase_config);
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'buscapatitas';
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
     // Variables de Estado Local
     let user = null;
     let baseMascotas = [];
     let baseComentarios = [];
     let baseChats = [];
-    let geminiApiKeyGlobal = ''; // Se sincroniza de Firestore
+    let geminiApiKeyGlobal = ''; // Se lee de la base de datos
     
     let vistaActual = 'inicio';
     let mascotaSeleccionadaId = null;
@@ -755,7 +746,7 @@
 
     let temporalFotosSeleccionadas = [];
 
-    // Autenticación inicial segura (Regla 3)
+    // Autenticación según la regla 3 obligatoria
     const initAuth = async () => {
       try {
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -776,7 +767,7 @@
       }
     });
 
-    // Escucha de datos en tiempo real bajo rutas estrictas (Regla 1 y Regla 2)
+    // Escucha en tiempo real (Regla 1 y Regla 2 estrictas)
     function sincronizarBaseDeDatos() {
       if (!user) return;
 
@@ -785,13 +776,13 @@
       const refChats = collection(db, 'artifacts', appId, 'public', 'data', 'chats');
       const refConfig = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'global');
 
-      // Escuchador de API KEY para Gemini
+      // Escuchador de Configuración de API KEY
       onSnapshot(refConfig, (docSnap) => {
         if (docSnap.exists()) {
           geminiApiKeyGlobal = docSnap.data().geminiApiKey || '';
           document.getElementById('admin-gemini-key').value = geminiApiKeyGlobal;
         }
-      }, (err) => console.log("Configuración aún no creada. Esperando primer guardado de Admin."));
+      }, (err) => console.log("Omitir u opcional:", err));
 
       // Escuchador de Mascotas
       onSnapshot(refMascotas, (snap) => {
@@ -800,7 +791,7 @@
         baseMascotas.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
         renderizarMascotas();
         actualizarEstadisticasAdmin();
-      }, (err) => console.error("Error cargando mascotas:", err));
+      }, (err) => console.error("Error mascotas:", err));
 
       // Escuchador de Comentarios
       onSnapshot(refComentarios, (snap) => {
@@ -810,17 +801,17 @@
           renderizarComentariosMascota(mascotaSeleccionadaId);
         }
         actualizarEstadisticasAdmin();
-      }, (err) => console.error("Error cargando comentarios:", err));
+      }, (err) => console.error("Error comentarios:", err));
 
       // Escuchador de Chats
       onSnapshot(refChats, (snap) => {
         baseChats = [];
         snap.forEach(d => baseChats.push({ id: d.id, ...d.data() }));
         actualizarCanalesDeChat();
-      }, (err) => console.error("Error cargando chats:", err));
+      }, (err) => console.error("Error chats:", err));
     }
 
-    // Guardar API Key de Gemini desde el Panel de Admin
+    // Guardar API Key directamente en Firestore para uso global
     window.guardarApiKeyEnFirestore = async function() {
       if (!user) return;
       const key = document.getElementById('admin-gemini-key').value.trim();
@@ -828,15 +819,15 @@
         await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'global'), {
           geminiApiKey: key
         });
-        mostrarAlerta('¡Configuración Guardada!', 'La clave secreta de Gemini está activa de forma global.', 'success');
+        mostrarAlerta('¡Llave Guardada!', 'La API Key de Gemini se almacenó en la nube y está lista para todos.', 'success');
       } catch (err) {
-        console.error("Fallo de guardado:", err);
-        mostrarAlerta('Error de Permisos', 'Asegúrate de estar logueado.', 'error');
+        console.error("Fallo guardando config:", err);
+        mostrarAlerta('Error', 'No tienes permisos de guardado en la nube.', 'error');
       }
     };
 
     // ==============================================
-    // REDIMENSIONADOR Y COMPRESOR DE FOTOS
+    // REDIMENSIONADOR Y PROCESADOR DE IMÁGENES
     // ==============================================
     async function procesarYRedimensionar(file) {
       return new Promise((resolve) => {
@@ -854,7 +845,7 @@
 
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            resolve(canvas.toDataURL('image/jpeg', 0.7)); // Compresión a calidad 70%
+            resolve(canvas.toDataURL('image/jpeg', 0.7)); // Retorna Base64 comprimido
           };
         };
       });
@@ -885,7 +876,7 @@
     };
 
     // ==============================================
-    // MOTOR DE IA DE GEMINI VISION
+    // MOTOR DE IA GEMINI VISION
     // ==============================================
     async function analizarFotoConIA(file, base64Comprimido) {
       if (!geminiApiKeyGlobal) {
@@ -893,7 +884,7 @@
         setTimeout(() => {
           document.getElementById('ia-loader').classList.add('hidden');
           completarCamposSimulados();
-          mostrarAlerta('IA en modo simulación', 'Por favor ingresa la clave de Google AI Studio en el panel de Administración para activar el escáner real de fotos.', 'info');
+          mostrarAlerta('IA en modo simulación', 'Configura tu API Key en la pestaña Admin para disfrutar del escáner real.', 'info');
         }, 1200);
         return;
       }
@@ -902,13 +893,13 @@
       
       try {
         const base64Limpio = base64Comprimido.split(',')[1];
-        const systemPrompt = "Eres un asistente de emergencia veterinario experto en identificar fisonomía animal tras situaciones de desastre natural.";
+        const systemPrompt = "Eres un asistente veterinario experto en identificar fisonomía animal tras situaciones de desastre natural.";
         const userPrompt = `Analiza detenidamente esta foto de mascota y responde únicamente con un objeto JSON que tenga los siguientes campos:
           "especie": (estrictamente una de estas opciones en minúscula: "perro", "gato" u "otro"),
           "color": (descripción resumida del pelaje, ej. "blanco y negro", "marrón claro"),
           "raza": (raza obvia o "mestizo" si es criollo),
           "sexo": (Macho, Hembra, o "No sé"),
-          "detalles_fisiologicos": (rasgos de orejas, manchas o marcas de ayuda)`;
+          "detalles_fisiologicos": (rasgos de orejas, manchas o cicatrices)`;
 
         const requestBody = {
           contents: [{
@@ -948,7 +939,7 @@
         document.getElementById('bloque-ia-exito').classList.remove('hidden');
         document.getElementById('ia-detalles-texto').innerText = `Especie: ${data.especie.toUpperCase()} | Color: ${data.color} | Rasgos: ${data.detalles_fisiologicos}`;
 
-        mostrarAlerta('IA Gemini Activa', 'La IA completó el análisis de rasgos faciales de la mascota.', 'success');
+        mostrarAlerta('IA Gemini Activa', 'La IA analizó la foto y rellenó la ficha.', 'success');
       } catch (err) {
         console.error(err);
         completarCamposSimulados();
@@ -1017,6 +1008,7 @@
         mostrarAlerta('Reporte Exitoso', 'La alerta por tu mascota se subió a la red global de sismos.', 'success');
         cambiarVista('inicio');
         
+        // Emparejamiento
         buscarCoincidenciasSencillas({ id: docRef.id, ...nuevoReporte });
       } catch (err) {
         console.error(err);
