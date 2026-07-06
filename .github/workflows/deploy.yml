@@ -1,0 +1,39 @@
+name: Despliegue de Contenido Estatico a Pages
+
+on:
+  push:
+    branches: ["main", "master"] # Se ejecuta al hacer push a main o master
+  workflow_dispatch:
+
+# Configura los permisos necesarios para realizar el despliegue en GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Evita ejecuciones simultáneas del despliegue
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar codigo del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar entorno de Pages
+        uses: actions/configure-pages@v5
+
+      - name: Subir el archivo HTML como artefacto
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.' # Sube todo el contenido de la raiz
+
+      - name: Desplegar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
