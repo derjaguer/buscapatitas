@@ -5,44 +5,42 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mascotas Salvadas - Venezuela Alerta</title>
   
-  <!-- Tailwind CSS para la estructura responsiva -->
+  <!-- Tailwind CSS para la estructura responsiva y moderna -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons para una interfaz moderna -->
+  <!-- Lucide Icons para una interfaz con iconos limpios -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <!-- Firebase CDN SDKs (ESM) -->
+  <!-- Firebase CDN SDKs (Compatibles con ES Modules) -->
   <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js" type="module"></script>
   <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js" type="module"></script>
   <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js" type="module"></script>
 
   <!-- 
     ========================================================================
-    HOJA DE ESTILOS PERSONALIZABLE (Equivalente a tu archivo .css externo)
-    Puedes cambiar estos valores para re-diseñar toda la aplicación al instante.
+    HOJA DE ESTILOS PERSONALIZABLE (Modifica estas variables para cambiar el diseño)
     ========================================================================
   -->
   <style id="estilos-personalizados">
     :root {
-      /* Paleta de Colores de Alerta y Rescate */
-      --color-primario: #f97316;       /* Naranja vibrante para Pérdidas y Alertas */
+      /* Colores Principales */
+      --color-primario: #f97316;       /* Naranja vibrante para Alertas de Pérdida */
       --color-primario-hover: #ea580c; /* Naranja oscuro */
-      --color-secundario: #0284c7;     /* Azul de calma para Rescates */
+      --color-secundario: #0284c7;     /* Azul de calma para Rescates y Avistamientos */
       --color-secundario-hover: #0369a1;
       --color-exito: #16a34a;          /* Verde para mascotas reunidas */
       --color-peligro: #dc2626;        /* Rojo para urgencias */
+      --color-sobrio: #64748b;         /* Gris para fallecidos */
       
       /* Fondos y Textos */
-      --color-fondo: #f8fafc;          /* Fondo Slate claro */
+      --color-fondo: #f8fafc;          /* Fondo Slate ultra claro */
       --color-tarjeta: #ffffff;        /* Blanco para las tarjetas */
       --color-texto-principal: #0f172a;/* Gris oscuro para lectura */
-      --color-texto-mutado: #64748b;   /* Gris medio para detalles secundario */
+      --color-texto-mutado: #64748b;   /* Gris medio */
       
-      /* Estructuras y Esquinas */
-      --radio-borde: 16px;             /* Redondeado moderno y amigable */
+      /* Estilos generales */
+      --radio-borde: 16px;             /* Bordes redondeados amigables */
       --sombra-tarjeta: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
       --sombra-enfoque: 0 0 0 4px rgba(249, 115, 22, 0.2);
-      
-      /* Tipografía */
       --fuente-familia: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
@@ -98,6 +96,15 @@
       box-shadow: var(--sombra-enfoque);
     }
 
+    /* Scrollbar invisible para el menú deslizable en móvil */
+    .menu-scroll-x::-webkit-scrollbar {
+      display: none;
+    }
+    .menu-scroll-x {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+    }
+
     .fade-in {
       animation: fadeIn 0.3s ease-in-out;
     }
@@ -107,47 +114,47 @@
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col text-base md:text-lg">
 
-  <!-- Encabezado / Navbar -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
-      <div class="flex items-center space-x-3 cursor-pointer" onclick="cambiarVista('inicio')">
+  <!-- Encabezado / Navbar Adaptativo -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-45 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-3 cursor-pointer w-full md:w-auto justify-center md:justify-start" onclick="cambiarVista('inicio')">
         <div class="p-2 bg-orange-100 rounded-full text-orange-600">
           <i data-lucide="paw-print" class="w-8 h-8"></i>
         </div>
-        <div>
-          <h1 class="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-            Mascotas Salvadas <span class="bg-red-500 text-white text-[10px] px-2.5 py-0.5 rounded-full uppercase font-bold animate-pulse">Sismo Venezuela</span>
+        <div class="text-center md:text-left">
+          <h1 class="text-xl md:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2 justify-center md:justify-start">
+            Mascotas Salvadas <span class="bg-red-500 text-white text-[9px] px-2.5 py-0.5 rounded-full uppercase font-bold animate-pulse">Sismo Venezuela</span>
           </h1>
           <p class="text-xs text-slate-500">Base de Datos de Emergencia · La Guaira & Caracas</p>
         </div>
       </div>
       
-      <!-- Navegación de la App (Adaptable a Móvil) -->
-      <nav class="flex items-center space-x-2 flex-wrap">
-        <button onclick="cambiarVista('inicio')" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 transition-colors flex items-center gap-1 text-slate-700">
-          <i data-lucide="home" class="w-4 h-4"></i> Inicio
+      <!-- Menú Deslizable en Móviles sin distorsión -->
+      <nav class="w-full md:w-auto overflow-x-auto menu-scroll-x flex items-center gap-2 pb-2 md:pb-0 justify-start md:justify-end px-2 md:px-0 scroll-smooth snap-x snap-mandatory">
+        <button onclick="cambiarVista('inicio')" class="snap-start flex-shrink-0 px-4 py-2.5 rounded-xl text-sm md:text-base font-bold hover:bg-slate-100 transition-colors flex items-center gap-1.5 text-slate-700 min-h-[44px]">
+          <i data-lucide="home" class="w-4.5 h-4.5"></i> Inicio
         </button>
-        <button onclick="cambiarVista('reportar-perdido')" class="px-3 py-2 rounded-lg text-sm font-medium bg-orange-50 text-orange-700 hover:bg-orange-100 transition-colors flex items-center gap-1">
-          <i data-lucide="megaphone" class="w-4 h-4"></i> Reportar Perdido
+        <button onclick="cambiarVista('reportar-perdido')" class="snap-start flex-shrink-0 px-4 py-2.5 rounded-xl text-sm md:text-base font-bold bg-orange-50 text-orange-700 hover:bg-orange-100 transition-colors flex items-center gap-1.5 min-h-[44px]">
+          <i data-lucide="megaphone" class="w-4.5 h-4.5"></i> Reportar Perdido
         </button>
-        <button onclick="cambiarVista('reportar-encontrado')" class="px-3 py-2 rounded-lg text-sm font-medium bg-sky-50 text-sky-700 hover:bg-sky-100 transition-colors flex items-center gap-1">
-          <i data-lucide="heart" class="w-4 h-4"></i> Reportar Avistado
+        <button onclick="cambiarVista('reportar-encontrado')" class="snap-start flex-shrink-0 px-4 py-2.5 rounded-xl text-sm md:text-base font-bold bg-sky-50 text-sky-700 hover:bg-sky-100 transition-colors flex items-center gap-1.5 min-h-[44px]">
+          <i data-lucide="heart" class="w-4.5 h-4.5"></i> Reportar Avistado
         </button>
-        <button onclick="cambiarVista('chats')" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 transition-colors flex items-center gap-1 text-slate-700 relative">
-          <i data-lucide="message-square" class="w-4 h-4"></i> Mensajería
+        <button onclick="cambiarVista('chats')" class="snap-start flex-shrink-0 px-4 py-2.5 rounded-xl text-sm md:text-base font-bold hover:bg-slate-100 transition-colors flex items-center gap-1.5 text-slate-700 relative min-h-[44px]">
+          <i data-lucide="message-square" class="w-4.5 h-4.5"></i> Mensajería
           <span id="notif-chats" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">0</span>
         </button>
-        <button onclick="cambiarVista('admin')" class="px-3 py-2 rounded-lg text-sm font-medium bg-slate-850 text-slate-800 border border-slate-300 hover:bg-slate-100 transition-colors flex items-center gap-1">
-          <i data-lucide="shield" class="w-4 h-4 text-slate-600"></i> Admin
+        <button onclick="cambiarVista('admin')" class="snap-start flex-shrink-0 px-4 py-2.5 rounded-xl text-sm md:text-base font-bold bg-slate-800 text-white hover:bg-slate-700 transition-colors flex items-center gap-1.5 min-h-[44px]">
+          <i data-lucide="shield" class="w-4.5 h-4.5"></i> Admin
         </button>
       </nav>
     </div>
   </header>
 
   <!-- Contenedor Principal -->
-  <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-8">
+  <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-6 md:py-8 space-y-6">
     
     <!-- Alertas y Notificaciones Dinámicas -->
     <div id="contenedor-alerta" class="hidden mb-6 p-4 rounded-xl border flex items-start gap-3 fade-in">
@@ -157,19 +164,61 @@
         <p id="alerta-mensaje" class="text-xs mt-1"></p>
       </div>
       <button onclick="cerrarAlerta()" class="text-slate-400 hover:text-slate-600">
-        <i data-lucide="x" class="w-4 h-4"></i>
+        <i data-lucide="x" class="w-4.5 h-4.5"></i>
       </button>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- PUBLIC DASHBOARD DE ESTADÍSTICAS -->
+    <!-- ============================================== -->
+    <div id="public-counters-dashboard" class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 fade-in">
+      <div class="bg-white border border-slate-200 p-4 rounded-2xl flex items-center gap-3.5 shadow-sm">
+        <div class="p-3 bg-red-50 text-red-600 rounded-xl">
+          <i data-lucide="megaphone" class="w-6 h-6 md:w-7 md:h-7"></i>
+        </div>
+        <div>
+          <span class="text-xs md:text-sm text-slate-500 font-bold uppercase tracking-wider block">Buscando</span>
+          <span id="p-count-buscando" class="text-xl md:text-2xl font-black text-slate-800">0</span>
+        </div>
+      </div>
+      <div class="bg-white border border-slate-200 p-4 rounded-2xl flex items-center gap-3.5 shadow-sm">
+        <div class="p-3 bg-sky-50 text-sky-600 rounded-xl">
+          <i data-lucide="eye" class="w-6 h-6 md:w-7 md:h-7"></i>
+        </div>
+        <div>
+          <span class="text-xs md:text-sm text-slate-500 font-bold uppercase tracking-wider block">Avistados</span>
+          <span id="p-count-avistados" class="text-xl md:text-2xl font-black text-slate-800">0</span>
+        </div>
+      </div>
+      <div class="bg-white border border-slate-200 p-4 rounded-2xl flex items-center gap-3.5 shadow-sm">
+        <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+          <i data-lucide="check-circle" class="w-6 h-6 md:w-7 md:h-7"></i>
+        </div>
+        <div>
+          <span class="text-xs md:text-sm text-slate-500 font-bold uppercase tracking-wider block">Entregados</span>
+          <span id="p-count-reunidos" class="text-xl md:text-2xl font-black text-slate-800">0</span>
+        </div>
+      </div>
+      <div class="bg-white border border-slate-200 p-4 rounded-2xl flex items-center gap-3.5 shadow-sm">
+        <div class="p-3 bg-slate-100 text-slate-600 rounded-xl">
+          <i data-lucide="heart-off" class="w-6 h-6 md:w-7 md:h-7"></i>
+        </div>
+        <div>
+          <span class="text-xs md:text-sm text-slate-500 font-bold uppercase tracking-wider block">Fallecidos</span>
+          <span id="p-count-fallecidos" class="text-xl md:text-2xl font-black text-slate-800">0</span>
+        </div>
+      </div>
     </div>
 
     <!-- ============================================== -->
     <!-- VISTA 1: INICIO (Dashboard de búsqueda) -->
     <!-- ============================================== -->
-    <div id="vista-inicio" class="space-y-8 fade-in">
+    <div id="vista-inicio" class="space-y-6 fade-in">
       
       <!-- Panel de Introducción -->
       <div class="bg-gradient-to-r from-orange-500 to-amber-500 rounded-3xl p-6 sm:p-10 text-white shadow-xl relative overflow-hidden">
         <div class="relative z-10 max-w-2xl">
-          <span class="bg-white/20 text-white text-xs px-3 py-1 rounded-full font-semibold uppercase tracking-wider">Base de Datos Solidaria Sismo</span>
+          <span class="bg-white/20 text-white text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider">Base de Datos Solidaria Sismo</span>
           <h2 class="text-2xl sm:text-4xl font-extrabold mt-3 tracking-tight">Ayuda a reencontrar a las mascotas perdidas</h2>
           <p class="text-sm sm:text-base text-orange-50 mt-2">Plataforma colaborativa para dueños y rescatistas voluntarios en Venezuela. Registra a tu mascota perdida o reporta animales que veas deambulando.</p>
           
@@ -192,16 +241,16 @@
         
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <div class="flex flex-col">
-            <label class="text-xs font-semibold text-slate-500 mb-1">Buscar rasgos, raza o nombre</label>
+            <label class="text-xs font-bold text-slate-500 mb-1.5 uppercase">Buscar rasgos o nombre</label>
             <div class="relative">
-              <input type="text" id="filtro-texto" oninput="aplicarFiltros()" placeholder="Ej. Manchas blancas, collar..." class="input-custom w-full pl-9 py-2 text-sm">
-              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3.5"></i>
+              <input type="text" id="filtro-texto" oninput="aplicarFiltros()" placeholder="Ej. Manchas, collar..." class="input-custom w-full pl-9 py-2.5 text-sm md:text-base">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-4"></i>
             </div>
           </div>
 
           <div class="flex flex-col">
-            <label class="text-xs font-semibold text-slate-500 mb-1">Especie</label>
-            <select id="filtro-especie" onchange="aplicarFiltros()" class="input-custom w-full py-2 text-sm bg-white">
+            <label class="text-xs font-bold text-slate-500 mb-1.5 uppercase">Especie</label>
+            <select id="filtro-especie" onchange="aplicarFiltros()" class="input-custom w-full py-2.5 text-sm md:text-base bg-white">
               <option value="todos">Todos los animales</option>
               <option value="perro">Perro</option>
               <option value="gato">Gato</option>
@@ -210,18 +259,19 @@
           </div>
 
           <div class="flex flex-col">
-            <label class="text-xs font-semibold text-slate-500 mb-1">Estado de Alerta</label>
-            <select id="filtro-estado" onchange="aplicarFiltros()" class="input-custom w-full py-2 text-sm bg-white">
+            <label class="text-xs font-bold text-slate-500 mb-1.5 uppercase">Estado de Alerta</label>
+            <select id="filtro-estado" onchange="aplicarFiltros()" class="input-custom w-full py-2.5 text-sm md:text-base bg-white">
               <option value="todos">Todos</option>
-              <option value="perdido">Buscados (Perdidos)</option>
+              <option value="perdido">Buscando (Perdidos)</option>
               <option value="encontrado">Localizados (Avistados)</option>
               <option value="reunido">Reunidos con su dueño 🎉</option>
+              <option value="fallecido">Fallecidos 🕯️</option>
             </select>
           </div>
 
           <div class="flex flex-col">
-            <label class="text-xs font-semibold text-slate-500 mb-1">Zona / Parroquia</label>
-            <select id="filtro-zona" onchange="aplicarFiltros()" class="input-custom w-full py-2 text-sm bg-white">
+            <label class="text-xs font-bold text-slate-500 mb-1.5 uppercase">Zona / Parroquia</label>
+            <select id="filtro-zona" onchange="aplicarFiltros()" class="input-custom w-full py-2.5 text-sm md:text-base bg-white">
               <option value="todas">Todas las zonas</option>
               <option value="Catia La Mar">Catia La Mar (La Guaira)</option>
               <option value="Maiquetia">Maiquetía (La Guaira)</option>
@@ -240,10 +290,10 @@
       <!-- Listado de Mascotas -->
       <div>
         <div class="flex justify-between items-center mb-6">
-          <h3 class="text-xl font-extrabold text-slate-900 flex items-center gap-2">
+          <h3 class="text-xl md:text-2xl font-black text-slate-900 flex items-center gap-2">
             <i data-lucide="list" class="w-6 h-6 text-orange-500"></i> Mascotas Reportadas
           </h3>
-          <span id="contador-resultados" class="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1 rounded-full">Sincronizando...</span>
+          <span id="contador-resultados" class="text-xs md:text-sm font-bold bg-slate-100 text-slate-600 px-3 py-1 rounded-full">Sincronizando...</span>
         </div>
 
         <div id="listado-mascotas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -264,20 +314,20 @@
     <!-- ============================================== -->
     <div id="vista-reportar-perdido" class="hidden max-w-2xl mx-auto fade-in">
       <div class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
-        <h3 class="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
+        <h3 class="text-xl md:text-2xl font-bold text-slate-900 mb-2 flex items-center gap-2">
           <i data-lucide="megaphone" class="text-orange-500"></i> Registrar Mascota Perdida
         </h3>
-        <p class="text-xs text-slate-500 mb-6">Sube hasta 3 fotos. Una sola persona puede reportar múltiples mascotas si es necesario.</p>
+        <p class="text-sm text-slate-500 mb-6">Sube hasta 3 fotos. Una sola persona puede reportar múltiples mascotas si es necesario.</p>
 
         <form id="form-perdido" onsubmit="guardarMascotaPerdida(event)" class="space-y-6">
           
           <!-- Fotos múltiples -->
           <div class="space-y-2">
-            <label class="block text-sm font-semibold text-slate-700">Fotos de la mascota (Máximo 3)</label>
+            <label class="block text-sm md:text-base font-semibold text-slate-700">Fotos de la mascota (Máximo 3)</label>
             <input type="file" id="fotos-p" accept="image/*" multiple onchange="previsualizarMultiplesFotos(this, 'prevs-p')" class="hidden">
-            <div onclick="document.getElementById('fotos-p').click()" class="border-2 border-dashed border-slate-300 hover:border-orange-500 rounded-2xl p-6 text-center cursor-pointer bg-slate-50">
+            <div onclick="document.getElementById('fotos-p').click()" class="border-2 border-dashed border-slate-300 hover:border-orange-500 rounded-2xl p-6 text-center cursor-pointer bg-slate-50 min-h-[100px] flex flex-col justify-center items-center">
               <i data-lucide="image" class="w-8 h-8 mx-auto text-slate-400 mb-2"></i>
-              <p class="text-xs text-slate-500">Haz clic aquí para seleccionar de 1 a 3 fotos</p>
+              <p class="text-sm text-slate-500">Haz clic aquí para seleccionar de 1 a 3 fotos</p>
             </div>
             <div id="prevs-p" class="flex gap-2 mt-3 overflow-x-auto"></div>
           </div>
@@ -285,13 +335,13 @@
           <!-- Campos -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="flex flex-col">
-              <label class="text-xs font-semibold text-slate-600 mb-1">Nombre de la Mascota</label>
-              <input type="text" id="nombre-p" required placeholder="Ej. Firulais" class="input-custom text-sm">
+              <label class="text-xs font-bold text-slate-600 mb-1.5 uppercase">Nombre de la Mascota</label>
+              <input type="text" id="nombre-p" required placeholder="Ej. Firulais" class="input-custom text-sm md:text-base">
             </div>
 
             <div class="flex flex-col">
-              <label class="text-xs font-semibold text-slate-600 mb-1">Especie</label>
-              <select id="especie-p" class="input-custom text-sm bg-white" required>
+              <label class="text-xs font-bold text-slate-600 mb-1.5 uppercase">Especie</label>
+              <select id="especie-p" class="input-custom text-sm md:text-base bg-white" required>
                 <option value="perro">Perro</option>
                 <option value="gato">Gato</option>
                 <option value="otro">Otro</option>
@@ -299,8 +349,8 @@
             </div>
 
             <div class="flex flex-col">
-              <label class="text-xs font-semibold text-slate-600 mb-1">Sexo</label>
-              <select id="sexo-p" class="input-custom text-sm bg-white" required>
+              <label class="text-xs font-bold text-slate-600 mb-1.5 uppercase">Sexo</label>
+              <select id="sexo-p" class="input-custom text-sm md:text-base bg-white" required>
                 <option value="Macho">Macho</option>
                 <option value="Hembra">Hembra</option>
                 <option value="No sé">No lo sé</option>
@@ -308,15 +358,15 @@
             </div>
 
             <div class="flex flex-col">
-              <label class="text-xs font-semibold text-slate-600 mb-1">Raza (Aparente o conocida)</label>
-              <input type="text" id="raza-p" required placeholder="Ej. Mestizo, Golden, Criollo..." class="input-custom text-sm">
+              <label class="text-xs font-bold text-slate-600 mb-1.5 uppercase">Raza (Aparente o conocida)</label>
+              <input type="text" id="raza-p" required placeholder="Ej. Mestizo, Golden, Criollo..." class="input-custom text-sm md:text-base">
             </div>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="flex flex-col">
-              <label class="text-xs font-semibold text-slate-600 mb-1">Zona donde se perdió</label>
-              <select id="zona-p" class="input-custom text-sm bg-white" required>
+              <label class="text-xs font-bold text-slate-600 mb-1.5 uppercase">Zona donde se perdió</label>
+              <select id="zona-p" class="input-custom text-sm md:text-base bg-white" required>
                 <option value="Catia La Mar">Catia La Mar (La Guaira)</option>
                 <option value="Maiquetia">Maiquetía (La Guaira)</option>
                 <option value="Caraballeda">Caraballeda (La Guaira)</option>
@@ -330,23 +380,23 @@
             </div>
 
             <div class="flex flex-col">
-              <label class="text-xs font-semibold text-slate-600 mb-1">Rasgos Particulares</label>
-              <input type="text" id="rasgos-p" required placeholder="Ej. Mancha blanca en el lomo, collar verde" class="input-custom text-sm">
+              <label class="text-xs font-bold text-slate-600 mb-1.5 uppercase">Rasgos Particulares</label>
+              <input type="text" id="rasgos-p" required placeholder="Ej. Mancha blanca en el lomo, collar verde" class="input-custom text-sm md:text-base">
             </div>
           </div>
 
           <!-- Contacto -->
           <div class="bg-orange-50 p-4 rounded-2xl border border-orange-100 space-y-4">
-            <h4 class="text-xs font-bold text-orange-800 uppercase tracking-wider">Contacto Directo para Reencuentro</h4>
+            <h4 class="text-xs font-extrabold text-orange-800 uppercase tracking-wider">Contacto Directo para Reencuentro</h4>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <input type="tel" id="telefono-p" required placeholder="Número de WhatsApp (Ej. 0412-1234567)" class="input-custom text-sm bg-white">
-              <input type="email" id="email-p" required placeholder="Correo electrónico" class="input-custom text-sm bg-white">
+              <input type="tel" id="telefono-p" required placeholder="Número de WhatsApp (Ej. 0412-1234567)" class="input-custom text-sm md:text-base bg-white">
+              <input type="email" id="email-p" required placeholder="Correo electrónico" class="input-custom text-sm md:text-base bg-white">
             </div>
           </div>
 
           <div class="flex gap-4">
-            <button type="button" onclick="cambiarVista('inicio')" class="w-1/2 py-3 bg-slate-100 hover:bg-slate-200 font-bold rounded-xl text-sm">Cancelar</button>
-            <button type="submit" class="w-1/2 py-3 btn-primary font-bold text-sm shadow-md">Publicar Reporte</button>
+            <button type="button" onclick="cambiarVista('inicio')" class="w-1/2 py-3 bg-slate-100 hover:bg-slate-200 font-bold rounded-xl text-sm md:text-base min-h-[44px]">Cancelar</button>
+            <button type="submit" class="w-1/2 py-3 btn-primary font-bold text-sm md:text-base shadow-md min-h-[44px]">Publicar Reporte</button>
           </div>
         </form>
       </div>
@@ -357,23 +407,23 @@
     <!-- ============================================== -->
     <div id="vista-reportar-encontrado" class="hidden max-w-2xl mx-auto fade-in">
       <div class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
-        <h3 class="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
+        <h3 class="text-xl md:text-2xl font-bold text-slate-900 mb-2 flex items-center gap-2">
           <i data-lucide="heart" class="text-sky-500"></i> Reportar Mascota Localizada
         </h3>
-        <p class="text-xs text-slate-500 mb-6">Si subes la foto del animalito, la IA de Gemini la analizará en segundo plano para identificar sus rasgos al instante.</p>
+        <p class="text-sm text-slate-500 mb-6">Si subes la foto del animalito, la IA de Gemini la analizará en segundo plano para identificar sus rasgos al instante.</p>
 
         <form id="form-encontrado" onsubmit="guardarMascotaEncontrada(event)" class="space-y-6">
           
           <!-- Fotos y Loader IA -->
           <div class="space-y-2">
             <div class="flex justify-between items-center">
-              <label class="block text-sm font-semibold text-slate-700">Subir Fotos de la Mascota (Máximo 3)</label>
+              <label class="block text-sm md:text-base font-semibold text-slate-700">Subir Fotos de la Mascota (Máximo 3)</label>
               <span class="bg-emerald-50 text-emerald-700 text-[10px] px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1">
                 <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Reconocimiento IA Activo
               </span>
             </div>
             <input type="file" id="fotos-e" accept="image/*" multiple onchange="previsualizarYAnalizarIA(this)" class="hidden">
-            <div onclick="document.getElementById('fotos-e').click()" class="border-2 border-dashed border-slate-300 hover:border-sky-500 rounded-2xl p-6 text-center cursor-pointer relative bg-slate-50">
+            <div onclick="document.getElementById('fotos-e').click()" class="border-2 border-dashed border-slate-300 hover:border-sky-500 rounded-2xl p-6 text-center cursor-pointer relative bg-slate-50 min-h-[100px] flex flex-col justify-center items-center">
               
               <!-- Loader IA -->
               <div id="ia-loader" class="hidden absolute inset-0 bg-white/95 rounded-2xl flex flex-col items-center justify-center space-y-2 z-20">
@@ -383,7 +433,7 @@
               </div>
 
               <i data-lucide="camera" class="w-8 h-8 mx-auto text-slate-400 mb-2"></i>
-              <p class="text-xs text-slate-500">Selecciona fotos del animal localizado</p>
+              <p class="text-sm text-slate-500">Selecciona fotos del animal localizado</p>
             </div>
             <div id="prevs-e" class="flex gap-2 mt-3 overflow-x-auto"></div>
           </div>
@@ -399,35 +449,35 @@
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="flex flex-col">
-              <label class="text-xs font-semibold text-slate-600 mb-1">Especie</label>
-              <select id="especie-e" class="input-custom text-sm bg-white" required>
+              <label class="text-xs font-bold text-slate-600 mb-1.5 uppercase">Especie</label>
+              <select id="especie-e" class="input-custom text-sm md:text-base bg-white" required>
                 <option value="perro">Perro</option>
                 <option value="gato">Gato</option>
                 <option value="otro">Otro</option>
               </select>
             </div>
             <div class="flex flex-col">
-              <label class="text-xs font-semibold text-slate-600 mb-1">Sexo Aparente</label>
-              <select id="sexo-e" class="input-custom text-sm bg-white" required>
+              <label class="text-xs font-bold text-slate-600 mb-1.5 uppercase">Sexo Aparente</label>
+              <select id="sexo-e" class="input-custom text-sm md:text-base bg-white" required>
                 <option value="Macho">Macho</option>
                 <option value="Hembra">Hembra</option>
                 <option value="No sé">No lo sé</option>
               </select>
             </div>
             <div class="flex flex-col">
-              <label class="text-xs font-semibold text-slate-600 mb-1">Raza o Tipo</label>
-              <input type="text" id="raza-e" required placeholder="Mestizo, Criollo..." class="input-custom text-sm">
+              <label class="text-xs font-bold text-slate-600 mb-1.5 uppercase">Raza o Tipo</label>
+              <input type="text" id="raza-e" required placeholder="Mestizo, Criollo..." class="input-custom text-sm md:text-base">
             </div>
             <div class="flex flex-col">
-              <label class="text-xs font-semibold text-slate-600 mb-1">Color de Pelaje</label>
-              <input type="text" id="color-e" required placeholder="Marrón, Manchado..." class="input-custom text-sm">
+              <label class="text-xs font-bold text-slate-600 mb-1.5 uppercase">Color de Pelaje</label>
+              <input type="text" id="color-e" required placeholder="Marrón, Manchado..." class="input-custom text-sm md:text-base">
             </div>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="flex flex-col">
-              <label class="text-xs font-semibold text-slate-600 mb-1">¿Dónde lo conseguiste?</label>
-              <select id="zona-e" class="input-custom text-sm bg-white" required>
+              <label class="text-xs font-bold text-slate-600 mb-1.5 uppercase">¿Dónde lo conseguiste?</label>
+              <select id="zona-e" class="input-custom text-sm md:text-base bg-white" required>
                 <option value="Catia La Mar">Catia La Mar (La Guaira)</option>
                 <option value="Maiquetia">Maiquetía (La Guaira)</option>
                 <option value="Caraballeda">Caraballeda (La Guaira)</option>
@@ -440,22 +490,22 @@
               </select>
             </div>
             <div class="flex flex-col">
-              <label class="text-xs font-semibold text-slate-600 mb-1">Estado de Salud / Detalles</label>
-              <input type="text" id="detalles-e" required placeholder="Ej. Muy asustado, amigable, cojea un poco" class="input-custom text-sm">
+              <label class="text-xs font-bold text-slate-600 mb-1.5 uppercase">Estado de Salud / Detalles</label>
+              <input type="text" id="detalles-e" required placeholder="Ej. Muy asustado, amigable, cojea un poco" class="input-custom text-sm md:text-base">
             </div>
           </div>
 
           <div class="bg-sky-50 p-4 rounded-2xl border border-sky-100 space-y-4">
-            <h4 class="text-xs font-bold text-sky-800 uppercase">Contacto del Rescatista / Voluntario</h4>
+            <h4 class="text-xs font-extrabold text-sky-800 uppercase">Contacto del Rescatista / Voluntario</h4>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <input type="tel" id="telefono-e" required placeholder="Número de contacto" class="input-custom text-sm bg-white">
-              <input type="text" id="lugar-e" required placeholder="¿Dónde está la mascota ahora? (Ej. En mi casa, Refugio)" class="input-custom text-sm bg-white">
+              <input type="tel" id="telefono-e" required placeholder="Número de contacto" class="input-custom text-sm md:text-base bg-white">
+              <input type="text" id="lugar-e" required placeholder="¿Dónde está la mascota ahora? (Ej. En mi casa, Refugio)" class="input-custom text-sm md:text-base bg-white">
             </div>
           </div>
 
           <div class="flex gap-4">
-            <button type="button" onclick="cambiarVista('inicio')" class="w-1/2 py-3 bg-slate-100 hover:bg-slate-200 font-bold rounded-xl text-sm">Cancelar</button>
-            <button type="submit" class="w-1/2 py-3 btn-secondary font-bold text-sm shadow-md">Publicar Avistamiento</button>
+            <button type="button" onclick="cambiarVista('inicio')" class="w-1/2 py-3 bg-slate-100 hover:bg-slate-200 font-bold rounded-xl text-sm md:text-base min-h-[44px]">Cancelar</button>
+            <button type="submit" class="w-1/2 py-3 btn-secondary font-bold text-sm md:text-base shadow-md min-h-[44px]">Publicar Avistamiento</button>
           </div>
         </form>
       </div>
@@ -466,8 +516,8 @@
     <!-- ============================================== -->
     <div id="vista-detalle-mascota" class="hidden space-y-8 fade-in">
       <div class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
-        <button onclick="cambiarVista('inicio')" class="text-xs font-bold text-slate-500 hover:text-slate-800 flex items-center gap-1 mb-6">
-          <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al listado
+        <button onclick="cambiarVista('inicio')" class="text-xs md:text-sm font-bold text-slate-500 hover:text-slate-800 flex items-center gap-1 mb-6 min-h-[44px]">
+          <i data-lucide="arrow-left" class="w-4.5 h-4.5"></i> Volver al listado
         </button>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -475,45 +525,45 @@
           <div class="space-y-4">
             <div class="aspect-video w-full rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 relative shadow-sm">
               <img id="detalle-foto-principal" class="w-full h-full object-cover" alt="Foto Mascota">
-              <span id="detalle-estado-badge" class="absolute top-4 left-4 text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-md"></span>
+              <span id="detalle-estado-badge" class="absolute top-4 left-4 text-white text-xs md:text-sm font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-md text-center"></span>
             </div>
             <div id="detalle-miniaturas" class="flex gap-2 overflow-x-auto"></div>
           </div>
 
-          <!-- Información General -->
+          <!-- ... Información General ... -->
           <div class="flex flex-col justify-between">
             <div>
               <h2 id="detalle-nombre" class="text-3xl font-extrabold text-slate-900"></h2>
-              <p id="detalle-zona" class="text-sm font-semibold text-orange-600 mt-1 flex items-center gap-1"></p>
+              <p id="detalle-zona" class="text-base font-bold text-orange-600 mt-1 flex items-center gap-1"></p>
 
-              <div class="grid grid-cols-2 gap-4 mt-6 bg-slate-50 p-4 rounded-2xl border border-slate-100 text-sm">
-                <div><span class="font-bold text-slate-400">Especie:</span> <span id="detalle-especie"></span></div>
-                <div><span class="font-bold text-slate-400">Sexo:</span> <span id="detalle-sexo"></span></div>
-                <div><span class="font-bold text-slate-400">Raza:</span> <span id="detalle-raza"></span></div>
-                <div><span class="font-bold text-slate-400">Publicado el:</span> <span id="detalle-fecha"></span></div>
+              <div class="grid grid-cols-2 gap-4 mt-6 bg-slate-50 p-4 rounded-2xl border border-slate-100 text-sm md:text-base">
+                <div><span class="font-bold text-slate-400 block md:inline">Especie:</span> <span id="detalle-especie" class="font-semibold text-slate-800"></span></div>
+                <div><span class="font-bold text-slate-400 block md:inline">Sexo:</span> <span id="detalle-sexo" class="font-semibold text-slate-800"></span></div>
+                <div><span class="font-bold text-slate-400 block md:inline">Raza:</span> <span id="detalle-raza" class="font-semibold text-slate-800"></span></div>
+                <div><span class="font-bold text-slate-400 block md:inline">Publicado:</span> <span id="detalle-fecha" class="font-semibold text-slate-800"></span></div>
               </div>
 
               <div class="mt-6">
-                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Descripción y Rasgos</h4>
-                <p id="detalle-rasgos" class="text-sm text-slate-700 mt-2 leading-relaxed italic"></p>
+                <h4 class="text-xs md:text-sm font-bold text-slate-400 uppercase tracking-wider">Descripción y Rasgos</h4>
+                <p id="detalle-rasgos" class="text-sm md:text-base text-slate-700 mt-2 leading-relaxed italic"></p>
               </div>
 
               <div id="detalle-lugar-actual-wrapper" class="mt-4 hidden">
-                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">¿Dónde se encuentra ahora?</h4>
-                <p id="detalle-lugar-actual" class="text-sm text-slate-700 mt-1"></p>
+                <h4 class="text-xs md:text-sm font-bold text-slate-400 uppercase tracking-wider">¿Dónde se encuentra ahora?</h4>
+                <p id="detalle-lugar-actual" class="text-sm md:text-base text-slate-700 mt-1"></p>
               </div>
             </div>
 
-            <div class="mt-8 pt-6 border-t border-slate-100 flex flex-wrap gap-3 items-center justify-between">
+            <div class="mt-8 pt-6 border-t border-slate-100 flex flex-wrap gap-4 items-center justify-between">
               <div>
-                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Contacto Directo</span>
-                <span id="detalle-contacto" class="text-lg font-extrabold text-slate-900"></span>
+                <span class="text-[10px] md:text-xs text-slate-400 font-bold uppercase tracking-wider block">Contacto Directo</span>
+                <span id="detalle-contacto" class="text-lg md:text-xl font-extrabold text-slate-900"></span>
               </div>
-              <div class="flex gap-2">
-                <a id="detalle-whatsapp-btn" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 shadow-sm transition-all">
+              <div class="flex gap-2 w-full sm:w-auto">
+                <a id="detalle-whatsapp-btn" target="_blank" class="w-1/2 sm:w-auto justify-center bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-4 py-3 rounded-xl text-sm md:text-base flex items-center gap-2 shadow-sm transition-all min-h-[44px]">
                   <i data-lucide="message-circle" class="w-5 h-5"></i> WhatsApp
                 </a>
-                <button id="detalle-chat-btn" class="bg-sky-600 hover:bg-sky-700 text-white font-bold px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 shadow-sm transition-all">
+                <button id="detalle-chat-btn" class="w-1/2 sm:w-auto justify-center bg-sky-600 hover:bg-sky-700 text-white font-bold px-4 py-3 rounded-xl text-sm md:text-base flex items-center gap-2 shadow-sm transition-all min-h-[44px]">
                   <i data-lucide="message-square" class="w-5 h-5"></i> Chat Interno
                 </button>
               </div>
@@ -529,17 +579,17 @@
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div class="md:col-span-1 space-y-4">
-              <h4 class="text-sm font-bold text-slate-700">Dejar un comentario / pista de avistamiento</h4>
+              <h4 class="text-sm md:text-base font-bold text-slate-700">Dejar un comentario / pista de avistamiento</h4>
               <form onsubmit="agregarComentario(event)" class="space-y-3">
-                <input type="text" id="comentario-autor" required placeholder="Tu nombre" class="input-custom w-full text-xs">
-                <textarea id="comentario-texto" required placeholder="Escribe aquí si tienes información..." rows="3" class="input-custom w-full text-xs"></textarea>
-                <button type="submit" class="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl">Publicar Comentario</button>
+                <input type="text" id="comentario-autor" required placeholder="Tu nombre" class="input-custom w-full text-sm">
+                <textarea id="comentario-texto" required placeholder="Escribe aquí si tienes información..." rows="3" class="input-custom w-full text-sm"></textarea>
+                <button type="submit" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-sm rounded-xl min-h-[44px]">Publicar Comentario</button>
               </form>
             </div>
 
             <div class="md:col-span-2 space-y-4">
               <div id="lista-comentarios" class="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                <!-- Comentarios dinámicos -->
+                <!-- Comentarios dinámicos se listan aquí -->
               </div>
             </div>
           </div>
@@ -577,8 +627,8 @@
               <div id="chat-mensajes" class="flex-grow p-4 overflow-y-auto space-y-3 flex flex-col"></div>
 
               <form onsubmit="enviarMensajeChat(event)" class="bg-white p-3 border-t border-slate-200 flex gap-2">
-                <input type="text" id="chat-input" required placeholder="Escribe un mensaje..." class="input-custom flex-grow py-2 text-xs">
-                <button type="submit" class="bg-sky-600 hover:bg-sky-700 text-white px-4 rounded-xl text-xs font-bold">Enviar</button>
+                <input type="text" id="chat-input" required placeholder="Escribe un mensaje..." class="input-custom flex-grow py-2 text-sm">
+                <button type="submit" class="bg-sky-600 hover:bg-sky-700 text-white px-4 rounded-xl text-sm font-bold min-h-[44px]">Enviar</button>
               </form>
             </div>
           </div>
@@ -587,7 +637,7 @@
     </div>
 
     <!-- ============================================== -->
-    <!-- VISTA 6: PANEL DE ADMINISTRACIÓN (CONFIDENCIAL) -->
+    <!-- VISTA 6: PANEL DE ADMINISTRACIÓN -->
     <!-- ============================================== -->
     <div id="vista-admin" class="hidden space-y-6 fade-in">
       
@@ -595,12 +645,12 @@
       <div id="admin-login" class="max-w-md mx-auto bg-white border border-slate-200 rounded-3xl p-8 text-center space-y-6">
         <i data-lucide="shield-alert" class="w-16 h-16 text-slate-400 mx-auto font-bold"></i>
         <div>
-          <h3 class="text-xl font-extrabold text-slate-900">Consola de Control del Administrador</h3>
-          <p class="text-xs text-slate-500 mt-1">Sube, edita o elimina reportes. Escribe la clave secreta de acceso.</p>
+          <h3 class="text-xl md:text-2xl font-extrabold text-slate-900">Consola de Control del Administrador</h3>
+          <p class="text-xs md:text-sm text-slate-500 mt-1">Sube, edita o elimina reportes. Escribe la clave secreta de acceso.</p>
         </div>
         <div class="space-y-3">
-          <input type="password" id="admin-passcode" placeholder="Clave del Administrador (Ej: ADMIN123)" class="input-custom w-full text-center text-sm">
-          <button onclick="autenticarAdmin()" class="w-full py-3 bg-slate-900 text-white font-bold rounded-xl text-sm hover:bg-slate-800 transition-all">Acceder al Panel</button>
+          <input type="password" id="admin-passcode" placeholder="Clave del Administrador (Ej: ADMIN123)" class="input-custom w-full text-center text-sm md:text-base">
+          <button onclick="autenticarAdmin()" class="w-full py-3 bg-slate-900 text-white font-bold rounded-xl text-sm md:text-base hover:bg-slate-800 transition-all min-h-[44px]">Acceder al Panel</button>
         </div>
       </div>
 
@@ -611,51 +661,51 @@
             <h2 class="text-2xl font-bold text-slate-900">Panel de Control General</h2>
             <p class="text-xs text-slate-500">Sincronizado en tiempo real con la base de datos Firestore</p>
           </div>
-          <button onclick="cerrarSesionAdmin()" class="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-xl text-xs font-bold transition-all">Cerrar Sesión Admin</button>
+          <button onclick="cerrarSesionAdmin()" class="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-xl text-xs font-bold transition-all min-h-[44px]">Cerrar Sesión Admin</button>
         </div>
 
-        <!-- Configuración API KEY Secreta de Gemini -->
-        <div class="bg-amber-50 border border-amber-200 p-6 rounded-3xl space-y-4">
+        <!-- Configuración API KEY de Gemini -->
+        <div class="bg-amber-50 border border-amber-200 p-6 rounded-3xl space-y-4 shadow-sm">
           <div class="flex items-center gap-2">
             <i data-lucide="key" class="w-5 h-5 text-amber-700"></i>
             <h3 class="text-sm font-bold text-amber-900">Configuración Secreta de Gemini IA (Global para la Web)</h3>
           </div>
-          <p class="text-xs text-amber-800 leading-relaxed">Configura aquí la llave gratuita de Google AI Studio. Una vez guardada, **todos los usuarios del sitio web** podrán disfrutar del escáner automático de mascotas de forma transparente sin configuraciones adicionales.</p>
+          <p class="text-xs text-amber-800 leading-relaxed">Configura aquí la llave gratuita de Google AI Studio para activar el escáner de fotos de mascotas automáticamente para todos los visitantes.</p>
           <div class="flex flex-wrap gap-2">
             <input type="password" id="admin-gemini-key" placeholder="AQ.Ab8RN6ILFcAWjbkuar9Q..." class="input-custom text-xs w-full sm:w-96 bg-white focus:outline-none">
-            <button onclick="guardarApiKeyEnFirestore()" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all">Guardar Llave Global</button>
+            <button onclick="guardarApiKeyEnFirestore()" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[44px]">Guardar Llave Global</button>
           </div>
         </div>
 
-        <!-- Estadísticas -->
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <!-- Estadísticas del Administrador -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div class="bg-white border border-slate-200 p-5 rounded-2xl flex items-center justify-between">
             <div>
-              <span class="text-xs text-slate-400 font-bold block uppercase">Buscados (Perdidos)</span>
+              <span class="text-xs text-slate-400 font-bold block uppercase">Buscando</span>
               <span id="stat-perdidos" class="text-3xl font-black text-red-600">0</span>
             </div>
             <i data-lucide="megaphone" class="w-8 h-8 text-red-100"></i>
           </div>
           <div class="bg-white border border-slate-200 p-5 rounded-2xl flex items-center justify-between">
             <div>
-              <span class="text-xs text-slate-400 font-bold block uppercase">Localizados (Avistados)</span>
+              <span class="text-xs text-slate-400 font-bold block uppercase">Avistados</span>
               <span id="stat-encontrados" class="text-3xl font-black text-sky-600">0</span>
             </div>
-            <i data-lucide="heart" class="w-8 h-8 text-sky-100"></i>
+            <i data-lucide="eye" class="w-8 h-8 text-sky-100"></i>
           </div>
           <div class="bg-white border border-slate-200 p-5 rounded-2xl flex items-center justify-between">
             <div>
-              <span class="text-xs text-slate-400 font-bold block uppercase">Reunidos con su Dueño</span>
+              <span class="text-xs text-slate-400 font-bold block uppercase">Entregados</span>
               <span id="stat-reunidos" class="text-3xl font-black text-emerald-600">0</span>
             </div>
             <i data-lucide="check-circle" class="w-8 h-8 text-emerald-100"></i>
           </div>
           <div class="bg-white border border-slate-200 p-5 rounded-2xl flex items-center justify-between">
             <div>
-              <span class="text-xs text-slate-400 font-bold block uppercase">Comentarios Activos</span>
-              <span id="stat-comentarios" class="text-3xl font-black text-amber-600">0</span>
+              <span class="text-xs text-slate-400 font-bold block uppercase">Fallecidos</span>
+              <span id="stat-fallecidos" class="text-3xl font-black text-slate-600">0</span>
             </div>
-            <i data-lucide="message-square" class="w-8 h-8 text-amber-100"></i>
+            <i data-lucide="heart-off" class="w-8 h-8 text-slate-300"></i>
           </div>
         </div>
 
@@ -711,7 +761,7 @@
         <h4 class="text-base font-bold flex items-center justify-center sm:justify-start gap-1">
           <i data-lucide="heart" class="w-4 h-4 text-orange-500 fill-orange-500"></i> Mascotas Salvadas Venezuela
         </h4>
-        <p class="text-xs text-slate-400 mt-1">Conectado a la red de emergencia en la nube.</p>
+        <p class="text-xs text-slate-400 mt-1">Conectado a tu base de datos de emergencia en la nube.</p>
       </div>
       <div class="text-xs text-slate-400">🇻🇪 Hecho en Venezuela de forma voluntaria.</div>
     </div>
@@ -725,19 +775,30 @@
     import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
     import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, addDoc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-    // 1. Inicialización de base de datos
-    const firebaseConfig = JSON.parse(__firebase_config);
+    // 1. Configuración de Firebase con tus credenciales de buscapatitas
+    const configDeUsuario = {
+      apiKey: "AIzaSyDkeh5WVeWi1yFTHGiCSLvz9aB8auhZtT8",
+      authDomain: "buscapatutas.firebaseapp.com",
+      projectId: "buscapatutas",
+      storageBucket: "buscapatutas.firebasestorage.app",
+      messagingSenderId: "61106039176",
+      appId: "1:61106039176:web:266707c6c9fa2c5a1b723d",
+      measurementId: "G-NS2EZKX6KN"
+    };
+
+    // Estructuración híbrida para compatibilidad local y de producción
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : configDeUsuario;
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'buscapatitas';
 
     // Variables de Estado Local
     let user = null;
     let baseMascotas = [];
     let baseComentarios = [];
     let baseChats = [];
-    let geminiApiKeyGlobal = ''; // Se lee de la base de datos
+    let geminiApiKeyGlobal = ''; // Se sincroniza de Firestore
     
     let vistaActual = 'inicio';
     let mascotaSeleccionadaId = null;
@@ -746,7 +807,7 @@
 
     let temporalFotosSeleccionadas = [];
 
-    // Autenticación según la regla 3 obligatoria
+    // Autenticación inicial segura (Regla 3)
     const initAuth = async () => {
       try {
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -767,7 +828,7 @@
       }
     });
 
-    // Escucha en tiempo real (Regla 1 y Regla 2 estrictas)
+    // Escucha de datos en tiempo real bajo rutas estrictas (Regla 1 y Regla 2)
     function sincronizarBaseDeDatos() {
       if (!user) return;
 
@@ -776,13 +837,13 @@
       const refChats = collection(db, 'artifacts', appId, 'public', 'data', 'chats');
       const refConfig = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'global');
 
-      // Escuchador de Configuración de API KEY
+      // Escuchador de API KEY para Gemini
       onSnapshot(refConfig, (docSnap) => {
         if (docSnap.exists()) {
           geminiApiKeyGlobal = docSnap.data().geminiApiKey || '';
           document.getElementById('admin-gemini-key').value = geminiApiKeyGlobal;
         }
-      }, (err) => console.log("Omitir u opcional:", err));
+      }, (err) => console.log("Configuración aún no creada. Esperando primer guardado de Admin."));
 
       // Escuchador de Mascotas
       onSnapshot(refMascotas, (snap) => {
@@ -791,7 +852,8 @@
         baseMascotas.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
         renderizarMascotas();
         actualizarEstadisticasAdmin();
-      }, (err) => console.error("Error mascotas:", err));
+        actualizarContadoresPublicos();
+      }, (err) => console.error("Error cargando mascotas:", err));
 
       // Escuchador de Comentarios
       onSnapshot(refComentarios, (snap) => {
@@ -801,17 +863,17 @@
           renderizarComentariosMascota(mascotaSeleccionadaId);
         }
         actualizarEstadisticasAdmin();
-      }, (err) => console.error("Error comentarios:", err));
+      }, (err) => console.error("Error cargando comentarios:", err));
 
       // Escuchador de Chats
       onSnapshot(refChats, (snap) => {
         baseChats = [];
         snap.forEach(d => baseChats.push({ id: d.id, ...d.data() }));
         actualizarCanalesDeChat();
-      }, (err) => console.error("Error chats:", err));
+      }, (err) => console.error("Error cargando chats:", err));
     }
 
-    // Guardar API Key directamente en Firestore para uso global
+    // Guardar API Key de Gemini desde el Panel de Admin
     window.guardarApiKeyEnFirestore = async function() {
       if (!user) return;
       const key = document.getElementById('admin-gemini-key').value.trim();
@@ -819,15 +881,15 @@
         await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'global'), {
           geminiApiKey: key
         });
-        mostrarAlerta('¡Llave Guardada!', 'La API Key de Gemini se almacenó en la nube y está lista para todos.', 'success');
+        mostrarAlerta('¡Configuración Guardada!', 'La clave secreta de Gemini está activa de forma global.', 'success');
       } catch (err) {
-        console.error("Fallo guardando config:", err);
-        mostrarAlerta('Error', 'No tienes permisos de guardado en la nube.', 'error');
+        console.error("Fallo de guardado:", err);
+        mostrarAlerta('Error de Permisos', 'Asegúrate de estar logueado.', 'error');
       }
     };
 
     // ==============================================
-    // REDIMENSIONADOR Y PROCESADOR DE IMÁGENES
+    // REDIMENSIONADOR Y COMPRESOR DE FOTOS
     // ==============================================
     async function procesarYRedimensionar(file) {
       return new Promise((resolve) => {
@@ -845,7 +907,7 @@
 
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            resolve(canvas.toDataURL('image/jpeg', 0.7)); // Retorna Base64 comprimido
+            resolve(canvas.toDataURL('image/jpeg', 0.7)); // Compresión a calidad 70%
           };
         };
       });
@@ -876,7 +938,7 @@
     };
 
     // ==============================================
-    // MOTOR DE IA GEMINI VISION
+    // MOTOR DE IA DE GEMINI VISION
     // ==============================================
     async function analizarFotoConIA(file, base64Comprimido) {
       if (!geminiApiKeyGlobal) {
@@ -884,7 +946,7 @@
         setTimeout(() => {
           document.getElementById('ia-loader').classList.add('hidden');
           completarCamposSimulados();
-          mostrarAlerta('IA en modo simulación', 'Configura tu API Key en la pestaña Admin para disfrutar del escáner real.', 'info');
+          mostrarAlerta('IA en modo simulación', 'Por favor ingresa la clave de Google AI Studio en el panel de Administración para activar el escáner real de fotos.', 'info');
         }, 1200);
         return;
       }
@@ -893,13 +955,13 @@
       
       try {
         const base64Limpio = base64Comprimido.split(',')[1];
-        const systemPrompt = "Eres un asistente veterinario experto en identificar fisonomía animal tras situaciones de desastre natural.";
+        const systemPrompt = "Eres un asistente de emergencia veterinario experto en identificar fisonomía animal tras situaciones de desastre natural.";
         const userPrompt = `Analiza detenidamente esta foto de mascota y responde únicamente con un objeto JSON que tenga los siguientes campos:
           "especie": (estrictamente una de estas opciones en minúscula: "perro", "gato" u "otro"),
           "color": (descripción resumida del pelaje, ej. "blanco y negro", "marrón claro"),
           "raza": (raza obvia o "mestizo" si es criollo),
           "sexo": (Macho, Hembra, o "No sé"),
-          "detalles_fisiologicos": (rasgos de orejas, manchas o cicatrices)`;
+          "detalles_fisiologicos": (rasgos de orejas, manchas o marcas de ayuda)`;
 
         const requestBody = {
           contents: [{
@@ -939,7 +1001,7 @@
         document.getElementById('bloque-ia-exito').classList.remove('hidden');
         document.getElementById('ia-detalles-texto').innerText = `Especie: ${data.especie.toUpperCase()} | Color: ${data.color} | Rasgos: ${data.detalles_fisiologicos}`;
 
-        mostrarAlerta('IA Gemini Activa', 'La IA analizó la foto y rellenó la ficha.', 'success');
+        mostrarAlerta('IA Gemini Activa', 'La IA completó el análisis de rasgos faciales de la mascota.', 'success');
       } catch (err) {
         console.error(err);
         completarCamposSimulados();
@@ -1008,7 +1070,6 @@
         mostrarAlerta('Reporte Exitoso', 'La alerta por tu mascota se subió a la red global de sismos.', 'success');
         cambiarVista('inicio');
         
-        // Emparejamiento
         buscarCoincidenciasSencillas({ id: docRef.id, ...nuevoReporte });
       } catch (err) {
         console.error(err);
@@ -1150,7 +1211,7 @@
 
       filtrados.forEach(c => {
         const div = document.createElement('div');
-        div.className = "bg-slate-50 p-4 rounded-2xl border border-slate-100 text-xs";
+        div.className = "bg-slate-50 p-4 rounded-2xl border border-slate-100 text-xs md:text-sm";
         div.innerHTML = `
           <div class="flex justify-between items-center mb-1">
             <span class="font-bold text-slate-800">${c.autor}</span>
@@ -1179,7 +1240,7 @@
           participantes: [user.uid, pet.creadorId],
           mensajes: [{
             autor: "Sistema de Emergencia",
-            texto: `Canal abierto para coordinar el rescate de ${pet.nombre}.`,
+            texto: `Canal abierto para coordinar el rescue de ${pet.nombre}.`,
             fecha: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
           }]
         };
@@ -1211,7 +1272,7 @@
       misChats.forEach(c => {
         const btn = document.createElement('button');
         btn.onclick = () => activarVentanaChat(c.id);
-        btn.className = `w-full p-4 rounded-2xl text-left text-xs border transition-all ${chatSeleccionadoId === c.id ? 'bg-sky-50 border-sky-300' : 'bg-white border-slate-100 hover:bg-slate-50'}`;
+        btn.className = `w-full p-4 rounded-2xl text-left text-xs md:text-sm border transition-all ${chatSeleccionadoId === c.id ? 'bg-sky-50 border-sky-300' : 'bg-white border-slate-100 hover:bg-slate-50'}`;
         btn.innerHTML = `
           <h4 class="font-bold text-slate-900">${c.mascotaNombre}</h4>
           <p class="text-slate-500 truncate">${c.mensajes[c.mensajes.length - 1]?.texto || ''}</p>
@@ -1235,7 +1296,7 @@
       canal.mensajes.forEach(m => {
         const esMio = m.autorId === user?.uid;
         const msgDiv = document.createElement('div');
-        msgDiv.className = `max-w-[80%] rounded-2xl p-3 text-xs flex flex-col ${esMio ? 'bg-sky-600 text-white self-end rounded-tr-none' : 'bg-white text-slate-800 self-start rounded-tl-none border'}`;
+        msgDiv.className = `max-w-[80%] rounded-2xl p-3 text-xs md:text-sm flex flex-col ${esMio ? 'bg-sky-600 text-white self-end rounded-tr-none' : 'bg-white text-slate-800 self-start rounded-tl-none border'}`;
         msgDiv.innerHTML = `
           <span class="font-extrabold text-[10px] opacity-75 mb-1">${m.autor}</span>
           <span>${m.texto}</span>
@@ -1301,6 +1362,19 @@
       renderizarMascotas();
     };
 
+    // Contadores Dinámicos Públicos (Petición 2)
+    function actualizarContadoresPublicos() {
+      const lost = baseMascotas.filter(m => m.estado === 'perdido').length;
+      const found = baseMascotas.filter(m => m.estado === 'encontrado').length;
+      const reunited = baseMascotas.filter(m => m.estado === 'reunido').length;
+      const dead = baseMascotas.filter(m => m.estado === 'fallecido').length;
+
+      document.getElementById('p-count-buscando').innerText = lost;
+      document.getElementById('p-count-avistados').innerText = found;
+      document.getElementById('p-count-reunidos').innerText = reunited;
+      document.getElementById('p-count-fallecidos').innerText = dead;
+    }
+
     function renderizarMascotas() {
       const grid = document.getElementById('listado-mascotas');
       const sinResultados = document.getElementById('sin-resultados');
@@ -1329,24 +1403,27 @@
 
       filtrados.forEach(m => {
         const card = document.createElement('div');
-        card.className = "tarjeta-mascota border border-slate-200 overflow-hidden flex flex-col cursor-pointer";
+        card.className = "tarjeta-mascota border border-slate-200 overflow-hidden flex flex-col cursor-pointer snap-start";
         card.onclick = () => verDetalleMascota(m.id);
 
         let badgeColor = 'bg-red-500';
         let badgeTexto = 'Buscado';
         if (m.estado === 'encontrado') {
-          badgeColor = 'bg-sky-500';
+          badgeColor = 'bg-sky-50';
           badgeTexto = 'Localizado';
         } else if (m.estado === 'reunido') {
           badgeColor = 'bg-emerald-600';
           badgeTexto = 'Reunido 🎉';
+        } else if (m.estado === 'fallecido') {
+          badgeColor = 'bg-slate-500';
+          badgeTexto = 'Fallecido 🕯️';
         }
 
         const img = m.fotos && m.fotos[0] ? m.fotos[0] : '';
 
         card.innerHTML = `
           <div class="relative h-48 w-full bg-slate-100">
-            <img src="${img}" class="w-full h-full object-cover">
+            <img src="${img}" class="w-full h-full object-cover" loading="lazy">
             <span class="absolute top-3 left-3 ${badgeColor} text-white font-extrabold text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
               ${badgeTexto}
             </span>
@@ -1354,17 +1431,17 @@
           <div class="p-5 flex-grow flex flex-col justify-between">
             <div>
               <div class="flex justify-between items-start">
-                <h4 class="font-extrabold text-base text-slate-900">${m.nombre}</h4>
+                <h4 class="font-extrabold text-lg text-slate-900">${m.nombre}</h4>
                 <span class="text-xs text-slate-400">${m.fecha}</span>
               </div>
-              <p class="text-xs font-semibold text-orange-600 mt-1 flex items-center gap-1">
+              <p class="text-xs md:text-sm font-semibold text-orange-600 mt-1 flex items-center gap-1">
                 <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> ${m.zona}
               </p>
-              <p class="text-xs text-slate-600 mt-3 line-clamp-2 italic">"${m.rasgos}"</p>
+              <p class="text-sm text-slate-600 mt-3 line-clamp-2 italic">"${m.rasgos}"</p>
             </div>
-            <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-xs">
+            <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-xs md:text-sm">
               <span class="font-bold text-slate-800">Raza: ${m.raza}</span>
-              <span class="text-[10px] text-sky-600 font-bold uppercase flex items-center gap-1">
+              <span class="text-[10px] md:text-xs text-sky-600 font-bold uppercase flex items-center gap-1">
                 Ver Ficha <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
               </span>
             </div>
@@ -1387,8 +1464,21 @@
       fotoPrincipal.src = m.fotos ? m.fotos[0] : '';
 
       const badge = document.getElementById('detalle-estado-badge');
-      badge.className = `absolute top-4 left-4 text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-md ${m.estado === 'perdido' ? 'bg-red-500' : m.estado === 'encontrado' ? 'bg-sky-500' : 'bg-emerald-600'}`;
-      badge.innerText = m.estado === 'perdido' ? 'Buscado' : m.estado === 'encontrado' ? 'Localizado' : 'Reunido 🎉';
+      let currentBadgeColor = 'bg-red-500';
+      let currentBadgeText = 'Buscado';
+      if (m.estado === 'encontrado') {
+        currentBadgeColor = 'bg-sky-500';
+        currentBadgeText = 'Localizado';
+      } else if (m.estado === 'reunido') {
+        currentBadgeColor = 'bg-emerald-600';
+        currentBadgeText = 'Reunido 🎉';
+      } else if (m.estado === 'fallecido') {
+        currentBadgeColor = 'bg-slate-500';
+        currentBadgeText = 'Fallecido 🕯️';
+      }
+      
+      badge.className = `absolute top-4 left-4 text-white text-xs md:text-sm font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-md ${currentBadgeColor}`;
+      badge.innerText = currentBadgeText;
 
       const carrusel = document.getElementById('detalle-miniaturas');
       carrusel.innerHTML = '';
@@ -1449,11 +1539,19 @@
       const lost = baseMascotas.filter(m => m.estado === 'perdido').length;
       const found = baseMascotas.filter(m => m.estado === 'encontrado').length;
       const reunited = baseMascotas.filter(m => m.estado === 'reunido').length;
+      const dead = baseMascotas.filter(m => m.estado === 'fallecido').length;
 
-      document.getElementById('stat-perdidos').innerText = lost;
-      document.getElementById('stat-encontrados').innerText = found;
-      document.getElementById('stat-reunidos').innerText = reunited;
-      document.getElementById('stat-comentarios').innerText = baseComentarios.length;
+      const elStatLost = document.getElementById('stat-perdidos');
+      const elStatFound = document.getElementById('stat-encontrados');
+      const elStatReunited = document.getElementById('stat-reunidos');
+      const elStatDead = document.getElementById('stat-fallecidos');
+      const elStatComments = document.getElementById('stat-comentarios');
+
+      if (elStatLost) elStatLost.innerText = lost;
+      if (elStatFound) elStatFound.innerText = found;
+      if (elStatReunited) elStatReunited.innerText = reunited;
+      if (elStatDead) elStatDead.innerText = dead;
+      if (elStatComments) elStatComments.innerText = baseComentarios.length;
     }
 
     function renderizarAdmin() {
@@ -1461,26 +1559,27 @@
       tbPets.innerHTML = '';
       baseMascotas.forEach(m => {
         const tr = document.createElement('tr');
-        tr.className = "border-b hover:bg-slate-50 text-xs";
+        tr.className = "border-b hover:bg-slate-50 text-xs md:text-sm";
         tr.innerHTML = `
           <td class="p-4 flex items-center gap-2">
             <img src="${m.fotos ? m.fotos[0] : ''}" class="w-8 h-8 rounded-lg object-cover">
             <div>
-              <span class="font-bold block">${m.nombre}</span>
-              <span class="text-slate-400">${m.raza}</span>
+              <span class="font-bold block text-slate-800">${m.nombre}</span>
+              <span class="text-slate-400 text-xs">${m.raza}</span>
             </div>
           </td>
-          <td class="p-4">${m.zona}</td>
-          <td class="p-4 font-semibold">${m.contacto}</td>
+          <td class="p-4 text-slate-600">${m.zona}</td>
+          <td class="p-4 font-semibold text-slate-800">${m.contacto}</td>
           <td class="p-4">
-            <select onchange="actualizarEstatusAdmin('${m.id}', this.value)" class="p-1 border rounded bg-white text-xs">
+            <select onchange="actualizarEstatusAdmin('${m.id}', this.value)" class="p-1.5 border rounded bg-white text-xs font-bold">
               <option value="perdido" ${m.estado === 'perdido' ? 'selected' : ''}>Buscado</option>
               <option value="encontrado" ${m.estado === 'encontrado' ? 'selected' : ''}>Localizado</option>
               <option value="reunido" ${m.estado === 'reunido' ? 'selected' : ''}>Reunido 🎉</option>
+              <option value="fallecido" ${m.estado === 'fallecido' ? 'selected' : ''}>Fallecido 🕯️</option>
             </select>
           </td>
           <td class="p-4 text-right">
-            <button onclick="eliminarReporteAdmin('${m.id}')" class="text-red-500 font-bold">Eliminar</button>
+            <button onclick="eliminarReporteAdmin('${m.id}')" class="text-red-500 font-bold hover:text-red-700 min-h-[44px] px-2">Eliminar</button>
           </td>
         `;
         tbPets.appendChild(tr);
@@ -1490,13 +1589,13 @@
       tbComments.innerHTML = '';
       baseComentarios.forEach(c => {
         const tr = document.createElement('tr');
-        tr.className = "border-b hover:bg-slate-50 text-xs";
+        tr.className = "border-b hover:bg-slate-50 text-xs md:text-sm";
         tr.innerHTML = `
-          <td class="p-4 font-bold">${c.autor}</td>
+          <td class="p-4 font-bold text-slate-800">${c.autor}</td>
           <td class="p-4 text-slate-500 max-w-xs truncate">${c.texto}</td>
-          <td class="p-4 text-slate-400">${c.mascotaId}</td>
+          <td class="p-4 text-slate-400 text-xs">${c.mascotaId}</td>
           <td class="p-4 text-right">
-            <button onclick="eliminarComentarioAdmin('${c.id}')" class="text-red-500 font-bold">Borrar</button>
+            <button onclick="eliminarComentarioAdmin('${c.id}')" class="text-red-500 font-bold hover:text-red-700 min-h-[44px] px-2">Borrar</button>
           </td>
         `;
         tbComments.appendChild(tr);
@@ -1536,27 +1635,32 @@
       const elemTitulo = document.getElementById('alerta-titulo');
       const elemMensaje = document.getElementById('alerta-mensaje');
 
-      contenedor.className = "mb-6 p-4 rounded-xl border flex items-start gap-3 fade-in";
-      
-      if (tipo === 'success') {
-        contenedor.classList.add('bg-emerald-50', 'border-emerald-200', 'text-emerald-800');
-        icono.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5 text-emerald-600"></i>`;
-      } else if (tipo === 'error') {
-        contenedor.classList.add('bg-red-50', 'border-red-200', 'text-red-800');
-        icono.innerHTML = `<i data-lucide="alert-triangle" class="w-5 h-5 text-red-600"></i>`;
-      } else {
-        contenedor.classList.add('bg-amber-50', 'border-amber-200', 'text-amber-800');
-        icono.innerHTML = `<i data-lucide="info" class="w-5 h-5 text-amber-600"></i>`;
-      }
+      if (contenedor) {
+        contenedor.className = "mb-6 p-4 rounded-xl border flex items-start gap-3 fade-in text-sm md:text-base";
+        
+        if (tipo === 'success') {
+          contenedor.classList.add('bg-emerald-50', 'border-emerald-200', 'text-emerald-800');
+          if (icono) icono.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5 text-emerald-600"></i>`;
+        } else if (tipo === 'error') {
+          contenedor.classList.add('bg-red-50', 'border-red-200', 'text-red-800');
+          if (icono) icono.innerHTML = `<i data-lucide="alert-triangle" class="w-5 h-5 text-red-600"></i>`;
+        } else {
+          contenedor.classList.add('bg-amber-50', 'border-amber-200', 'text-amber-800');
+          if (icono) icono.innerHTML = `<i data-lucide="info" class="w-5 h-5 text-amber-600"></i>`;
+        }
 
-      elemTitulo.innerText = titulo;
-      elemMensaje.innerText = mensaje;
-      contenedor.classList.remove('hidden');
-      lucide.createIcons();
+        if (elemTitulo) elemTitulo.innerText = titulo;
+        if (elemMensaje) elemMensaje.innerText = mensaje;
+        contenedor.classList.remove('hidden');
+        lucide.createIcons();
+      }
     };
 
     window.cerrarAlerta = function() {
-      document.getElementById('contenedor-alerta').classList.add('hidden');
+      const contenedor = document.getElementById('contenedor-alerta');
+      if (contenedor) {
+        contenedor.classList.add('hidden');
+      }
     };
   </script>
 </body>
