@@ -250,12 +250,14 @@
 
           <div class="flex flex-col">
             <label class="text-xs font-bold text-slate-500 mb-1.5 uppercase">Especie</label>
-            <select id="filtro-especie" onchange="aplicarFiltros()" class="input-custom w-full py-2.5 text-sm md:text-base bg-white">
-              <option value="todos">Todos los animales</option>
-              <option value="perro">Perro</option>
-              <option value="gato">Gato</option>
-              <option value="otro">Otro</option>
-            </select>
+              <select id="filtro-estado" onchange="aplicarFiltros()" class="input-custom w-full py-2.5 text-sm md:text-base bg-white">
+                <option value="todos">Todos</option>
+                <option value="perdido">Buscando (Perdidos)</option>
+                <option value="encontrado">Localizados (Avistados)</option>
+                <option value="reunido">Reunidos con su dueño 🎉</option>
+                <option value="fallecido">Fallecidos 🕯️</option>
+                <option value="adopcion">Adopción 🐾</option> <!-- Agrega esta línea -->
+              </select>
           </div>
 
           <div class="flex flex-col">
@@ -1415,8 +1417,11 @@
           badgeColor = 'bg-emerald-600';
           badgeTexto = 'Reunido 🎉';
         } else if (m.estado === 'fallecido') {
-          badgeColor = 'bg-slate-500';
+          badgeColor = 'bg-black-500';
           badgeTexto = 'Fallecido 🕯️';
+         } else if (m.estado === 'adopcion') { // Agrega este bloque
+          badgeColor = 'bg-purple-600';
+          badgeTexto = 'En Adopción 🐾';
         }
 
         const img = m.fotos && m.fotos[0] ? m.fotos[0] : '';
