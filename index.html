@@ -171,7 +171,7 @@
     <!-- ============================================== -->
     <!-- PUBLIC DASHBOARD DE ESTADÍSTICAS -->
     <!-- ============================================== -->
-    <div id="public-counters-dashboard" class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 fade-in">
+    <div id="public-counters-dashboard" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4 fade-in">
       <div class="bg-white border border-slate-200 p-4 rounded-2xl flex items-center gap-3.5 shadow-sm">
         <div class="p-3 bg-red-50 text-red-600 rounded-xl">
           <i data-lucide="megaphone" class="w-6 h-6 md:w-7 md:h-7"></i>
@@ -188,6 +188,15 @@
         <div>
           <span class="text-xs md:text-sm text-slate-500 font-bold uppercase tracking-wider block">Avistados</span>
           <span id="p-count-avistados" class="text-xl md:text-2xl font-black text-slate-800">0</span>
+        </div>
+      </div>
+      <div class="bg-white border border-slate-200 p-4 rounded-2xl flex items-center gap-3.5 shadow-sm">
+        <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
+          <i data-lucide="home" class="w-6 h-6 md:w-7 md:h-7"></i>
+        </div>
+        <div>
+          <span class="text-xs md:text-sm text-slate-500 font-bold uppercase tracking-wider block">Rescatados</span>
+          <span id="p-count-rescatados" class="text-xl md:text-2xl font-black text-slate-800">0</span>
         </div>
       </div>
       <div class="bg-white border border-slate-200 p-4 rounded-2xl flex items-center gap-3.5 shadow-sm">
@@ -250,14 +259,12 @@
 
           <div class="flex flex-col">
             <label class="text-xs font-bold text-slate-500 mb-1.5 uppercase">Especie</label>
-              <select id="filtro-estado" onchange="aplicarFiltros()" class="input-custom w-full py-2.5 text-sm md:text-base bg-white">
-                <option value="todos">Todos</option>
-                <option value="perdido">Buscando (Perdidos)</option>
-                <option value="encontrado">Localizados (Avistados)</option>
-                <option value="reunido">Reunidos con su dueño 🎉</option>
-                <option value="fallecido">Fallecidos 🕯️</option>
-                <option value="adopcion">adopción 🐾</option>
-              </select>
+            <select id="filtro-especie" onchange="aplicarFiltros()" class="input-custom w-full py-2.5 text-sm md:text-base bg-white">
+              <option value="todos">Todos los animales</option>
+              <option value="perro">Perro</option>
+              <option value="gato">Gato</option>
+              <option value="otro">Otro</option>
+            </select>
           </div>
 
           <div class="flex flex-col">
@@ -266,6 +273,7 @@
               <option value="todos">Todos</option>
               <option value="perdido">Buscando (Perdidos)</option>
               <option value="encontrado">Localizados (Avistados)</option>
+              <option value="rescatado">Rescatados 🏠</option>
               <option value="reunido">Reunidos con su dueño 🎉</option>
               <option value="fallecido">Fallecidos 🕯️</option>
             </select>
@@ -680,7 +688,7 @@
         </div>
 
         <!-- Estadísticas del Administrador -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
           <div class="bg-white border border-slate-200 p-5 rounded-2xl flex items-center justify-between">
             <div>
               <span class="text-xs text-slate-400 font-bold block uppercase">Buscando</span>
@@ -694,6 +702,13 @@
               <span id="stat-encontrados" class="text-3xl font-black text-sky-600">0</span>
             </div>
             <i data-lucide="eye" class="w-8 h-8 text-sky-100"></i>
+          </div>
+          <div class="bg-white border border-slate-200 p-5 rounded-2xl flex items-center justify-between">
+            <div>
+              <span class="text-xs text-slate-400 font-bold block uppercase">Rescatados</span>
+              <span id="stat-rescatados" class="text-3xl font-black text-indigo-600">0</span>
+            </div>
+            <i data-lucide="home" class="w-8 h-8 text-indigo-100"></i>
           </div>
           <div class="bg-white border border-slate-200 p-5 rounded-2xl flex items-center justify-between">
             <div>
@@ -770,6 +785,130 @@
   </footer>
 
   <!-- ============================================== -->
+  <!-- SISTEMA DE MODALES Y CONFIRMACIONES DINÁMICAS (NUEVO) -->
+  <!-- ============================================== -->
+
+  <!-- MODAL EDITAR MASCOTA (ADMIN) -->
+  <div id="admin-modal-editar" class="hidden fixed inset-0 bg-black/60 z-[100] flex justify-center items-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden fade-in my-8">
+      <div class="bg-slate-900 text-white p-6 flex justify-between items-center">
+        <h3 class="text-lg font-bold flex items-center gap-2">
+          <i data-lucide="edit" class="w-5 h-5 text-orange-500"></i> Editar Ficha de Mascota
+        </h3>
+        <button onclick="cerrarAdminModalEditar()" class="text-slate-400 hover:text-white transition-colors">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+      
+      <form id="admin-form-editar" onsubmit="guardarEdicionMascotaAdmin(event)" class="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+        <input type="hidden" id="edit-mascota-id">
+        
+        <!-- Fotos -->
+        <div class="space-y-2">
+          <label class="block text-sm font-semibold text-slate-700">Cambiar Fotos de la mascota (Máximo 3)</label>
+          <input type="file" id="edit-fotos" accept="image/*" multiple onchange="previsualizarEditFotos(this)" class="hidden">
+          <div onclick="document.getElementById('edit-fotos').click()" class="border-2 border-dashed border-slate-300 hover:border-orange-500 rounded-2xl p-6 text-center cursor-pointer bg-slate-50 min-h-[100px] flex flex-col justify-center items-center">
+            <i data-lucide="image" class="w-8 h-8 mx-auto text-slate-400 mb-2"></i>
+            <p class="text-sm text-slate-500">Haz clic aquí para cambiar las fotos (dejar vacío para mantener las actuales)</p>
+          </div>
+          <div id="edit-prevs-container" class="flex gap-2 mt-3 overflow-x-auto"></div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="flex flex-col">
+            <label class="text-xs font-bold text-slate-600 mb-1.5 uppercase">Nombre de la Mascota</label>
+            <input type="text" id="edit-nombre" required class="input-custom text-sm">
+          </div>
+          <div class="flex flex-col">
+            <label class="text-xs font-bold text-slate-600 mb-1.5 uppercase">Especie</label>
+            <select id="edit-especie" class="input-custom text-sm bg-white" required>
+              <option value="perro">Perro</option>
+              <option value="gato">Gato</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div class="flex flex-col">
+            <label class="text-xs font-bold text-slate-600 mb-1.5 uppercase">Sexo</label>
+            <select id="edit-sexo" class="input-custom text-sm bg-white" required>
+              <option value="Macho">Macho</option>
+              <option value="Hembra">Hembra</option>
+              <option value="No sé">No lo sé</option>
+            </select>
+          </div>
+          <div class="flex flex-col">
+            <label class="text-xs font-bold text-slate-600 mb-1.5 uppercase">Raza</label>
+            <input type="text" id="edit-raza" required class="input-custom text-sm">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="flex flex-col">
+            <label class="text-xs font-bold text-slate-600 mb-1.5 uppercase">Zona / Parroquia</label>
+            <select id="edit-zona" class="input-custom text-sm bg-white" required>
+              <option value="Catia La Mar">Catia La Mar (La Guaira)</option>
+              <option value="Maiquetia">Maiquetía (La Guaira)</option>
+              <option value="Caraballeda">Caraballeda (La Guaira)</option>
+              <option value="Naiguata">Naiguatá (La Guaira)</option>
+              <option value="Altamira">Altamira (Caracas)</option>
+              <option value="Chacao">Chacao (Caracas)</option>
+              <option value="Petare">Petare (Caracas)</option>
+              <option value="La Pastora">La Pastora (Caracas)</option>
+              <option value="Otro">Otro Sector</option>
+            </select>
+          </div>
+          <div class="flex flex-col">
+            <label class="text-xs font-bold text-slate-600 mb-1.5 uppercase">Rasgos Particulares</label>
+            <input type="text" id="edit-rasgos" required class="input-custom text-sm">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+          <div class="flex flex-col">
+            <label class="text-xs font-bold text-slate-600 mb-1.5 uppercase">Contacto de Reencuentro</label>
+            <input type="tel" id="edit-contacto" required class="input-custom text-sm bg-white">
+          </div>
+          <div class="flex flex-col">
+            <label class="text-xs font-bold text-slate-600 mb-1.5 uppercase">Lugar Actual (Si aplica)</label>
+            <input type="text" id="edit-lugarActual" class="input-custom text-sm bg-white" placeholder="Ej. En mi casa, Refugio...">
+          </div>
+        </div>
+
+        <div class="flex gap-4 pt-4 border-t border-slate-100">
+          <button type="button" onclick="cerrarAdminModalEditar()" class="w-1/2 py-3 bg-slate-100 hover:bg-slate-200 font-bold rounded-xl text-sm min-h-[44px]">Cancelar</button>
+          <button type="submit" class="w-1/2 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-xl shadow-md min-h-[44px]">Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL COINCIDENCIAS / MATCHES -->
+  <div id="modal-coincidencias" class="hidden fixed inset-0 bg-black/60 z-[100] flex justify-center items-center p-4">
+    <div class="bg-white rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl fade-in">
+      <div class="flex justify-between items-center">
+        <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
+          <i data-lucide="sparkles" class="text-orange-500 w-5 h-5"></i> Posibles Coincidencias
+        </h3>
+        <button onclick="cerrarModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-6 h-6"></i></button>
+      </div>
+      <div id="match-resultados" class="space-y-3 max-h-[300px] overflow-y-auto"></div>
+      <button onclick="cerrarModal()" class="w-full py-2.5 bg-slate-900 text-white font-bold rounded-xl text-sm">Cerrar</button>
+    </div>
+  </div>
+
+  <!-- MODAL DE CONFIRMACIÓN CUSTOM (REEMPLAZO DE CONFIRM PARA IFRAMES) -->
+  <div id="modal-confirmacion" class="hidden fixed inset-0 bg-black/60 z-[110] flex justify-center items-center p-4">
+    <div class="bg-white rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl fade-in text-center">
+      <i data-lucide="help-circle" class="w-16 h-16 text-amber-500 mx-auto"></i>
+      <h3 class="text-lg font-black text-slate-900" id="confirm-titulo">¿Confirmar Acción?</h3>
+      <p class="text-sm text-slate-500" id="confirm-mensaje">¿Estás seguro de que deseas realizar esta acción?</p>
+      <div class="flex gap-3 pt-2">
+        <button id="btn-confirm-cancelar" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-sm min-h-[44px]">Cancelar</button>
+        <button id="btn-confirm-aceptar" class="w-1/2 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-sm min-h-[44px]">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
   <!-- LÓGICA DEL MOTOR EN TIEMPO REAL -->
   <!-- ============================================== -->
   <script type="module">
@@ -808,6 +947,7 @@
     let filtroActual = { texto: '', especie: 'todos', estado: 'todos', zona: 'todas' };
 
     let temporalFotosSeleccionadas = [];
+    let editFotosSeleccionadas = [];
 
     // Autenticación inicial segura (Regla 3)
     const initAuth = async () => {
@@ -939,9 +1079,6 @@
       }
     };
 
-    // ==============================================
-    // MOTOR DE IA DE GEMINI VISION
-    // ==============================================
     async function analizarFotoConIA(file, base64Comprimido) {
       if (!geminiApiKeyGlobal) {
         document.getElementById('ia-loader').classList.remove('hidden');
@@ -1013,7 +1150,7 @@
     }
 
     async function enviarPeticionGemini(key, body, retries = 5, delay = 1000) {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${key}`;
       for (let i = 0; i < retries; i++) {
         try {
           const res = await fetch(url, {
@@ -1364,15 +1501,16 @@
       renderizarMascotas();
     };
 
-    // Contadores Dinámicos Públicos (Petición 2)
     function actualizarContadoresPublicos() {
       const lost = baseMascotas.filter(m => m.estado === 'perdido').length;
       const found = baseMascotas.filter(m => m.estado === 'encontrado').length;
+      const rescued = baseMascotas.filter(m => m.estado === 'rescatado').length;
       const reunited = baseMascotas.filter(m => m.estado === 'reunido').length;
       const dead = baseMascotas.filter(m => m.estado === 'fallecido').length;
 
       document.getElementById('p-count-buscando').innerText = lost;
       document.getElementById('p-count-avistados').innerText = found;
+      document.getElementById('p-count-rescatados').innerText = rescued;
       document.getElementById('p-count-reunidos').innerText = reunited;
       document.getElementById('p-count-fallecidos').innerText = dead;
     }
@@ -1408,20 +1546,23 @@
         card.className = "tarjeta-mascota border border-slate-200 overflow-hidden flex flex-col cursor-pointer snap-start";
         card.onclick = () => verDetalleMascota(m.id);
 
-        let badgeColor = 'bg-red-500';
+        let badgeColor = 'bg-red-600 text-white';
         let badgeTexto = 'Buscado';
         if (m.estado === 'encontrado') {
-          badgeColor = 'bg-sky-50';
+          badgeColor = 'bg-sky-600 text-white';
           badgeTexto = 'Localizado';
+        } else if (m.estado === 'rescatado') {
+          badgeColor = 'bg-violet-600 text-white';
+          badgeTexto = 'Rescatado 🏠';
         } else if (m.estado === 'reunido') {
-          badgeColor = 'bg-emerald-600';
+          badgeColor = 'bg-emerald-600 text-white';
           badgeTexto = 'Reunido 🎉';
         } else if (m.estado === 'fallecido') {
-          badgeColor = 'bg-black-500';
+          badgeColor = 'bg-slate-600 text-white';
           badgeTexto = 'Fallecido 🕯️';
-         } else if (m.estado === 'adopcion') { // Agrega este bloque
-          badgeColor = 'bg-purple-600';
-          badgeTexto = 'En Adopción 🐾';
+        } else if (m.estado === 'adopcion') {
+          badgeColor = 'bg-amber-500 text-white';
+          badgeTexto = 'En Adopción';
         }
 
         const img = m.fotos && m.fotos[0] ? m.fotos[0] : '';
@@ -1429,7 +1570,7 @@
         card.innerHTML = `
           <div class="relative h-48 w-full bg-slate-100">
             <img src="${img}" class="w-full h-full object-cover" loading="lazy">
-            <span class="absolute top-3 left-3 ${badgeColor} text-white font-extrabold text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
+            <span class="absolute top-3 left-3 ${badgeColor} font-extrabold text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
               ${badgeTexto}
             </span>
           </div>
@@ -1469,17 +1610,23 @@
       fotoPrincipal.src = m.fotos ? m.fotos[0] : '';
 
       const badge = document.getElementById('detalle-estado-badge');
-      let currentBadgeColor = 'bg-red-500';
+      let currentBadgeColor = 'bg-red-600';
       let currentBadgeText = 'Buscado';
       if (m.estado === 'encontrado') {
-        currentBadgeColor = 'bg-sky-500';
+        currentBadgeColor = 'bg-sky-600';
         currentBadgeText = 'Localizado';
+      } else if (m.estado === 'rescatado') {
+        currentBadgeColor = 'bg-violet-600';
+        currentBadgeText = 'Rescatado 🏠';
       } else if (m.estado === 'reunido') {
         currentBadgeColor = 'bg-emerald-600';
         currentBadgeText = 'Reunido 🎉';
       } else if (m.estado === 'fallecido') {
-        currentBadgeColor = 'bg-slate-500';
+        currentBadgeColor = 'bg-slate-600';
         currentBadgeText = 'Fallecido 🕯️';
+      } else if (m.estado === 'adopcion') {
+        currentBadgeColor = 'bg-amber-500';
+        currentBadgeText = 'En Adopción';
       }
       
       badge.className = `absolute top-4 left-4 text-white text-xs md:text-sm font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-md ${currentBadgeColor}`;
@@ -1521,8 +1668,25 @@
     };
 
     // ==============================================
-    // BACKEND DE ADMINISTRACIÓN
+    // BACKEND DE ADMINISTRACIÓN Y NUEVO GESTOR DE EDICIÓN
     // ==============================================
+    window.confirmacionPersonalizada = function(titulo, mensaje, accionAceptar) {
+      document.getElementById('confirm-titulo').innerText = titulo;
+      document.getElementById('confirm-mensaje').innerText = mensaje;
+      
+      const modal = document.getElementById('modal-confirmacion');
+      modal.classList.remove('hidden');
+      
+      document.getElementById('btn-confirm-cancelar').onclick = () => {
+        modal.classList.add('hidden');
+      };
+      
+      document.getElementById('btn-confirm-aceptar').onclick = () => {
+        modal.classList.add('hidden');
+        accionAceptar();
+      };
+    };
+
     window.autenticarAdmin = function() {
       const pin = document.getElementById('admin-passcode').value.trim();
       if (pin === ".2411Patty..") {
@@ -1543,20 +1707,21 @@
     function actualizarEstadisticasAdmin() {
       const lost = baseMascotas.filter(m => m.estado === 'perdido').length;
       const found = baseMascotas.filter(m => m.estado === 'encontrado').length;
+      const rescued = baseMascotas.filter(m => m.estado === 'rescatado').length;
       const reunited = baseMascotas.filter(m => m.estado === 'reunido').length;
       const dead = baseMascotas.filter(m => m.estado === 'fallecido').length;
 
       const elStatLost = document.getElementById('stat-perdidos');
       const elStatFound = document.getElementById('stat-encontrados');
+      const elStatRescued = document.getElementById('stat-rescatados');
       const elStatReunited = document.getElementById('stat-reunidos');
       const elStatDead = document.getElementById('stat-fallecidos');
-      const elStatComments = document.getElementById('stat-comentarios');
 
       if (elStatLost) elStatLost.innerText = lost;
       if (elStatFound) elStatFound.innerText = found;
+      if (elStatRescued) elStatRescued.innerText = rescued;
       if (elStatReunited) elStatReunited.innerText = reunited;
       if (elStatDead) elStatDead.innerText = dead;
-      if (elStatComments) elStatComments.innerText = baseComentarios.length;
     }
 
     function renderizarAdmin() {
@@ -1579,13 +1744,17 @@
             <select onchange="actualizarEstatusAdmin('${m.id}', this.value)" class="p-1.5 border rounded bg-white text-xs font-bold">
               <option value="perdido" ${m.estado === 'perdido' ? 'selected' : ''}>Buscado</option>
               <option value="encontrado" ${m.estado === 'encontrado' ? 'selected' : ''}>Localizado</option>
+              <option value="rescatado" ${m.estado === 'rescatado' ? 'selected' : ''}>Rescatado</option>
               <option value="reunido" ${m.estado === 'reunido' ? 'selected' : ''}>Reunido 🎉</option>
               <option value="fallecido" ${m.estado === 'fallecido' ? 'selected' : ''}>Fallecido 🕯️</option>
-              <option value="adopcion" ${m.estado === 'adopcion' ? 'selected' : ''}>adopcion </option>
+              <option value="adopcion" ${m.estado === 'adopcion' ? 'selected' : ''}>En Adopción</option>
             </select>
           </td>
           <td class="p-4 text-right">
-            <button onclick="eliminarReporteAdmin('${m.id}')" class="text-red-500 font-bold hover:text-red-700 min-h-[44px] px-2">Eliminar</button>
+            <div class="flex justify-end gap-2">
+              <button onclick="abrirAdminModalEditar('${m.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold px-3 py-1.5 rounded-xl text-xs transition-all">Editar</button>
+              <button onclick="eliminarReporteAdmin('${m.id}')" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold px-3 py-1.5 rounded-xl text-xs transition-all">Eliminar</button>
+            </div>
           </td>
         `;
         tbPets.appendChild(tr);
@@ -1608,6 +1777,98 @@
       });
     }
 
+    // ==============================================
+    // LÓGICA DE EDICIÓN AVANZADA DE MASCOTA POR ADMIN
+    // ==============================================
+    window.previsualizarEditFotos = async function(input) {
+      const container = document.getElementById('edit-prevs-container');
+      container.innerHTML = '';
+      editFotosSeleccionadas = [];
+
+      const files = Array.from(input.files).slice(0, 3);
+      for (const file of files) {
+        const base64 = await procesarYRedimensionar(file);
+        editFotosSeleccionadas.push(base64);
+
+        const miniatura = document.createElement('div');
+        miniatura.className = "relative w-16 h-16 rounded-xl border overflow-hidden flex-shrink-0 bg-slate-100 shadow-sm";
+        miniatura.innerHTML = `<img src="${base64}" class="w-full h-full object-cover">`;
+        container.appendChild(miniatura);
+      }
+    };
+
+    window.abrirAdminModalEditar = function(id) {
+      const m = baseMascotas.find(p => p.id === id);
+      if (!m) return;
+
+      document.getElementById('edit-mascota-id').value = m.id;
+      document.getElementById('edit-nombre').value = m.nombre || '';
+      document.getElementById('edit-especie').value = m.especie || 'perro';
+      document.getElementById('edit-sexo').value = m.sexo || 'Macho';
+      document.getElementById('edit-raza').value = m.raza || '';
+      document.getElementById('edit-zona').value = m.zona || 'Catia La Mar';
+      document.getElementById('edit-rasgos').value = m.rasgos || '';
+      document.getElementById('edit-contacto').value = m.contacto || '';
+      document.getElementById('edit-lugarActual').value = m.lugarActual || '';
+
+      // Reiniciar fotos subidas
+      document.getElementById('edit-fotos').value = '';
+      editFotosSeleccionadas = [];
+
+      // Mostrar fotos actuales
+      const container = document.getElementById('edit-prevs-container');
+      container.innerHTML = '';
+      if (m.fotos) {
+        m.fotos.forEach(f => {
+          const miniatura = document.createElement('div');
+          miniatura.className = "relative w-16 h-16 rounded-xl border overflow-hidden flex-shrink-0 bg-slate-100 shadow-sm";
+          miniatura.innerHTML = `<img src="${f}" class="w-full h-full object-cover">`;
+          container.appendChild(miniatura);
+        });
+      }
+
+      document.getElementById('admin-modal-editar').classList.remove('hidden');
+      lucide.createIcons();
+    };
+
+    window.cerrarAdminModalEditar = function() {
+      document.getElementById('admin-modal-editar').classList.add('hidden');
+    };
+
+    window.guardarEdicionMascotaAdmin = async function(event) {
+      event.preventDefault();
+      if (!user) return;
+
+      const id = document.getElementById('edit-mascota-id').value;
+      const currentPet = baseMascotas.find(p => p.id === id);
+      if (!currentPet) return;
+
+      // Si no se cargaron nuevas fotos, mantén las actuales
+      const fotosArr = editFotosSeleccionadas.length > 0 ? editFotosSeleccionadas : currentPet.fotos;
+
+      const payload = {
+        nombre: document.getElementById('edit-nombre').value.trim(),
+        especie: document.getElementById('edit-especie').value,
+        sexo: document.getElementById('edit-sexo').value,
+        raza: document.getElementById('edit-raza').value.trim(),
+        zona: document.getElementById('edit-zona').value,
+        rasgos: document.getElementById('edit-rasgos').value.trim(),
+        contacto: document.getElementById('edit-contacto').value.trim(),
+        lugarActual: document.getElementById('edit-lugarActual').value.trim(),
+        fotos: fotosArr
+      };
+
+      try {
+        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pets', id), payload);
+        mostrarAlerta('Ficha Actualizada', 'Los cambios en la mascota se aplicaron correctamente.', 'success');
+        cerrarAdminModalEditar();
+        renderizarAdmin();
+      } catch (err) {
+        console.error("Error actualizando mascota:", err);
+        mostrarAlerta('Error', 'No se pudieron guardar los cambios de la mascota.', 'error');
+      }
+    };
+
     window.actualizarEstatusAdmin = async function(id, estatus) {
       try {
         await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pets', id), { estado: estatus });
@@ -1616,22 +1877,32 @@
       } catch (err) { console.error(err); }
     };
 
-    window.eliminarReporteAdmin = async function(id) {
-      if (confirm('¿Deseas eliminar permanentemente esta ficha?')) {
-        try {
-          await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pets', id));
-          mostrarAlerta('Reporte Eliminado', 'Ficha removida de la base de datos.', 'success');
-          renderizarAdmin();
-        } catch (err) { console.error(err); }
-      }
+    window.eliminarReporteAdmin = function(id) {
+      window.confirmacionPersonalizada(
+        '¿Eliminar Reporte?', 
+        '¿Deseas eliminar permanentemente esta ficha? Esta acción es irreversible.',
+        async () => {
+          try {
+            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pets', id));
+            mostrarAlerta('Reporte Eliminado', 'Ficha removida de la base de datos.', 'success');
+            renderizarAdmin();
+          } catch (err) { console.error(err); }
+        }
+      );
     };
 
-    window.eliminarComentarioAdmin = async function(id) {
-      try {
-        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'comments', id));
-        mostrarAlerta('Comentario Borrado', 'Moderación exitosa.', 'success');
-        renderizarAdmin();
-      } catch (err) { console.error(err); }
+    window.eliminarComentarioAdmin = function(id) {
+      window.confirmacionPersonalizada(
+        '¿Borrar Comentario?',
+        '¿Deseas borrar este comentario permanentemente de la plataforma?',
+        async () => {
+          try {
+            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'comments', id));
+            mostrarAlerta('Comentario Borrado', 'Moderación exitosa.', 'success');
+            renderizarAdmin();
+          } catch (err) { console.error(err); }
+        }
+      );
     };
 
     // Alertas Toasts
