@@ -3,18 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mascotas Salvadas - Venezuela Alerta</title>
+  <title>Mascotas Salvadas - Proyecto Patitas (Venezuela)</title>
   
-  <!-- Tailwind CSS para la estructura responsiva y moderna -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons para una interfaz con iconos limpios -->
+  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-
-  <!-- Leaflet CSS & JS (Mapas interactivos Gratuitos OpenStreetMap) -->
+  <!-- Leaflet CSS & JS (Mapas Gratuitos) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- Firebase CDN SDKs (Compatibles con ES Modules) -->
+  <!-- Firebase CDN SDKs -->
   <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js" type="module"></script>
   <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js" type="module"></script>
   <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js" type="module"></script>
@@ -37,44 +36,16 @@
       --sombra-enfoque: 0 0 0 4px rgba(249, 115, 22, 0.2);
       --fuente-familia: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-
-    body {
-      background-color: var(--color-fondo);
-      color: var(--color-texto-principal);
-      font-family: var(--fuente-familia);
-      scroll-behavior: smooth;
-      overflow-x: hidden;
-    }
-
+    body { background-color: var(--color-fondo); color: var(--color-texto-principal); font-family: var(--fuente-familia); scroll-behavior: smooth; overflow-x: hidden; }
     .btn-primary { background-color: var(--color-primario); color: #ffffff; border-radius: var(--radio-borde); transition: all 0.2s; }
     .btn-primary:hover { background-color: var(--color-primario-hover); transform: translateY(-1px); }
     .btn-secondary { background-color: var(--color-secundario); color: #ffffff; border-radius: var(--radio-borde); transition: all 0.2s; }
     .btn-secondary:hover { background-color: var(--color-secundario-hover); transform: translateY(-1px); }
-
-    .tarjeta-mascota {
-      background-color: var(--color-tarjeta);
-      border-radius: var(--radio-borde);
-      box-shadow: var(--sombra-tarjeta);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .tarjeta-mascota:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.08);
-    }
-
-    .input-custom {
-      border: 1px solid #cbd5e1;
-      border-radius: calc(var(--radio-borde) / 1.5);
-      padding: 0.75rem 1rem;
-      transition: all 0.2s ease;
-      width: 100%;
-    }
+    .tarjeta-mascota { background-color: var(--color-tarjeta); border-radius: var(--radio-borde); box-shadow: var(--sombra-tarjeta); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .tarjeta-mascota:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.08); }
+    .input-custom { border: 1px solid #cbd5e1; border-radius: calc(var(--radio-borde) / 1.5); padding: 0.75rem 1rem; transition: all 0.2s ease; width: 100%; }
     .input-custom:focus { outline: none; border-color: var(--color-primario); box-shadow: var(--sombra-enfoque); }
-
-    /* Fix para evitar que el mapa de Leaflet se ponga sobre el menú principal y modales */
     .leaflet-container { z-index: 10 !important; }
-
-    /* Scrollbar invisible para móvil */
     .menu-scroll-x::-webkit-scrollbar { display: none; }
     .menu-scroll-x { -ms-overflow-style: none; scrollbar-width: none; }
     .fade-in { animation: fadeIn 0.3s ease-in-out; }
@@ -87,37 +58,21 @@
   <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm w-full">
     <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col xl:flex-row justify-between items-center gap-4">
       <div class="flex items-center space-x-3 cursor-pointer w-full xl:w-auto justify-center xl:justify-start" onclick="cambiarVista('inicio')">
-        <div class="p-2 bg-orange-100 rounded-full text-orange-600 flex-shrink-0">
-          <i data-lucide="paw-print" class="w-8 h-8"></i>
-        </div>
+        <div class="p-2 bg-orange-100 rounded-full text-orange-600 flex-shrink-0"><i data-lucide="paw-print" class="w-8 h-8"></i></div>
         <div class="text-center xl:text-left">
           <h1 class="text-xl md:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2 justify-center xl:justify-start">
-            Mascotas Salvadas <span class="bg-red-500 text-white text-[9px] px-2.5 py-0.5 rounded-full uppercase font-bold animate-pulse">Emergencia</span>
+            Proyecto Patitas <span class="bg-red-500 text-white text-[9px] px-2.5 py-0.5 rounded-full uppercase font-bold animate-pulse">Emergencia</span>
           </h1>
-          <p class="text-xs text-slate-500">Base de Datos · La Guaira & Caracas</p>
+          <p class="text-xs text-slate-500">Mascotas Salvadas · La Guaira & Caracas</p>
         </div>
       </div>
-      
       <nav class="w-full xl:w-auto overflow-x-auto md:overflow-visible menu-scroll-x flex md:flex-wrap items-center justify-start xl:justify-end gap-2 pb-2 xl:pb-0 px-2 xl:px-0">
-        <button onclick="cambiarVista('inicio')" class="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm md:text-base font-bold hover:bg-slate-100 transition-colors flex items-center gap-1.5 text-slate-700 min-h-[44px]">
-          <i data-lucide="home" class="w-4.5 h-4.5"></i> Inicio
-        </button>
-        <button onclick="cambiarVista('refugios')" class="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm md:text-base font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors flex items-center gap-1.5 min-h-[44px]">
-          <i data-lucide="tent" class="w-4.5 h-4.5"></i> Refugios/Rescatistas
-        </button>
-        <button onclick="cambiarVista('reportar-perdido')" class="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm md:text-base font-bold bg-orange-50 text-orange-700 hover:bg-orange-100 transition-colors flex items-center gap-1.5 min-h-[44px]">
-          <i data-lucide="megaphone" class="w-4.5 h-4.5"></i> Reportar Perdido
-        </button>
-        <button onclick="cambiarVista('reportar-encontrado')" class="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm md:text-base font-bold bg-sky-50 text-sky-700 hover:bg-sky-100 transition-colors flex items-center gap-1.5 min-h-[44px]">
-          <i data-lucide="heart" class="w-4.5 h-4.5"></i> Reportar Avistado
-        </button>
-        <button onclick="cambiarVista('chats')" class="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm md:text-base font-bold hover:bg-slate-100 transition-colors flex items-center gap-1.5 text-slate-700 relative min-h-[44px]">
-          <i data-lucide="message-square" class="w-4.5 h-4.5"></i> Mensajería
-          <span id="notif-chats" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">0</span>
-        </button>
-        <button onclick="cambiarVista('admin')" class="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm md:text-base font-bold bg-slate-800 text-white hover:bg-slate-700 transition-colors flex items-center gap-1.5 min-h-[44px]">
-          <i data-lucide="shield" class="w-4.5 h-4.5"></i> Admin
-        </button>
+        <button onclick="cambiarVista('inicio')" class="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm md:text-base font-bold hover:bg-slate-100 transition-colors flex items-center gap-1.5 text-slate-700 min-h-[44px]"><i data-lucide="home" class="w-4.5 h-4.5"></i> Inicio</button>
+        <button onclick="cambiarVista('refugios')" class="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm md:text-base font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors flex items-center gap-1.5 min-h-[44px]"><i data-lucide="tent" class="w-4.5 h-4.5"></i> Refugios/Rescatistas</button>
+        <button onclick="cambiarVista('reportar-perdido')" class="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm md:text-base font-bold bg-orange-50 text-orange-700 hover:bg-orange-100 transition-colors flex items-center gap-1.5 min-h-[44px]"><i data-lucide="megaphone" class="w-4.5 h-4.5"></i> Reportar Perdido</button>
+        <button onclick="cambiarVista('reportar-encontrado')" class="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm md:text-base font-bold bg-sky-50 text-sky-700 hover:bg-sky-100 transition-colors flex items-center gap-1.5 min-h-[44px]"><i data-lucide="heart" class="w-4.5 h-4.5"></i> Reportar Avistado</button>
+        <button onclick="cambiarVista('chats')" class="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm md:text-base font-bold hover:bg-slate-100 transition-colors flex items-center gap-1.5 text-slate-700 min-h-[44px]"><i data-lucide="message-square" class="w-4.5 h-4.5"></i> Mensajería</button>
+        <button onclick="cambiarVista('admin')" class="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm md:text-base font-bold bg-slate-800 text-white hover:bg-slate-700 transition-colors flex items-center gap-1.5 min-h-[44px]"><i data-lucide="shield" class="w-4.5 h-4.5"></i> Admin</button>
       </nav>
     </div>
   </header>
@@ -131,9 +86,7 @@
       <button onclick="cerrarAlerta()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4.5 h-4.5"></i></button>
     </div>
 
-    <!-- ============================================== -->
-    <!-- PUBLIC DASHBOARD DE ESTADÍSTICAS -->
-    <!-- ============================================== -->
+    <!-- DASHBOARD DE ESTADÍSTICAS PÚBLICAS -->
     <div id="public-counters-dashboard" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4 fade-in">
       <div class="bg-white border p-4 rounded-2xl flex items-center gap-3.5 shadow-sm"><div class="p-3 bg-red-50 text-red-600 rounded-xl"><i data-lucide="megaphone" class="w-6 h-6 md:w-7 md:h-7"></i></div><div><span class="text-[10px] md:text-xs text-slate-500 font-bold uppercase block">Buscando</span><span id="p-count-buscando" class="text-xl md:text-2xl font-black text-slate-800">0</span></div></div>
       <div class="bg-white border p-4 rounded-2xl flex items-center gap-3.5 shadow-sm"><div class="p-3 bg-sky-50 text-sky-600 rounded-xl"><i data-lucide="eye" class="w-6 h-6 md:w-7 md:h-7"></i></div><div><span class="text-[10px] md:text-xs text-slate-500 font-bold uppercase block">Avistados</span><span id="p-count-avistados" class="text-xl md:text-2xl font-black text-slate-800">0</span></div></div>
@@ -148,7 +101,7 @@
     <div id="vista-inicio" class="space-y-6 fade-in">
       <div class="bg-gradient-to-r from-orange-500 to-amber-500 rounded-3xl p-6 sm:p-10 text-white shadow-xl relative overflow-hidden">
         <div class="relative z-10 max-w-2xl">
-          <span class="bg-white/20 text-white text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider">Ayuda en Desastres Naturales</span>
+          <span class="bg-white/20 text-white text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider">Proyecto Patitas Independiente</span>
           <h2 class="text-2xl sm:text-4xl font-extrabold mt-3 tracking-tight">Ayuda a reencontrar a las mascotas perdidas</h2>
           <p class="text-sm sm:text-base text-orange-50 mt-2">Plataforma libre para dueños, rescatistas y grupos internacionales en Venezuela.</p>
           <div class="flex flex-wrap gap-3 mt-6">
@@ -175,8 +128,7 @@
         </div>
         <div id="listado-mascotas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
         <div id="sin-resultados" class="hidden text-center py-12 bg-white border border-slate-200 rounded-2xl">
-          <i data-lucide="paw-print" class="w-12 h-12 mx-auto text-slate-300 mb-3"></i>
-          <h4 class="text-lg font-bold text-slate-800">No hay coincidencias en este momento</h4>
+          <i data-lucide="paw-print" class="w-12 h-12 mx-auto text-slate-300 mb-3"></i><h4 class="text-lg font-bold text-slate-800">No hay coincidencias en este momento</h4>
         </div>
       </div>
     </div>
@@ -199,7 +151,6 @@
     <div id="vista-reportar-perdido" class="hidden max-w-2xl mx-auto fade-in">
       <div class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
         <h3 class="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2"><i data-lucide="megaphone" class="text-orange-500"></i> Registrar Mascota Perdida</h3>
-        <p class="text-sm text-slate-500 mb-6">Agrega las fotos y marca en el mapa interactivo el lugar exacto del extravío.</p>
 
         <form id="form-perdido" onsubmit="guardarMascotaPerdida(event)" class="space-y-6">
           <div class="space-y-2">
@@ -217,17 +168,18 @@
             <div class="flex flex-col"><label class="text-xs font-bold text-slate-600 mb-1.5 uppercase">Raza</label><input type="text" id="raza-p" required class="input-custom"></div>
           </div>
 
-          <!-- Mapa Interactivo -->
+          <!-- Dirección Bidireccional (Texto <-> Mapa) -->
           <div class="flex flex-col border-t border-slate-100 pt-4">
-            <label class="text-xs font-bold text-slate-600 mb-2 uppercase">Lugar de pérdida (Mapa interactivo)</label>
-            <div id="map-p" class="w-full h-48 bg-slate-200 rounded-xl mb-3 border border-slate-300 relative z-0"></div>
-            <div class="flex gap-2">
-              <input type="text" id="gps-p" readonly placeholder="Coordenadas automáticas" class="input-custom flex-grow text-xs bg-slate-50">
-              <button type="button" onclick="obtenerGPSConMapa('gps-p', 'map-p')" class="bg-slate-800 text-white px-4 py-2.5 rounded-xl font-bold text-sm min-h-[44px] min-w-fit">
-                <i data-lucide="crosshair" class="w-4 h-4 inline"></i> Mi GPS
-              </button>
+            <label class="text-xs font-bold text-slate-600 mb-2 uppercase">Lugar de pérdida (Escribe o marca en el mapa)</label>
+            <div class="flex gap-2 mb-3">
+              <input type="text" id="direccion-texto-p" placeholder="Ej. Avenida Bolívar, Catia La Mar" class="input-custom flex-grow text-sm">
+              <button type="button" onclick="buscarDireccionNominatim('direccion-texto-p', 'gps-p', 'map-p')" class="bg-slate-800 text-white px-4 rounded-xl font-bold text-sm hover:bg-slate-900 transition-colors">Buscar</button>
             </div>
-            <p class="text-[10px] text-slate-500 mt-1">Haz clic en el mapa para mover la chincheta o usa el botón "Mi GPS".</p>
+            <div id="map-p" class="w-full h-48 bg-slate-200 rounded-xl mb-2 border border-slate-300 relative z-0"></div>
+            <div class="flex gap-2 items-center">
+              <input type="text" id="gps-p" readonly placeholder="Coordenadas automáticas" class="input-custom text-xs bg-slate-50 text-slate-400 w-1/2">
+              <button type="button" onclick="obtenerGPSConMapa('gps-p', 'map-p', 'direccion-texto-p')" class="bg-sky-100 text-sky-700 px-3 py-2 rounded-xl font-bold text-xs flex-grow"><i data-lucide="crosshair" class="w-4 h-4 inline"></i> Usar mi GPS Local</button>
+            </div>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -237,7 +189,10 @@
 
           <div class="bg-orange-50 p-4 rounded-2xl border border-orange-100 space-y-4">
             <h4 class="text-xs font-extrabold text-orange-800 uppercase">Contacto Directo</h4>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4"><input type="tel" id="telefono-p" required placeholder="Número de WhatsApp" class="input-custom bg-white"><input type="email" id="email-p" required placeholder="Correo electrónico" class="input-custom bg-white"></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <input type="tel" id="telefono-p" required placeholder="Número de WhatsApp" class="input-custom bg-white">
+              <input type="email" id="email-p" placeholder="Correo electrónico (Opcional)" class="input-custom bg-white">
+            </div>
           </div>
 
           <div class="flex gap-4">
@@ -256,25 +211,44 @@
         <h3 class="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2"><i data-lucide="heart" class="text-sky-500"></i> Reportar Mascota Localizada</h3>
 
         <form id="form-encontrado" onsubmit="guardarMascotaEncontrada(event)" class="space-y-6 mt-6">
+          
+          <!-- Fotos Animal -->
           <div class="space-y-2">
-            <div class="flex justify-between items-center"><label class="block font-semibold text-slate-700">Subir Fotos</label><span class="bg-emerald-50 text-emerald-700 text-[10px] px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i> IA Activa</span></div>
+            <div class="flex justify-between items-center"><label class="block font-semibold text-slate-700">Subir Fotos de la Mascota</label><span class="bg-emerald-50 text-emerald-700 text-[10px] px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i> IA Activa</span></div>
             <input type="file" id="fotos-e" accept="image/*" multiple onchange="previsualizarYAnalizarIA(this)" class="hidden">
             <div onclick="document.getElementById('fotos-e').click()" class="border-2 border-dashed border-slate-300 hover:border-sky-500 rounded-2xl p-6 text-center cursor-pointer relative bg-slate-50 flex flex-col justify-center items-center">
               <div id="ia-loader" class="hidden absolute inset-0 bg-white/95 rounded-2xl flex flex-col items-center justify-center z-20"><div class="animate-spin rounded-full h-8 w-8 border-4 border-sky-500 border-t-transparent"></div><p class="text-xs font-bold text-sky-800 mt-2">Gemini escaneando...</p></div>
-              <i data-lucide="camera" class="w-8 h-8 text-slate-400 mb-2"></i><p class="text-sm font-semibold text-slate-600">Seleccionar fotos</p>
+              <i data-lucide="camera" class="w-8 h-8 text-slate-400 mb-2"></i><p class="text-sm font-semibold text-slate-600">Seleccionar fotos (Máx 3)</p>
             </div>
             <div id="prevs-e" class="flex gap-2 mt-3 overflow-x-auto"></div>
           </div>
           <div id="bloque-ia-exito" class="hidden bg-emerald-50 border p-4 rounded-2xl text-xs"><i data-lucide="sparkles" class="w-4 h-4 inline mr-1"></i><span id="ia-detalles-texto">IA analizó la foto</span></div>
 
-          <div class="flex flex-col border-t border-slate-100 pt-4">
-            <label class="text-xs font-bold text-slate-600 mb-2 uppercase">Lugar exacto del avistamiento o rescate (Mapa interactivo)</label>
-            <div id="map-e" class="w-full h-48 bg-slate-200 rounded-xl mb-3 border border-slate-300 relative z-0"></div>
-            <div class="flex gap-2">
-              <input type="text" id="gps-e" readonly placeholder="Coordenadas" class="input-custom flex-grow text-xs bg-slate-50">
-              <button type="button" onclick="obtenerGPSConMapa('gps-e', 'map-e')" class="bg-slate-800 text-white px-4 py-2.5 rounded-xl font-bold text-sm min-h-[44px] min-w-fit"><i data-lucide="crosshair" class="w-4 h-4 inline"></i> Mi GPS</button>
+          <!-- Foto Rescatista (Opcional) -->
+          <div class="space-y-2 border-t pt-4">
+            <label class="block font-semibold text-slate-700 text-sm">Foto del Rescatista con el Animal (Opcional)</label>
+            <input type="file" id="foto-rescatista-e" accept="image/*" class="hidden" onchange="previsualizarFotoUnica(this, 'prev-rescatista-img')">
+            <div class="flex items-center gap-4">
+              <div onclick="document.getElementById('foto-rescatista-e').click()" class="w-20 h-20 border-2 border-dashed border-slate-300 hover:border-sky-500 rounded-xl cursor-pointer flex items-center justify-center relative bg-slate-50 overflow-hidden flex-shrink-0">
+                <i data-lucide="user" class="w-6 h-6 text-slate-400 absolute z-0"></i>
+                <img id="prev-rescatista-img" class="w-full h-full object-cover relative z-10 hidden">
+              </div>
+              <p class="text-xs text-slate-500">Ayuda a generar confianza mostrando quién encontró a la mascota.</p>
             </div>
-            <p class="text-[10px] text-slate-500 mt-1">Marca la posición en el mapa haciendo clic sobre él.</p>
+          </div>
+
+          <!-- Dirección Bidireccional (Texto <-> Mapa) -->
+          <div class="flex flex-col border-t border-slate-100 pt-4">
+            <label class="text-xs font-bold text-slate-600 mb-2 uppercase">Lugar del Avistamiento o Rescate</label>
+            <div class="flex gap-2 mb-3">
+              <input type="text" id="direccion-texto-e" placeholder="Ej. Plaza Altamira, Caracas" class="input-custom flex-grow text-sm">
+              <button type="button" onclick="buscarDireccionNominatim('direccion-texto-e', 'gps-e', 'map-e')" class="bg-slate-800 text-white px-4 rounded-xl font-bold text-sm">Buscar</button>
+            </div>
+            <div id="map-e" class="w-full h-48 bg-slate-200 rounded-xl mb-2 border border-slate-300 relative z-0"></div>
+            <div class="flex gap-2 items-center">
+              <input type="text" id="gps-e" readonly placeholder="Coordenadas" class="input-custom text-xs bg-slate-50 text-slate-400 w-1/2">
+              <button type="button" onclick="obtenerGPSConMapa('gps-e', 'map-e', 'direccion-texto-e')" class="bg-sky-100 text-sky-700 px-3 py-2 rounded-xl font-bold text-xs flex-grow"><i data-lucide="crosshair" class="w-4 h-4 inline"></i> GPS Local</button>
+            </div>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -289,9 +263,16 @@
             <div class="flex flex-col"><label class="text-xs font-bold text-slate-600 uppercase">Salud / Detalles</label><input type="text" id="detalles-e" required class="input-custom"></div>
           </div>
 
-          <div class="bg-sky-50 p-4 rounded-2xl border border-sky-100">
-            <h4 class="text-xs font-extrabold text-sky-800 uppercase mb-3">Contacto / Resguardo</h4>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4"><input type="tel" id="telefono-e" required placeholder="Teléfono" class="input-custom bg-white"><input type="text" id="lugar-e" required placeholder="Lugar donde está (Ej: Refugio X)" class="input-custom bg-white"></div>
+          <div class="bg-sky-50 p-4 rounded-2xl border border-sky-100 space-y-4">
+            <h4 class="text-xs font-extrabold text-sky-800 uppercase">Contacto y Resguardo</h4>
+            <div class="flex flex-col">
+              <label class="text-xs font-bold text-sky-700 uppercase mb-1">¿Fue entregado a una Fundación/Refugio?</label>
+              <select id="refugio-e" class="input-custom bg-white text-sm">
+                <option value="">-- No / En la calle / Resguardo Particular --</option>
+                <!-- Llenado dinámicamente -->
+              </select>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4"><input type="tel" id="telefono-e" required placeholder="Teléfono" class="input-custom bg-white"><input type="text" id="lugar-e" placeholder="Lugar Exacto (Casa/Calle)" class="input-custom bg-white"></div>
           </div>
 
           <div class="flex gap-4">
@@ -303,11 +284,11 @@
     </div>
 
     <!-- ============================================== -->
-    <!-- VISTA FICHA DETALLADA MASCOTA (CON MAPA) -->
+    <!-- VISTA FICHA DETALLADA MASCOTA (DOBLE MAPA) -->
     <!-- ============================================== -->
     <div id="vista-detalle-mascota" class="hidden space-y-8 fade-in">
       <div class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
-        <button onclick="cambiarVista('inicio')" class="text-sm font-bold text-slate-500 hover:text-slate-800 flex items-center gap-1 mb-6 min-h-[44px]"><i data-lucide="arrow-left" class="w-4.5 h-4.5"></i> Volver</button>
+        <button onclick="cambiarVista('inicio')" class="text-sm font-bold text-slate-500 hover:text-slate-800 flex items-center gap-1 mb-6 min-h-[44px]"><i data-lucide="arrow-left" class="w-4.5 h-4.5"></i> Volver al catálogo</button>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div class="space-y-4">
@@ -316,27 +297,40 @@
               <span id="detalle-estado-badge" class="absolute top-4 left-4 text-white text-sm font-extrabold px-3 py-1 rounded-full uppercase shadow-md"></span>
             </div>
             <div id="detalle-miniaturas" class="flex gap-2 overflow-x-auto"></div>
+            
+            <!-- Foto del Rescatista -->
+            <div id="detalle-foto-rescatista-wrapper" class="hidden items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <img id="detalle-foto-rescatista" class="w-12 h-12 rounded-full object-cover border border-slate-200 shadow-sm">
+              <div><p class="text-xs font-bold text-slate-700">Foto con su rescatista</p><p class="text-[10px] text-slate-500">Mascota a salvo.</p></div>
+            </div>
           </div>
 
           <div class="flex flex-col justify-between">
             <div>
               <h2 id="detalle-nombre" class="text-3xl font-extrabold text-slate-900"></h2>
               <p id="detalle-zona" class="text-base font-bold text-orange-600 mt-1 flex items-center gap-1"></p>
+              <p id="detalle-direccion-texto" class="text-sm text-slate-600 mt-1"></p>
 
-              <!-- Lugar Actual y MAPA en la ficha -->
-              <div id="detalle-lugar-actual-wrapper" class="mt-4 bg-indigo-50 p-4 rounded-xl border border-indigo-100 hidden">
-                 <h4 class="text-xs md:text-sm font-bold text-indigo-800 uppercase tracking-wider"><i data-lucide="home" class="w-4 h-4 inline mb-1"></i> Lugar Actual (Resguardo)</h4>
-                 <p id="detalle-lugar-actual" class="text-sm md:text-base text-indigo-900 mt-1 font-semibold leading-tight"></p>
+              <!-- MAPA 1: Lugar del Evento (Perdido/Encontrado/Fallecido) -->
+              <div id="detalle-mapa-evento-wrapper" class="mt-4 hidden relative z-0">
+                 <h4 id="titulo-mapa-evento" class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Lugar del Suceso</h4>
+                 <div id="map-detalle-evento" class="w-full h-32 md:h-40 rounded-xl border border-slate-200 relative z-0"></div>
               </div>
 
-              <div id="detalle-mapa-wrapper" class="mt-4 hidden relative z-0">
-                 <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Ubicación Registrada en Mapa</h4>
-                 <div id="map-detalle" class="w-full h-32 md:h-40 rounded-xl border border-slate-200 relative z-0"></div>
-                 <a id="detalle-gps-link" target="_blank" class="mt-3 inline-flex items-center justify-center w-full gap-2 bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 py-2.5 rounded-xl text-sm transition-colors">
-                    <i data-lucide="map" class="w-4 h-4"></i> Abrir Navegación en Google Maps
+              <!-- MAPA 2: Lugar de Resguardo / Refugio Oficial -->
+              <div id="detalle-mapa-refugio-wrapper" class="mt-6 bg-indigo-50 p-4 rounded-xl border border-indigo-100 hidden relative z-0">
+                 <h4 class="text-xs md:text-sm font-bold text-indigo-800 uppercase tracking-wider flex items-center gap-1"><i data-lucide="tent" class="w-4 h-4"></i> En custodia oficial:</h4>
+                 <p id="detalle-nombre-refugio" class="text-base text-indigo-900 mt-1 font-black leading-tight"></p>
+                 <p id="detalle-contacto-refugio" class="text-xs text-indigo-700 mb-3"></p>
+                 
+                 <div id="map-detalle-refugio" class="w-full h-32 rounded-xl border border-indigo-200 relative z-0 mb-3"></div>
+                 
+                 <a id="detalle-ruta-refugio-link" target="_blank" class="flex items-center justify-center w-full gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl text-sm transition-colors">
+                    <i data-lucide="map" class="w-4 h-4"></i> ¿Cómo llegar al Albergue?
                  </a>
               </div>
 
+              <!-- Ficha técnica -->
               <div class="grid grid-cols-2 gap-4 mt-6 bg-slate-50 p-4 rounded-2xl border text-sm">
                 <div><span class="font-bold text-slate-400 block md:inline">Especie:</span> <span id="detalle-especie" class="font-semibold text-slate-800"></span></div>
                 <div><span class="font-bold text-slate-400 block md:inline">Sexo:</span> <span id="detalle-sexo" class="font-semibold text-slate-800"></span></div>
@@ -348,7 +342,7 @@
 
             <div class="mt-8 pt-6 border-t border-slate-100 flex flex-wrap gap-4 items-center justify-between">
               <div>
-                <span class="text-[10px] md:text-xs text-slate-400 font-bold uppercase block">Contacto Directo</span>
+                <span class="text-[10px] md:text-xs text-slate-400 font-bold uppercase block">Contacto Reporte</span>
                 <span id="detalle-contacto" class="text-lg md:text-xl font-extrabold text-slate-900"></span>
               </div>
               <div class="flex gap-2 w-full sm:w-auto">
@@ -376,80 +370,55 @@
     </div>
 
     <!-- ============================================== -->
-    <!-- CHATS -->
+    <!-- CHATS Y ADMIN DASHBOARD (Mantenidos igual pero depurados) -->
     <!-- ============================================== -->
     <div id="vista-chats" class="hidden space-y-6 fade-in"><div class="bg-white rounded-3xl p-6 shadow-sm"><h2 class="text-xl font-bold text-slate-900 mb-4"><i data-lucide="message-square" class="text-sky-500 inline"></i> Mensajes Privados</h2><div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-[500px]"><div id="lista-canales-chat" class="border-r pr-4 overflow-y-auto space-y-2"></div><div class="md:col-span-2 flex flex-col justify-between h-full bg-slate-50 rounded-2xl border"><div id="chat-vacio" class="flex-grow flex flex-col items-center justify-center text-slate-400 p-8"><i data-lucide="message-square" class="w-12 h-12 mb-2 text-slate-300"></i><p>Selecciona un chat</p></div><div id="chat-activo" class="hidden flex-grow flex flex-col justify-between h-full"><div class="bg-white border-b p-4"><h4 id="chat-cabecera-nombre" class="font-bold">Mascota</h4></div><div id="chat-mensajes" class="flex-grow p-4 overflow-y-auto space-y-3 flex flex-col"></div><form onsubmit="enviarMensajeChat(event)" class="bg-white p-3 border-t flex gap-2"><input type="text" id="chat-input" class="input-custom flex-grow text-sm"><button type="submit" class="bg-sky-600 text-white px-4 rounded-xl font-bold min-h-[44px]">Enviar</button></form></div></div></div></div></div>
 
-    <!-- ============================================== -->
-    <!-- VISTA ADMIN DASHBOARD -->
-    <!-- ============================================== -->
     <div id="vista-admin" class="hidden space-y-6 fade-in w-full">
-      <div id="admin-login" class="max-w-md mx-auto bg-white border border-slate-200 rounded-3xl p-8 text-center space-y-6">
-        <i data-lucide="shield-alert" class="w-16 h-16 text-slate-400 mx-auto font-bold"></i><h3 class="text-2xl font-extrabold text-slate-900">Admin Control</h3>
-        <div class="space-y-3"><input type="password" id="admin-passcode" placeholder="Clave del Administrador" class="input-custom w-full text-center"><button onclick="autenticarAdmin()" class="w-full py-3 bg-slate-900 text-white font-bold rounded-xl min-h-[44px]">Acceder</button></div>
+      <div id="admin-login" class="max-w-md mx-auto bg-white border border-slate-200 rounded-3xl p-8 text-center space-y-6"><i data-lucide="shield-alert" class="w-16 h-16 text-slate-400 mx-auto font-bold"></i><h3 class="text-2xl font-extrabold text-slate-900">Admin Control</h3><div class="space-y-3"><input type="password" id="admin-passcode" placeholder="Clave del Administrador" class="input-custom w-full text-center"><button onclick="autenticarAdmin()" class="w-full py-3 bg-slate-900 text-white font-bold rounded-xl min-h-[44px]">Acceder</button></div></div>
+      <div id="admin-dashboard" class="hidden space-y-8 w-full"><div class="flex justify-between items-center flex-wrap gap-4"><h2 class="text-2xl font-bold text-slate-900">Panel Global</h2><div class="flex gap-2"><button onclick="abrirModalRefugio()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold min-h-[44px]"><i data-lucide="plus" class="w-4 h-4 inline"></i> Añadir Refugio/Rescate</button><button onclick="cerrarSesionAdmin()" class="bg-red-50 text-red-600 px-4 py-2 rounded-xl text-xs font-bold">Salir</button></div></div><div class="bg-amber-50 border border-amber-200 p-6 rounded-3xl space-y-4 shadow-sm flex flex-wrap gap-2 items-center"><i data-lucide="key" class="w-5 h-5 text-amber-700"></i><span class="font-bold text-amber-900 text-sm">Gemini IA Key:</span><input type="password" id="admin-gemini-key" class="input-custom text-xs flex-grow focus:outline-none"><button onclick="guardarApiKeyEnFirestore()" class="bg-amber-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold">Guardar</button></div>
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="bg-white border p-5 rounded-2xl flex justify-between"><div class="min-w-0"><span class="text-[10px] md:text-xs text-slate-400 font-bold block uppercase">Buscando</span><span id="stat-perdidos" class="text-2xl font-black text-red-600">0</span></div></div>
+        <div class="bg-white border p-5 rounded-2xl flex justify-between"><div class="min-w-0"><span class="text-[10px] md:text-xs text-slate-400 font-bold block uppercase">Avistados</span><span id="stat-encontrados" class="text-2xl font-black text-sky-600">0</span></div></div>
+        <div class="bg-white border p-5 rounded-2xl flex justify-between"><div class="min-w-0"><span class="text-[10px] md:text-xs text-slate-400 font-bold block uppercase">Rescatados</span><span id="stat-rescatados" class="text-2xl font-black text-indigo-600">0</span></div></div>
+        <div class="bg-white border p-5 rounded-2xl flex justify-between"><div class="min-w-0"><span class="text-[10px] md:text-xs text-slate-400 font-bold block uppercase">Reunidos</span><span id="stat-reunidos" class="text-2xl font-black text-emerald-600">0</span></div></div>
+        <div class="bg-white border p-5 rounded-2xl flex justify-between"><div class="min-w-0"><span class="text-[10px] md:text-xs text-slate-400 font-bold block uppercase">Fallecidos</span><span id="stat-fallecidos" class="text-2xl font-black text-slate-600">0</span></div></div>
       </div>
-
-      <div id="admin-dashboard" class="hidden space-y-8 w-full">
-        <div class="flex justify-between items-center flex-wrap gap-4">
-          <h2 class="text-2xl font-bold text-slate-900">Panel Global</h2>
-          <div class="flex gap-2">
-             <button onclick="abrirModalRefugio()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold min-h-[44px]"><i data-lucide="plus" class="w-4 h-4 inline"></i> Añadir Refugio/Rescate</button>
-             <button onclick="cerrarSesionAdmin()" class="bg-red-50 text-red-600 px-4 py-2 rounded-xl text-xs font-bold min-h-[44px]">Salir</button>
-          </div>
-        </div>
-
-        <div class="bg-amber-50 border border-amber-200 p-6 rounded-3xl space-y-4 shadow-sm flex flex-wrap gap-2 items-center">
-          <i data-lucide="key" class="w-5 h-5 text-amber-700"></i><span class="font-bold text-amber-900 text-sm">Gemini IA Key:</span>
-          <input type="password" id="admin-gemini-key" class="input-custom text-xs flex-grow focus:outline-none"><button onclick="guardarApiKeyEnFirestore()" class="bg-amber-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold min-h-[44px]">Guardar</button>
-        </div>
-
-        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          <div class="bg-white border p-5 rounded-2xl flex justify-between"><div class="min-w-0"><span class="text-[10px] md:text-xs text-slate-400 font-bold block">Buscando</span><span id="stat-perdidos" class="text-2xl font-black text-red-600">0</span></div></div>
-          <div class="bg-white border p-5 rounded-2xl flex justify-between"><div class="min-w-0"><span class="text-[10px] md:text-xs text-slate-400 font-bold block">Avistados</span><span id="stat-encontrados" class="text-2xl font-black text-sky-600">0</span></div></div>
-          <div class="bg-white border p-5 rounded-2xl flex justify-between"><div class="min-w-0"><span class="text-[10px] md:text-xs text-slate-400 font-bold block">Rescatados</span><span id="stat-rescatados" class="text-2xl font-black text-indigo-600">0</span></div></div>
-          <div class="bg-white border p-5 rounded-2xl flex justify-between"><div class="min-w-0"><span class="text-[10px] md:text-xs text-slate-400 font-bold block">Reunidos</span><span id="stat-reunidos" class="text-2xl font-black text-emerald-600">0</span></div></div>
-          <div class="bg-white border p-5 rounded-2xl flex justify-between"><div class="min-w-0"><span class="text-[10px] md:text-xs text-slate-400 font-bold block">Fallecidos</span><span id="stat-fallecidos" class="text-2xl font-black text-slate-600">0</span></div></div>
-        </div>
-
-        <div class="space-y-8 w-full">
-          <div class="bg-white border rounded-3xl overflow-hidden"><div class="p-6 border-b"><h3 class="font-extrabold text-base">Grupos de Rescate</h3></div><div class="overflow-x-auto w-full"><table class="w-full text-left text-sm whitespace-nowrap"><thead><tr class="bg-slate-50 text-slate-400 text-xs border-b"><th class="p-4">Fundación/País</th><th class="p-4">Responsable</th><th class="p-4 text-right">Acciones</th></tr></thead><tbody id="admin-tabla-refugios"></tbody></table></div></div>
-          <div class="bg-white border rounded-3xl overflow-hidden"><div class="p-6 border-b"><h3 class="font-extrabold text-base">Gestión Mascotas</h3></div><div class="overflow-x-auto w-full"><table class="w-full text-left text-sm whitespace-nowrap"><thead><tr class="bg-slate-50 text-slate-400 text-xs border-b"><th class="p-4">Mascota</th><th class="p-4">Zona</th><th class="p-4">Estatus</th><th class="p-4 text-right">Acciones</th></tr></thead><tbody id="admin-tabla-mascotas"></tbody></table></div></div>
-        </div>
-      </div>
+      <div class="space-y-8 w-full"><div class="bg-white border rounded-3xl overflow-hidden"><div class="p-6 border-b"><h3 class="font-extrabold text-base">Grupos de Rescate</h3></div><div class="overflow-x-auto w-full"><table class="w-full text-left text-sm whitespace-nowrap"><thead><tr class="bg-slate-50 text-slate-400 text-xs border-b"><th class="p-4">Fundación/País</th><th class="p-4">Responsable</th><th class="p-4 text-right">Acciones</th></tr></thead><tbody id="admin-tabla-refugios"></tbody></table></div></div><div class="bg-white border rounded-3xl overflow-hidden"><div class="p-6 border-b"><h3 class="font-extrabold text-base">Gestión Mascotas</h3></div><div class="overflow-x-auto w-full"><table class="w-full text-left text-sm whitespace-nowrap"><thead><tr class="bg-slate-50 text-slate-400 text-xs border-b"><th class="p-4">Mascota</th><th class="p-4">Zona</th><th class="p-4">Estatus</th><th class="p-4 text-right">Acciones</th></tr></thead><tbody id="admin-tabla-mascotas"></tbody></table></div></div></div></div>
     </div>
   </main>
 
   <!-- ============================================== -->
-  <!-- MODALES FLOTANTES GLOBALES -->
+  <!-- MODALES DE ADMIN: REFUGIO, EDICIÓN Y CONFIRMAR -->
   <!-- ============================================== -->
-  
-  <!-- MODAL REFUGIO (MAPA) -->
   <div id="admin-modal-refugio" class="hidden fixed inset-0 bg-black/60 z-[100] flex justify-center items-center p-4 overflow-y-auto">
     <div class="bg-white rounded-3xl w-full max-w-2xl my-8 fade-in flex flex-col max-h-[90vh]">
       <div class="bg-indigo-600 text-white p-5 flex justify-between items-center flex-shrink-0 rounded-t-3xl"><h3 class="text-lg font-bold"><i data-lucide="tent" class="inline"></i> Registrar Refugio</h3><button onclick="cerrarModalRefugio()"><i data-lucide="x" class="w-6 h-6"></i></button></div>
       <form id="admin-form-refugio" onsubmit="guardarRefugio(event)" class="p-6 space-y-4 overflow-y-auto flex-grow">
         <div class="flex flex-col items-center"><input type="file" id="refugio-foto" accept="image/*" onchange="previsualizarFotoUnica(this, 'prev-refugio-img')" class="hidden"><div onclick="document.getElementById('refugio-foto').click()" class="w-24 h-24 border-2 border-dashed rounded-xl cursor-pointer flex items-center justify-center relative"><i data-lucide="camera" class="w-6 h-6 text-slate-300 absolute z-0"></i><img id="prev-refugio-img" class="w-full h-full object-cover relative z-10 hidden rounded-xl"></div></div>
         <div class="grid grid-cols-2 gap-4"><div class="flex flex-col"><label class="text-xs font-bold uppercase">Fundación</label><input type="text" id="refugio-nombre" required class="input-custom text-sm"></div><div class="flex flex-col"><label class="text-xs font-bold uppercase">País / Origen</label><input type="text" id="refugio-pais" required class="input-custom text-sm"></div><div class="flex flex-col"><label class="text-xs font-bold uppercase">Responsable</label><input type="text" id="refugio-responsable" required class="input-custom text-sm"></div><div class="flex flex-col"><label class="text-xs font-bold uppercase">Teléfono</label><input type="tel" id="refugio-telefono" required class="input-custom text-sm"></div></div>
-        <div class="flex flex-col"><label class="text-xs font-bold uppercase">Dirección Física</label><input type="text" id="refugio-direccion" required class="input-custom text-sm"></div>
+        
         <div class="flex flex-col border-t pt-4">
           <label class="text-xs font-bold uppercase mb-2">Punto en el Mapa (Sede)</label>
+          <div class="flex gap-2 mb-3">
+             <input type="text" id="direccion-texto-r" placeholder="Ej. Calle 1, Maiquetía" class="input-custom text-sm flex-grow">
+             <button type="button" onclick="buscarDireccionNominatim('direccion-texto-r', 'refugio-gps', 'map-r')" class="bg-slate-800 text-white px-4 rounded-xl font-bold text-sm">Buscar</button>
+          </div>
           <div id="map-r" class="w-full h-40 bg-slate-200 rounded-xl mb-2 relative z-0"></div>
-          <div class="flex gap-2"><input type="text" id="refugio-gps" readonly class="input-custom text-xs flex-grow bg-slate-50"><button type="button" onclick="obtenerGPSConMapa('refugio-gps', 'map-r')" class="bg-slate-800 text-white px-3 py-2 rounded-xl text-xs font-bold min-w-fit min-h-[44px]">📍 Mi GPS</button></div>
+          <div class="flex gap-2"><input type="text" id="refugio-gps" readonly class="input-custom text-xs flex-grow bg-slate-50"><button type="button" onclick="obtenerGPSConMapa('refugio-gps', 'map-r', 'direccion-texto-r')" class="bg-sky-100 text-sky-700 px-3 py-2 rounded-xl text-xs font-bold min-w-fit min-h-[44px]">📍 Mi GPS</button></div>
         </div>
         <div class="flex gap-4 pt-4"><button type="button" onclick="cerrarModalRefugio()" class="w-1/2 py-2.5 bg-slate-100 font-bold rounded-xl text-sm min-h-[44px]">Cancelar</button><button type="submit" class="w-1/2 py-2.5 bg-indigo-600 text-white font-bold text-sm rounded-xl min-h-[44px]">Guardar</button></div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL EDITAR MASCOTA ADMIN (CON LOS CAMPOS CORREGIDOS) -->
   <div id="admin-modal-editar" class="hidden fixed inset-0 bg-black/60 z-[100] flex justify-center items-center p-4 overflow-y-auto">
     <div class="bg-white rounded-3xl w-full max-w-2xl my-8 fade-in flex flex-col max-h-[90vh]">
-      <div class="bg-slate-900 text-white p-5 flex justify-between items-center flex-shrink-0 rounded-t-3xl"><h3 class="text-lg font-bold">Editar Mascota</h3><button onclick="cerrarAdminModalEditar()"><i data-lucide="x" class="w-6 h-6"></i></button></div>
+      <div class="bg-slate-900 text-white p-5 flex justify-between items-center flex-shrink-0 rounded-t-3xl"><h3 class="text-lg font-bold">Editar Ficha</h3><button onclick="cerrarAdminModalEditar()"><i data-lucide="x" class="w-6 h-6"></i></button></div>
       <form id="admin-form-editar" onsubmit="guardarEdicionMascotaAdmin(event)" class="p-6 space-y-4 overflow-y-auto flex-grow">
         <input type="hidden" id="edit-mascota-id">
         <div class="space-y-2"><input type="file" id="edit-fotos" accept="image/*" multiple onchange="previsualizarEditFotos(this)" class="hidden"><div onclick="document.getElementById('edit-fotos').click()" class="border-2 border-dashed p-4 text-center cursor-pointer rounded-xl bg-slate-50"><p class="text-sm">Cambiar fotos (Dejar vacío para no alterar)</p></div><div id="edit-prevs-container" class="flex gap-2 overflow-x-auto"></div></div>
         
-        <!-- Ahora sí están TODOS los campos de la Ficha en el HTML de edición -->
         <div class="grid grid-cols-2 gap-4">
           <div class="flex flex-col"><label class="text-xs font-bold uppercase">Nombre</label><input type="text" id="edit-nombre" class="input-custom text-sm"></div>
           <div class="flex flex-col"><label class="text-xs font-bold uppercase">Especie</label><select id="edit-especie" class="input-custom text-sm bg-white"><option value="perro">Perro</option><option value="gato">Gato</option><option value="otro">Otro</option></select></div>
@@ -457,17 +426,20 @@
           <div class="flex flex-col"><label class="text-xs font-bold uppercase">Raza</label><input type="text" id="edit-raza" class="input-custom text-sm"></div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="flex flex-col"><label class="text-xs font-bold uppercase">Contacto (WhatsApp)</label><input type="tel" id="edit-contacto" class="input-custom text-sm"></div>
-          <div class="flex flex-col"><label class="text-xs font-bold uppercase">Lugar Actual (Opcional)</label><input type="text" id="edit-lugarActual" class="input-custom text-sm"></div>
+          <div class="flex flex-col"><label class="text-xs font-bold uppercase">Asignar a Refugio Oficial</label><select id="edit-refugio" class="input-custom text-sm bg-white"><option value="">-- Ninguno --</option></select></div>
         </div>
         
         <div class="flex flex-col border-t pt-4">
           <label class="text-xs font-bold uppercase mb-2">Editar Ubicación en Mapa</label>
+          <div class="flex gap-2 mb-3">
+             <input type="text" id="direccion-texto-edit" placeholder="Ej. Calle 1, Maiquetía" class="input-custom text-sm flex-grow">
+             <button type="button" onclick="buscarDireccionNominatim('direccion-texto-edit', 'edit-gps', 'map-edit')" class="bg-slate-800 text-white px-4 rounded-xl font-bold text-sm">Buscar</button>
+          </div>
           <div id="map-edit" class="w-full h-40 bg-slate-200 rounded-xl mb-2 relative z-0"></div>
-          <div class="flex gap-2"><input type="text" id="edit-gps" readonly class="input-custom text-xs flex-grow bg-slate-50"><button type="button" onclick="obtenerGPSConMapa('edit-gps', 'map-edit')" class="bg-slate-800 text-white px-3 py-2 rounded-xl text-xs font-bold min-w-fit min-h-[44px]">📍 Mi GPS</button></div>
+          <div class="flex gap-2"><input type="text" id="edit-gps" readonly class="input-custom text-xs flex-grow bg-slate-50"><button type="button" onclick="obtenerGPSConMapa('edit-gps', 'map-edit', 'direccion-texto-edit')" class="bg-sky-100 text-sky-700 px-3 py-2 rounded-xl text-xs font-bold min-w-fit min-h-[44px]">📍 Mi GPS</button></div>
         </div>
-        
         <div class="flex gap-4 pt-4"><button type="button" onclick="cerrarAdminModalEditar()" class="w-1/2 py-2.5 bg-slate-100 font-bold rounded-xl text-sm min-h-[44px]">Cancelar</button><button type="submit" class="w-1/2 py-2.5 bg-slate-900 text-white font-bold text-sm rounded-xl min-h-[44px]">Guardar</button></div>
       </form>
     </div>
@@ -479,6 +451,24 @@
       <div class="flex gap-3 pt-2"><button id="btn-confirm-cancelar" class="w-1/2 py-2.5 bg-slate-100 font-bold rounded-xl min-h-[44px]">Cancelar</button><button id="btn-confirm-aceptar" class="w-1/2 py-2.5 bg-red-600 text-white font-bold rounded-xl min-h-[44px]">Confirmar</button></div>
     </div>
   </div>
+
+  <!-- FOOTER SOCIAL Y CRÉDITOS -->
+  <footer class="bg-slate-900 text-white py-8 mt-12 border-t border-slate-800 text-center">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col items-center gap-6">
+      <h4 class="text-base font-bold flex items-center justify-center gap-1"><i data-lucide="heart" class="w-4 h-4 text-orange-500 fill-orange-500"></i> Proyecto Patitas Venezuela</h4>
+      <p class="text-xs text-slate-400 max-w-md mx-auto">Ayúdanos a llegar a más personas compartiendo esta base de datos pública en tus redes sociales.</p>
+      <div class="flex gap-4 justify-center">
+        <button onclick="compartirWeb('facebook')" class="p-3 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors"><i data-lucide="facebook" class="w-5 h-5 text-white"></i></button>
+        <button onclick="compartirWeb('whatsapp')" class="p-3 bg-green-500 hover:bg-green-600 rounded-full transition-colors"><i data-lucide="message-circle" class="w-5 h-5 text-white"></i></button>
+        <button onclick="compartirWeb('twitter')" class="p-3 bg-slate-700 hover:bg-slate-600 rounded-full transition-colors"><i data-lucide="twitter" class="w-5 h-5 text-white"></i></button>
+        <button onclick="compartirWeb('email')" class="p-3 bg-red-500 hover:bg-red-600 rounded-full transition-colors"><i data-lucide="mail" class="w-5 h-5 text-white"></i></button>
+        <button onclick="compartirWeb('copiar')" class="p-3 bg-slate-800 hover:bg-slate-700 rounded-full transition-colors"><i data-lucide="link" class="w-5 h-5 text-white"></i></button>
+      </div>
+      <div class="text-xs text-slate-500 mt-2 border-t border-slate-800 pt-4 px-4 w-full">
+        Web-App Desarrollada por voluntarios independientes: <span class="font-bold text-slate-300">Zeus Mantilla</span> y <span class="font-bold text-slate-300">Patricia Pineda</span> como parte del proyecto independiente "Patitas". 🇻🇪
+      </div>
+    </div>
+  </footer>
 
   <!-- ============================================== -->
   <!-- LÓGICA DE JAVASCRIPT: MAPAS Y BASE DE DATOS -->
@@ -498,7 +488,7 @@
     let user = null; let baseMascotas = []; let baseComentarios = []; let baseChats = []; let baseRefugios = []; let geminiApiKeyGlobal = '';
     let vistaActual = 'inicio'; let mascotaSeleccionadaId = null; let chatSeleccionadoId = null;
     let filtroActual = { texto: '', especie: 'todos', estado: 'todos', zona: 'todas' };
-    let temporalFotosSeleccionadas = []; let editFotosSeleccionadas = []; let temporalFotoUnica = '';
+    let temporalFotosSeleccionadas = []; let editFotosSeleccionadas = []; let temporalFotoUnica = ''; let temporalFotoRescatista = '';
 
     // MAPAS GLOBALES (Evita re-dibujar mapas que ya existen)
     let globalMaps = {};
@@ -515,88 +505,101 @@
       onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'pets'), (s) => { baseMascotas = []; s.forEach(d => baseMascotas.push({ id: d.id, ...d.data() })); baseMascotas.sort((a,b) => new Date(b.fecha) - new Date(a.fecha)); renderizarMascotas(); actualizarEstadisticasAdmin(); actualizarContadoresPublicos(); }, () => {});
       onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'comments'), (s) => { baseComentarios = []; s.forEach(d => baseComentarios.push({ id: d.id, ...d.data() })); if (mascotaSeleccionadaId) renderizarComentariosMascota(mascotaSeleccionadaId); actualizarEstadisticasAdmin(); }, () => {});
       onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'chats'), (s) => { baseChats = []; s.forEach(d => baseChats.push({ id: d.id, ...d.data() })); actualizarCanalesDeChat(); }, () => {});
-      onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'shelters'), (s) => { baseRefugios = []; s.forEach(d => baseRefugios.push({ id: d.id, ...d.data() })); renderizarRefugiosPublicos(); if(!document.getElementById('admin-dashboard').classList.contains('hidden')) renderizarAdmin(); }, () => {});
+      onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'shelters'), (s) => { baseRefugios = []; s.forEach(d => baseRefugios.push({ id: d.id, ...d.data() })); actualizarDropdownRefugios(); renderizarRefugiosPublicos(); if(!document.getElementById('admin-dashboard').classList.contains('hidden')) renderizarAdmin(); }, () => {});
     }
 
-    window.guardarApiKeyEnFirestore = async function() {
-      if (!user) return; const key = document.getElementById('admin-gemini-key').value.trim();
-      try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'global'), { geminiApiKey: key }); mostrarAlerta('Guardado', 'Llave de IA global activa.', 'success'); } catch (err) {}
-    };
+    function actualizarDropdownRefugios() {
+      const selects = [document.getElementById('refugio-e'), document.getElementById('edit-refugio')];
+      selects.forEach(sel => {
+        if(!sel) return;
+        const currentVal = sel.value;
+        sel.innerHTML = '<option value="">-- No / En la calle / Resguardo Particular --</option>';
+        baseRefugios.forEach(r => { sel.innerHTML += `<option value="${r.id}">${r.nombre} (${r.pais})</option>`; });
+        sel.value = currentVal;
+      });
+    }
 
     // ==============================================
-    // MAPAS INTERACTIVOS LEAFLET
+    // REDES SOCIALES
     // ==============================================
-    window.inicializarMapa = function(mapId, inputId, interactive = true, startLat = 10.601, startLng = -66.938) {
+    window.compartirWeb = function(red) {
+      const url = encodeURIComponent("https://derjaguer.github.io/buscapatitas/"); // Tu URL Oficial
+      const text = encodeURIComponent("Ayuda a localizar mascotas perdidas en Venezuela tras los sismos. ¡Visita la base de datos Patitas!");
+      if (red === 'whatsapp') window.open(`https://wa.me/?text=${text}%20${url}`, '_blank');
+      if (red === 'facebook') window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+      if (red === 'twitter') window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+      if (red === 'email') window.location.href = `mailto:?subject=Proyecto Patitas Emergencia&body=${text} ${decodeURIComponent(url)}`;
+      if (red === 'copiar') {
+        const temp = document.createElement("input");
+        temp.value = "https://derjaguer.github.io/buscapatitas/"; document.body.appendChild(temp); temp.select(); document.execCommand("copy"); document.body.removeChild(temp);
+        mostrarAlerta('Copiado', 'Enlace copiado al portapapeles', 'success');
+      }
+    }
+
+    // ==============================================
+    // MAPAS INTERACTIVOS LEAFLET & NOMINATIM
+    // ==============================================
+    window.inicializarMapa = function(mapId, coordsInputId, addressInputId, interactive = true, startLat = 10.601, startLng = -66.938) {
       setTimeout(() => {
-        const inputEl = inputId ? document.getElementById(inputId) : null;
+        const inputCoords = coordsInputId ? document.getElementById(coordsInputId) : null;
         let lat = startLat; let lng = startLng;
-        
-        // Si ya había coordenadas guardadas en el input, usar esas
-        if(inputEl && inputEl.value && inputEl.value.includes(',')) {
-          const parts = inputEl.value.split(',');
-          lat = parseFloat(parts[0]); lng = parseFloat(parts[1]);
-        }
-
-        // Si el mapa ya existe, solo ajustar el tamaño y recentrar
-        if (globalMaps[mapId]) {
-          globalMaps[mapId].invalidateSize();
-          globalMaps[mapId].setView([lat, lng], 15);
-          if (globalMarkers[mapId]) globalMarkers[mapId].setLatLng([lat, lng]);
-          return;
-        }
-
-        // Crear mapa nuevo
+        if(inputCoords && inputCoords.value && inputCoords.value.includes(',')) { const parts = inputCoords.value.split(','); lat = parseFloat(parts[0]); lng = parseFloat(parts[1]); }
+        if (globalMaps[mapId]) { globalMaps[mapId].invalidateSize(); globalMaps[mapId].setView([lat, lng], 15); if (globalMarkers[mapId]) globalMarkers[mapId].setLatLng([lat, lng]); return; }
         const map = L.map(mapId).setView([lat, lng], 15);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
-
         const marker = L.marker([lat, lng], { draggable: interactive }).addTo(map);
 
-        if (interactive && inputEl) {
-          inputEl.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-          // Evento al arrastrar el marcador
-          marker.on('dragend', function (e) {
-            const pos = marker.getLatLng();
-            inputEl.value = `${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`;
-          });
-          // Evento al hacer clic en el mapa
-          map.on('click', function (e) {
-            marker.setLatLng(e.latlng);
-            inputEl.value = `${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`;
-          });
+        if (interactive && inputCoords) {
+          inputCoords.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+          const updateAddr = (la, lo) => {
+            if(!addressInputId) return;
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${la}&lon=${lo}`).then(r=>r.json()).then(d=>{ if(d.display_name) document.getElementById(addressInputId).value = d.display_name; }).catch(e=>{});
+          };
+          marker.on('dragend', function (e) { const pos = marker.getLatLng(); inputCoords.value = `${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`; updateAddr(pos.lat, pos.lng); });
+          map.on('click', function (e) { marker.setLatLng(e.latlng); inputCoords.value = `${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`; updateAddr(e.latlng.lat, e.latlng.lng); });
         }
-
-        globalMaps[mapId] = map;
-        globalMarkers[mapId] = marker;
-      }, 400); // 400ms garantiza que la vista ya salió del estado oculto (display: none)
+        globalMaps[mapId] = map; globalMarkers[mapId] = marker;
+      }, 400); 
     }
 
-    window.obtenerGPSConMapa = function(inputId, mapId) {
+    window.buscarDireccionNominatim = async function(addressInputId, coordsInputId, mapId) {
+      const q = document.getElementById(addressInputId).value;
+      if(!q) return;
+      mostrarAlerta('Buscando...', 'Geolocalizando dirección...', 'info');
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q + ", Venezuela")}`);
+        const data = await res.json();
+        if(data && data.length > 0) {
+          const lat = parseFloat(data[0].lat); const lon = parseFloat(data[0].lon);
+          document.getElementById(coordsInputId).value = `${lat}, ${lon}`;
+          document.getElementById(addressInputId).value = data[0].display_name;
+          if(globalMaps[mapId]) { globalMaps[mapId].setView([lat, lon], 16); globalMarkers[mapId].setLatLng([lat, lon]); }
+          mostrarAlerta('Ubicado', 'Chincheta actualizada.', 'success');
+        } else { mostrarAlerta('No encontrado', 'Intenta ser más específico.', 'error'); }
+      } catch(e) { mostrarAlerta('Error', 'Fallo al conectar con mapas.', 'error'); }
+    }
+
+    window.obtenerGPSConMapa = function(inputId, mapId, addressInputId) {
       if ("geolocation" in navigator) {
         mostrarAlerta('Buscando...', 'Acepta los permisos de GPS del navegador.', 'info');
         navigator.geolocation.getCurrentPosition(
           (pos) => {
             const lat = pos.coords.latitude; const lng = pos.coords.longitude;
             document.getElementById(inputId).value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-            if (globalMaps[mapId]) {
-              globalMaps[mapId].setView([lat, lng], 16);
-              globalMarkers[mapId].setLatLng([lat, lng]);
-            }
-            mostrarAlerta('GPS Listo', 'Marcador actualizado a tu ubicación real.', 'success');
+            if (globalMaps[mapId]) { globalMaps[mapId].setView([lat, lng], 16); globalMarkers[mapId].setLatLng([lat, lng]); }
+            if (addressInputId) { fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`).then(r=>r.json()).then(d=>{ if(d.display_name) document.getElementById(addressInputId).value = d.display_name; }).catch(e=>{}); }
+            mostrarAlerta('GPS Listo', 'Marcador actualizado a tu ubicación.', 'success');
           },
-          (err) => mostrarAlerta('Error GPS', 'Activa la ubicación de tu dispositivo.', 'error'),
-          { enableHighAccuracy: true, timeout: 10000 }
+          (err) => mostrarAlerta('Error GPS', 'Activa la ubicación de tu dispositivo.', 'error'), { enableHighAccuracy: true, timeout: 10000 }
         );
       }
     };
 
-    function generarEnlaceMaps(str) {
-      if (!str) return '';
-      if (str.includes('http')) return str; 
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(str)}`;
-    }
+    function generarRutaMaps(lat, lng) { return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`; }
+    function esUbicacionValida(str) { return str && str.includes(','); }
 
     // ==============================================
-    // CÁMARA E IA
+    // FOTOS Y IA
     // ==============================================
     async function procesarYRedimensionar(file) {
       return new Promise((resolve) => {
@@ -609,7 +612,13 @@
       const container = document.getElementById(containerId); container.innerHTML = ''; temporalFotosSeleccionadas = [];
       for (const file of Array.from(input.files).slice(0, 3)) { const b64 = await procesarYRedimensionar(file); temporalFotosSeleccionadas.push(b64); container.innerHTML += `<div class="relative w-16 h-16 rounded-xl border flex-shrink-0 shadow-sm"><img src="${b64}" class="w-full h-full object-cover rounded-xl"></div>`; }
     };
-    window.previsualizarFotoUnica = async function(input, imgId) { if(input.files[0]) { temporalFotoUnica = await procesarYRedimensionar(input.files[0]); const imgEl = document.getElementById(imgId); imgEl.src = temporalFotoUnica; imgEl.classList.remove('hidden'); } };
+    window.previsualizarFotoUnica = async function(input, imgId) { 
+      if(input.files[0]) { 
+        const b64 = await procesarYRedimensionar(input.files[0]);
+        if(imgId === 'prev-rescatista-img') temporalFotoRescatista = b64; else temporalFotoUnica = b64;
+        const imgEl = document.getElementById(imgId); imgEl.src = b64; imgEl.classList.remove('hidden'); 
+      } 
+    };
     window.previsualizarYAnalizarIA = async function(input) { await window.previsualizarMultiplesFotos(input, 'prevs-e'); if (temporalFotosSeleccionadas.length > 0) analizarFotoConIA(temporalFotosSeleccionadas[0]); };
 
     async function analizarFotoConIA(b64) {
@@ -630,18 +639,19 @@
     window.guardarMascotaPerdida = async function(e) {
       e.preventDefault(); if (!user) return;
       const fArr = temporalFotosSeleccionadas.length > 0 ? temporalFotosSeleccionadas : ["data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150'><rect width='100%' height='100%' fill='%23ccc'/></svg>"];
-      const payload = { estado: 'perdido', nombre: document.getElementById('nombre-p').value.trim(), especie: document.getElementById('especie-p').value, sexo: document.getElementById('sexo-p').value, raza: document.getElementById('raza-p').value.trim(), zona: document.getElementById('zona-p').value, rasgos: document.getElementById('rasgos-p').value.trim(), gps: document.getElementById('gps-p').value.trim(), contacto: document.getElementById('telefono-p').value.trim(), email: document.getElementById('email-p').value.trim(), fecha: new Date().toISOString().split('T')[0], fotos: fArr, creadorId: user.uid };
+      let dirTexto = document.getElementById('direccion-texto-p').value.trim();
+      const payload = { estado: 'perdido', nombre: document.getElementById('nombre-p').value.trim(), especie: document.getElementById('especie-p').value, sexo: document.getElementById('sexo-p').value, raza: document.getElementById('raza-p').value.trim(), zona: document.getElementById('zona-p').value, rasgos: document.getElementById('rasgos-p').value.trim(), gps: document.getElementById('gps-p').value.trim(), direccionExtra: dirTexto, contacto: document.getElementById('telefono-p').value.trim(), email: document.getElementById('email-p').value.trim(), fecha: new Date().toISOString().split('T')[0], fotos: fArr, creadorId: user.uid };
       try { await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pets'), payload); document.getElementById('form-perdido').reset(); document.getElementById('prevs-p').innerHTML = ''; temporalFotosSeleccionadas = []; mostrarAlerta('Éxito', 'Alerta publicada.', 'success'); cambiarVista('inicio'); } catch (err) {}
     };
 
     window.guardarMascotaEncontrada = async function(e) {
       e.preventDefault(); if (!user) return;
       const fArr = temporalFotosSeleccionadas.length > 0 ? temporalFotosSeleccionadas : ["data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150'><rect width='100%' height='100%' fill='%23ccc'/></svg>"];
-      const payload = { estado: 'encontrado', nombre: 'Avistado', especie: document.getElementById('especie-e').value, sexo: document.getElementById('sexo-e').value, raza: document.getElementById('raza-e').value.trim(), color: document.getElementById('color-e').value.trim(), zona: document.getElementById('zona-e').value, gps: document.getElementById('gps-e').value.trim(), rasgos: `${document.getElementById('color-e').value.trim()} - ${document.getElementById('detalles-e').value.trim()}`, contacto: document.getElementById('telefono-e').value.trim(), lugarActual: document.getElementById('lugar-e').value.trim(), fecha: new Date().toISOString().split('T')[0], fotos: fArr, creadorId: user.uid };
-      try { await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pets'), payload); document.getElementById('form-encontrado').reset(); document.getElementById('prevs-e').innerHTML = ''; document.getElementById('bloque-ia-exito').classList.add('hidden'); temporalFotosSeleccionadas = []; mostrarAlerta('Éxito', 'Reporte publicado.', 'success'); cambiarVista('inicio'); } catch (err) {}
+      const payload = { estado: 'encontrado', nombre: 'Avistado', especie: document.getElementById('especie-e').value, sexo: document.getElementById('sexo-e').value, raza: document.getElementById('raza-e').value.trim(), color: document.getElementById('color-e').value.trim(), zona: document.getElementById('zona-e').value, gps: document.getElementById('gps-e').value.trim(), direccionExtra: document.getElementById('direccion-texto-e').value.trim(), refugioId: document.getElementById('refugio-e').value, rasgos: `${document.getElementById('color-e').value.trim()} - ${document.getElementById('detalles-e').value.trim()}`, contacto: document.getElementById('telefono-e').value.trim(), lugarActual: document.getElementById('lugar-e').value.trim(), fecha: new Date().toISOString().split('T')[0], fotos: fArr, fotoRescatista: temporalFotoRescatista, creadorId: user.uid };
+      try { await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pets'), payload); document.getElementById('form-encontrado').reset(); document.getElementById('prevs-e').innerHTML = ''; document.getElementById('prev-rescatista-img').classList.add('hidden'); temporalFotosSeleccionadas = []; temporalFotoRescatista = ''; mostrarAlerta('Éxito', 'Reporte publicado.', 'success'); cambiarVista('inicio'); } catch (err) {}
     };
 
-    window.abrirModalRefugio = function() { document.getElementById('admin-form-refugio').reset(); document.getElementById('prev-refugio-img').classList.add('hidden'); temporalFotoUnica = ''; document.getElementById('admin-modal-refugio').classList.remove('hidden'); inicializarMapa('map-r', 'refugio-gps', true); }
+    window.abrirModalRefugio = function() { document.getElementById('admin-form-refugio').reset(); document.getElementById('prev-refugio-img').classList.add('hidden'); temporalFotoUnica = ''; document.getElementById('admin-modal-refugio').classList.remove('hidden'); window.inicializarMapa('map-r', 'refugio-gps', 'direccion-texto-r', true); }
     window.cerrarModalRefugio = function() { document.getElementById('admin-modal-refugio').classList.add('hidden'); }
     window.guardarRefugio = async function(e) {
       e.preventDefault(); if (!user) return;
@@ -655,24 +665,23 @@
       baseRefugios.forEach(r => {
         const card = document.createElement('div'); card.className = "bg-white border rounded-2xl overflow-hidden shadow-sm flex flex-col";
         const img = r.foto ? `<img src="${r.foto}" class="w-full h-40 object-cover">` : `<div class="w-full h-40 bg-indigo-50 flex items-center justify-center"><i data-lucide="tent" class="w-10 h-10 text-indigo-300"></i></div>`;
-        const linkMaps = r.gps ? `<a href="${generarEnlaceMaps(r.gps)}" target="_blank" class="mt-3 block text-center bg-indigo-50 text-indigo-700 font-bold py-2 rounded-xl text-xs hover:bg-indigo-100"><i data-lucide="map-pin" class="w-3.5 h-3.5 inline"></i> Mapa Satelital</a>` : '';
+        const linkMaps = esUbicacionValida(r.gps) ? `<a href="${generarRutaMaps(r.gps.split(',')[0], r.gps.split(',')[1])}" target="_blank" class="mt-3 block text-center bg-indigo-50 text-indigo-700 font-bold py-2 rounded-xl text-xs hover:bg-indigo-100"><i data-lucide="map-pin" class="w-3.5 h-3.5 inline"></i> ¿Cómo llegar? (Ruta)</a>` : '';
         card.innerHTML = `${img}<div class="p-5 flex flex-col flex-grow justify-between"><div><span class="text-[10px] font-bold uppercase bg-slate-100 px-2 py-0.5 rounded-full text-slate-500 mb-2 inline-block">Equipo ${r.pais}</span><h4 class="font-extrabold text-lg text-slate-900">${r.nombre}</h4><p class="text-xs text-slate-500 mt-1"><span class="font-semibold text-slate-700">Resp:</span> ${r.responsable}</p><p class="text-xs text-slate-500 mt-1 line-clamp-2">${r.direccion}</p></div><div class="mt-4 pt-4 border-t"><a href="https://wa.me/${r.telefono.replace(/[^0-9]/g, '')}" target="_blank" class="w-full bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs flex justify-center gap-1 hover:bg-emerald-600"><i data-lucide="phone" class="w-4 h-4"></i> ${r.telefono}</a>${linkMaps}</div></div>`;
         grid.appendChild(card);
       }); lucide.createIcons();
     }
 
     // ==============================================
-    // CONTROL DE NAVEGACIÓN Y RENDER DE VISTAS
+    // NAVEGACIÓN Y RENDER GENERAL
     // ==============================================
     window.cambiarVista = function(v) {
       vistaActual = v;
-      ['inicio', 'refugios', 'reportar-perdido', 'reportar-encontrado', 'detalle-mascota', 'chats', 'admin'].forEach(id => document.getElementById('vista-' + id).classList.add('hidden'));
-      document.getElementById('vista-' + v).classList.remove('hidden'); window.scrollTo(0, 0);
+      ['inicio', 'refugios', 'reportar-perdido', 'reportar-encontrado', 'detalle-mascota', 'chats', 'admin'].forEach(id => { const el = document.getElementById('vista-' + id); if(el) el.classList.add('hidden'); });
+      document.getElementById(`vista-${v}`).classList.remove('hidden'); window.scrollTo(0, 0);
       
       if (v === 'inicio') renderizarMascotas();
-      // Inicializar mapas si están en la vista activa
-      if (v === 'reportar-perdido') window.inicializarMapa('map-p', 'gps-p', true);
-      if (v === 'reportar-encontrado') window.inicializarMapa('map-e', 'gps-e', true);
+      if (v === 'reportar-perdido') window.inicializarMapa('map-p', 'gps-p', 'direccion-texto-p', true);
+      if (v === 'reportar-encontrado') window.inicializarMapa('map-e', 'gps-e', 'direccion-texto-e', true);
     };
 
     window.aplicarFiltros = function() { filtroActual.texto = document.getElementById('filtro-texto').value.toLowerCase().trim(); filtroActual.especie = document.getElementById('filtro-especie').value; filtroActual.estado = document.getElementById('filtro-estado').value; filtroActual.zona = document.getElementById('filtro-zona').value; renderizarMascotas(); };
@@ -693,35 +702,69 @@
       f.forEach(m => {
         const card = document.createElement('div'); card.className = "tarjeta-mascota border border-slate-200 overflow-hidden flex flex-col cursor-pointer snap-start"; card.onclick = () => verDetalleMascota(m.id);
         let bc = 'bg-red-600 text-white'; let bt = 'Buscando';
-        if (m.estado === 'encontrado') { bc = 'bg-sky-600'; bt = 'Localizado'; } else if (m.estado === 'rescatado') { bc = 'bg-indigo-600'; bt = 'Rescatado 🏠'; } else if (m.estado === 'reunido') { bc = 'bg-emerald-600'; bt = 'Reunido 🎉'; } else if (m.estado === 'fallecido') { bc = 'bg-slate-600'; bt = 'Fallecido 🕯️'; } else if (m.estado === 'adopcion') { bc = 'bg-amber-500'; bt = 'En Adopción'; }
+        if (m.estado === 'encontrado') { bc = 'bg-sky-600 text-white'; bt = 'Localizado'; } else if (m.estado === 'rescatado') { bc = 'bg-indigo-600 text-white'; bt = 'Rescatado 🏠'; } else if (m.estado === 'reunido') { bc = 'bg-emerald-600 text-white'; bt = 'Reunido 🎉'; } else if (m.estado === 'fallecido') { bc = 'bg-slate-600 text-white'; bt = 'Fallecido 🕯️'; } else if (m.estado === 'adopcion') { bc = 'bg-amber-500 text-white'; bt = 'En Adopción'; }
         const img = m.fotos && m.fotos[0] ? m.fotos[0] : '';
         card.innerHTML = `<div class="relative h-48 w-full bg-slate-100"><img src="${img}" class="w-full h-full object-cover" loading="lazy"><span class="absolute top-3 left-3 ${bc} font-extrabold text-[10px] px-2.5 py-1 rounded-full uppercase shadow-sm">${bt}</span></div><div class="p-5 flex-grow flex flex-col justify-between"><div><div class="flex justify-between items-start"><h4 class="font-extrabold text-lg text-slate-900 truncate">${m.nombre}</h4><span class="text-[10px] text-slate-400">${m.fecha}</span></div><p class="text-xs md:text-sm font-semibold text-orange-600 mt-1 flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i> ${m.zona}</p><p class="text-sm text-slate-600 mt-3 line-clamp-2 italic">"${m.rasgos}"</p></div><div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-xs md:text-sm"><span class="font-bold text-slate-800 truncate pr-2">Raza: ${m.raza}</span><span class="text-[10px] md:text-xs text-sky-600 font-bold uppercase flex items-center gap-1 flex-shrink-0">Ver Ficha <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></span></div></div>`;
         grid.appendChild(card);
       }); lucide.createIcons();
     }
 
+    // ==============================================
+    // FICHA DE DETALLE (CATÁLOGO) CON MAPAS
+    // ==============================================
     window.verDetalleMascota = function(id) {
       mascotaSeleccionadaId = id; const m = baseMascotas.find(p => p.id === id); if (!m) return;
       cambiarVista('detalle-mascota');
       const fp = document.getElementById('detalle-foto-principal'); fp.src = m.fotos ? m.fotos[0] : '';
-      const badge = document.getElementById('detalle-estado-badge'); let c = 'bg-red-600'; let t = 'Buscando';
-      if (m.estado === 'encontrado') { c = 'bg-sky-600'; t = 'Localizado'; } else if (m.estado === 'rescatado') { c = 'bg-indigo-600'; t = 'Rescatado 🏠'; } else if (m.estado === 'reunido') { c = 'bg-emerald-600'; t = 'Reunido 🎉'; } else if (m.estado === 'fallecido') { c = 'bg-slate-600'; t = 'Fallecido 🕯️'; } else if (m.estado === 'adopcion') { c = 'bg-amber-500'; t = 'En Adopción'; }
+      
+      const badge = document.getElementById('detalle-estado-badge'); let c = 'bg-red-600'; let t = 'Buscando'; let tituloMapa = "Lugar de Pérdida";
+      if (m.estado === 'encontrado') { c = 'bg-sky-600'; t = 'Localizado'; tituloMapa = "Lugar de Avistamiento"; } else if (m.estado === 'rescatado') { c = 'bg-indigo-600'; t = 'Rescatado 🏠'; tituloMapa = "Lugar del Rescate"; } else if (m.estado === 'reunido') { c = 'bg-emerald-600'; t = 'Reunido 🎉'; tituloMapa = "Lugar del Reencuentro"; } else if (m.estado === 'fallecido') { c = 'bg-slate-600'; t = 'Fallecido 🕯️'; tituloMapa = "Lugar del Hallazgo"; } else if (m.estado === 'adopcion') { c = 'bg-amber-500'; t = 'En Adopción'; }
       badge.className = `absolute top-4 left-4 text-white text-xs md:text-sm font-extrabold px-3 py-1 rounded-full uppercase shadow-md ${c}`; badge.innerText = t;
+      
       const car = document.getElementById('detalle-miniaturas'); car.innerHTML = '';
       if (m.fotos && m.fotos.length > 1) { m.fotos.forEach(f => { const mi = document.createElement('img'); mi.src = f; mi.onclick = () => fp.src = f; mi.className = "w-14 h-14 rounded-xl object-cover border cursor-pointer hover:border-orange-500"; car.appendChild(mi); }); }
-      document.getElementById('detalle-nombre').innerText = m.nombre; document.getElementById('detalle-zona').innerHTML = `<i data-lucide="map-pin" class="w-4 h-4 inline"></i> ${m.zona}`; document.getElementById('detalle-especie').innerText = m.especie.toUpperCase(); document.getElementById('detalle-sexo').innerText = m.sexo; document.getElementById('detalle-raza').innerText = m.raza; document.getElementById('detalle-fecha').innerText = m.fecha; document.getElementById('detalle-rasgos').innerText = m.rasgos;
+      
+      const rescW = document.getElementById('detalle-foto-rescatista-wrapper');
+      if (m.fotoRescatista) { rescW.classList.remove('hidden'); rescW.classList.add('flex'); document.getElementById('detalle-foto-rescatista').src = m.fotoRescatista; } else { rescW.classList.add('hidden'); rescW.classList.remove('flex'); }
 
-      // MAPA EN DETALLE
-      const wrapMap = document.getElementById('detalle-mapa-wrapper');
-      if (m.gps && m.gps.includes(',')) {
-        wrapMap.classList.remove('hidden');
+      document.getElementById('detalle-nombre').innerText = m.nombre; 
+      document.getElementById('detalle-zona').innerHTML = `<i data-lucide="map-pin" class="w-4 h-4 inline"></i> ${m.zona}`; 
+      document.getElementById('detalle-direccion-texto').innerText = m.direccionExtra || '';
+      document.getElementById('detalle-especie').innerText = m.especie.toUpperCase(); 
+      document.getElementById('detalle-sexo').innerText = m.sexo; 
+      document.getElementById('detalle-raza').innerText = m.raza; 
+      document.getElementById('detalle-fecha').innerText = m.fecha; 
+      document.getElementById('detalle-rasgos').innerText = m.rasgos;
+
+      // MAPA 1: Evento
+      const wrapMapEvento = document.getElementById('detalle-mapa-evento-wrapper');
+      if (esUbicacionValida(m.gps)) {
+        wrapMapEvento.classList.remove('hidden');
+        document.getElementById('titulo-mapa-evento').innerText = tituloMapa;
         const partes = m.gps.split(',');
-        window.inicializarMapa('map-detalle', '', false, parseFloat(partes[0]), parseFloat(partes[1]));
-        document.getElementById('detalle-gps-link').href = generarEnlaceMaps(m.gps);
-      } else { wrapMap.classList.add('hidden'); }
+        window.inicializarMapa('map-detalle-evento', '', '', false, parseFloat(partes[0]), parseFloat(partes[1]));
+      } else { wrapMapEvento.classList.add('hidden'); }
 
-      const locWrap = document.getElementById('detalle-lugar-actual-wrapper');
-      if (m.lugarActual || m.estado === 'rescatado') { locWrap.classList.remove('hidden'); document.getElementById('detalle-lugar-actual').innerText = m.lugarActual || "En refugio / custodia veterinaria."; } else { locWrap.classList.add('hidden'); }
+      // MAPA 2: Refugio
+      const wrapRefugio = document.getElementById('detalle-mapa-refugio-wrapper');
+      let refugioVinculado = null;
+      if (m.refugioId) refugioVinculado = baseRefugios.find(r => r.id === m.refugioId);
+
+      if (refugioVinculado) {
+        wrapRefugio.classList.remove('hidden');
+        document.getElementById('detalle-nombre-refugio').innerText = refugioVinculado.nombre;
+        document.getElementById('detalle-contacto-refugio').innerText = `Resp: ${refugioVinculado.responsable} | Tel: ${refugioVinculado.telefono}`;
+        if(esUbicacionValida(refugioVinculado.gps)) {
+          document.getElementById('map-detalle-refugio').classList.remove('hidden');
+          const pRef = refugioVinculado.gps.split(',');
+          window.inicializarMapa('map-detalle-refugio', '', '', false, parseFloat(pRef[0]), parseFloat(pRef[1]));
+          document.getElementById('detalle-ruta-refugio-link').href = generarRutaMaps(pRef[0], pRef[1]);
+        } else {
+          document.getElementById('map-detalle-refugio').classList.add('hidden');
+          document.getElementById('detalle-ruta-refugio-link').href = "#";
+        }
+      } else { wrapRefugio.classList.add('hidden'); }
+
       document.getElementById('detalle-contacto').innerText = m.contacto; document.getElementById('detalle-whatsapp-btn').href = `https://wa.me/${m.contacto.replace(/[^0-9]/g, '')}`; document.getElementById('detalle-chat-btn').onclick = () => iniciarChatSocial(m.id);
       renderizarComentariosMascota(id); lucide.createIcons();
     };
@@ -741,7 +784,7 @@
     window.autenticarAdmin = function() { if (document.getElementById('admin-passcode').value.trim() === ".2411Patty..") { document.getElementById('admin-login').classList.add('hidden'); document.getElementById('admin-dashboard').classList.remove('hidden'); mostrarAlerta('Sesión Activa', 'Admin.', 'success'); renderizarAdmin(); } else { mostrarAlerta('Denegado', 'Error.', 'error'); } };
     window.cerrarSesionAdmin = function() { document.getElementById('admin-dashboard').classList.add('hidden'); document.getElementById('admin-login').classList.remove('hidden'); };
     function actualizarEstadisticasAdmin() { const l = document.getElementById('stat-perdidos'); const f = document.getElementById('stat-encontrados'); const rs = document.getElementById('stat-rescatados'); const re = document.getElementById('stat-reunidos'); const d = document.getElementById('stat-fallecidos'); if (l) l.innerText = baseMascotas.filter(m => m.estado === 'perdido').length; if (f) f.innerText = baseMascotas.filter(m => m.estado === 'encontrado').length; if (rs) rs.innerText = baseMascotas.filter(m => m.estado === 'rescatado').length; if (re) re.innerText = baseMascotas.filter(m => m.estado === 'reunido').length; if (d) d.innerText = baseMascotas.filter(m => m.estado === 'fallecido').length; }
-    function renderizarAdmin() { const tm = document.getElementById('admin-tabla-mascotas'); tm.innerHTML = ''; baseMascotas.forEach(m => { const tr = document.createElement('tr'); tr.className = "border-b hover:bg-slate-50"; tr.innerHTML = `<td class="p-4 flex gap-2"><img src="${m.fotos ? m.fotos[0] : ''}" class="w-8 h-8 rounded-lg object-cover"><div><span class="font-bold block">${m.nombre}</span><span class="text-slate-400 text-xs">${m.raza}</span></div></td><td class="p-4">${m.zona}</td><td class="p-4 font-bold">${m.estado}</td><td class="p-4"><select onchange="actualizarEstatusAdmin('${m.id}', this.value)" class="p-1 border text-xs font-bold"><option value="perdido" ${m.estado === 'perdido' ? 'selected' : ''}>Buscado</option><option value="encontrado" ${m.estado === 'encontrado' ? 'selected' : ''}>Localizado</option><option value="rescatado" ${m.estado === 'rescatado' ? 'selected' : ''}>Rescatado</option><option value="reunido" ${m.estado === 'reunido' ? 'selected' : ''}>Reunido</option><option value="fallecido" ${m.estado === 'fallecido' ? 'selected' : ''}>Fallecido</option></select></td><td class="p-4 text-right"><button onclick="abrirAdminModalEditar('${m.id}')" class="text-indigo-600 px-2 font-bold">Editar</button><button onclick="eliminarReporteAdmin('${m.id}')" class="text-red-600 px-2 font-bold">Borrar</button></td>`; tm.appendChild(tr); }); }
+    function renderizarAdmin() { const tm = document.getElementById('admin-tabla-mascotas'); tm.innerHTML = ''; baseMascotas.forEach(m => { const tr = document.createElement('tr'); tr.className = "border-b hover:bg-slate-50 text-xs"; tr.innerHTML = `<td class="p-4 flex gap-2"><img src="${m.fotos ? m.fotos[0] : ''}" class="w-8 h-8 rounded-lg object-cover"><div><span class="font-bold block">${m.nombre}</span><span class="text-slate-400">${m.raza}</span></div></td><td class="p-4">${m.zona}</td><td class="p-4 font-bold">${m.estado}</td><td class="p-4"><select onchange="actualizarEstatusAdmin('${m.id}', this.value)" class="p-1 border text-xs font-bold"><option value="perdido" ${m.estado === 'perdido' ? 'selected' : ''}>Buscado</option><option value="encontrado" ${m.estado === 'encontrado' ? 'selected' : ''}>Localizado</option><option value="rescatado" ${m.estado === 'rescatado' ? 'selected' : ''}>Rescatado</option><option value="reunido" ${m.estado === 'reunido' ? 'selected' : ''}>Reunido</option><option value="fallecido" ${m.estado === 'fallecido' ? 'selected' : ''}>Fallecido</option></select></td><td class="p-4 text-right"><button onclick="abrirAdminModalEditar('${m.id}')" class="text-indigo-600 px-2 font-bold">Editar</button><button onclick="eliminarReporteAdmin('${m.id}')" class="text-red-600 px-2 font-bold">Borrar</button></td>`; tm.appendChild(tr); }); }
     
     // Editar en Admin
     window.abrirAdminModalEditar = function(id) { 
@@ -752,15 +795,16 @@
       document.getElementById('edit-sexo').value = m.sexo || 'Macho'; 
       document.getElementById('edit-raza').value = m.raza || ''; 
       document.getElementById('edit-contacto').value = m.contacto || ''; 
-      document.getElementById('edit-lugarActual').value = m.lugarActual || ''; 
+      document.getElementById('edit-refugio').value = m.refugioId || ''; 
       document.getElementById('edit-gps').value = m.gps || ''; 
+      document.getElementById('direccion-texto-edit').value = m.direccionExtra || ''; 
       document.getElementById('admin-modal-editar').classList.remove('hidden'); 
       
       const container = document.getElementById('edit-prevs-container');
       container.innerHTML = '';
       editFotosSeleccionadas = [];
       if (m.fotos) { m.fotos.forEach(f => { container.innerHTML += `<div class="relative w-16 h-16 border rounded-xl flex-shrink-0 shadow-sm"><img src="${f}" class="w-full h-full object-cover rounded-xl"></div>`; }); }
-      window.inicializarMapa('map-edit', 'edit-gps', true); 
+      window.inicializarMapa('map-edit', 'edit-gps', 'direccion-texto-edit', true); 
     };
     window.cerrarAdminModalEditar = function() { document.getElementById('admin-modal-editar').classList.add('hidden'); };
     window.guardarEdicionMascotaAdmin = async function(e) { 
@@ -774,7 +818,8 @@
           sexo: document.getElementById('edit-sexo').value, 
           raza: document.getElementById('edit-raza').value.trim(), 
           contacto: document.getElementById('edit-contacto').value.trim(),
-          lugarActual: document.getElementById('edit-lugarActual').value.trim(),
+          refugioId: document.getElementById('edit-refugio').value,
+          direccionExtra: document.getElementById('direccion-texto-edit').value.trim(),
           gps: document.getElementById('edit-gps').value.trim(), 
           fotos: fotosArr 
         }); 
