@@ -18,6 +18,45 @@
   <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js" type="module"></script>
   <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js" type="module"></script>
 
+  <!-- Script de PWA y Service Worker embebido para funcionamiento Offline -->
+  <script>
+    // 1. Generar e inyectar el Manifest.json para que sea instalable como App
+    const manifest = {
+      "name": "Proyecto Patitas - Ayuda Sismo",
+      "short_name": "Patitas App",
+      "start_url": ".",
+      "display": "standalone",
+      "background_color": "#f8fafc",
+      "theme_color": "#f97316",
+      "icons": [{
+        "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f97316'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z'/></svg>",
+        "sizes": "192x192",
+        "type": "image/svg+xml"
+      }]
+    };
+    const manifestUrl = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest));
+    document.querySelector('head').insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestUrl}">`);
+    document.querySelector('head').insertAdjacentHTML('beforeend', `<meta name="theme-color" content="#f97316">`);
+
+    // 2. Registrar el Service Worker Dinámico para guardar la web en la caché del celular
+    if ('serviceWorker' in navigator) {
+      const swCode = `
+        const CACHE_NAME = 'patitas-offline-v1';
+        const urlsToCache = ['/', 'https://cdn.tailwindcss.com/', 'https://unpkg.com/lucide@latest', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'];
+        self.addEventListener('install', event => {
+          event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)));
+        });
+        self.addEventListener('fetch', event => {
+          // No cachear datos de Firebase ni mapas para no interferir con la base de datos
+          if (event.request.url.includes('firestore.googleapis.com') || event.request.url.includes('nominatim.openstreetmap.org')) return;
+          event.respondWith(caches.match(event.request).then(response => { return response || fetch(event.request); }));
+        });
+      `;
+      const blob = new Blob([swCode], { type: 'application/javascript' });
+      navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(e => console.log(e));
+    }
+  </script>
+
   <style id="estilos-personalizados">
     :root {
       --color-primario: #f97316;
@@ -476,13 +515,18 @@
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
     import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-    import { getFirestore, doc, setDoc, collection, onSnapshot, addDoc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+    import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, collection, onSnapshot, addDoc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
     const configDeUsuario = { apiKey: "AIzaSyDkeh5WVeWi1yFTHGiCSLvz9aB8auhZtT8", authDomain: "buscapatutas.firebaseapp.com", projectId: "buscapatutas", storageBucket: "buscapatutas.firebasestorage.app", messagingSenderId: "61106039176", appId: "1:61106039176:web:266707c6c9fa2c5a1b723d" };
     const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : configDeUsuario;
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getFirestore(app);
+    
+    // Activar soporte de Base de Datos en Modo Offline (NUEVO)
+    const db = initializeFirestore(app, {
+      localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})
+    });
+    
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'buscapatitas';
 
     let user = null; let baseMascotas = []; let baseComentarios = []; let baseChats = []; let baseRefugios = []; let geminiApiKeyGlobal = '';
@@ -833,6 +877,14 @@
     
     window.mostrarAlerta = function(t, m, tipo = 'info') { const c = document.getElementById('contenedor-alerta'); if (c) { c.className = "mb-6 p-4 rounded-xl border flex items-start gap-3 fade-in text-sm md:text-base"; if (tipo === 'success') { c.classList.add('bg-emerald-50', 'border-emerald-200', 'text-emerald-800'); document.getElementById('alerta-icono').innerHTML = `<i data-lucide="check-circle" class="w-5 h-5 text-emerald-600"></i>`; } else if (tipo === 'error') { c.classList.add('bg-red-50', 'border-red-200', 'text-red-800'); document.getElementById('alerta-icono').innerHTML = `<i data-lucide="alert-triangle" class="w-5 h-5 text-red-600"></i>`; } else { c.classList.add('bg-amber-50', 'border-amber-200', 'text-amber-800'); document.getElementById('alerta-icono').innerHTML = `<i data-lucide="info" class="w-5 h-5 text-amber-600"></i>`; } document.getElementById('alerta-titulo').innerText = t; document.getElementById('alerta-mensaje').innerText = m; c.classList.remove('hidden'); c.style.zIndex = '9999'; lucide.createIcons(); } };
     window.cerrarAlerta = function() { const c = document.getElementById('contenedor-alerta'); if (c) c.classList.add('hidden'); };
+
+    // Notificaciones de Estado de Conexión (NUEVO)
+    window.addEventListener('offline', () => {
+      window.mostrarAlerta('Modo Sin Conexión 📡', 'Te quedaste sin internet. Puedes seguir reportando y todo se guardará al recuperar la señal.', 'info');
+    });
+    window.addEventListener('online', () => {
+      window.mostrarAlerta('Conexión Recuperada 🌐', 'Sincronizando reportes pendientes con la red.', 'success');
+    });
   </script>
 </body>
 </html>
