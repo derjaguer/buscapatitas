@@ -339,8 +339,15 @@
 
             <input type="text" id="auth-direccion" placeholder="Dirección Física" class="input-custom text-sm">
             <input type="tel" id="auth-telefono" placeholder="WhatsApp (Ej: +584120000000)" class="input-custom text-sm">
-            <input type="text" id="auth-code" placeholder="Código de Invitación del Refugio" class="input-custom text-sm">
-            <p class="text-[10px] text-slate-500 text-left">Si no dispones de código de tu refugio, se te registrará como Rescatista Independiente por defecto.</p>
+            
+            <!-- SELECTOR DE REFUGIOS EN EL REGISTRO -->
+            <div class="text-left space-y-1">
+              <label class="text-xs font-bold uppercase text-slate-500 block">Selecciona tu Refugio / Agrupación</label>
+              <select id="auth-refugio" class="input-custom text-sm bg-white"></select>
+            </div>
+
+            <input type="text" id="auth-code" placeholder="Código de Invitación (Opcional)" class="input-custom text-sm">
+            <p class="text-[10px] text-slate-500 text-left">Si no posees código o eliges "Independiente", se te registrará como colaborador libre.</p>
           </div>
           
           <input type="email" id="auth-email" required placeholder="Correo Electrónico" class="input-custom text-sm">
@@ -373,37 +380,50 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="bg-white border rounded-3xl p-6 shadow-sm space-y-4">
             <h3 class="font-extrabold text-lg flex items-center gap-1.5"><i data-lucide="id-card" class="text-indigo-600"></i> Tu Carnet Digital</h3>
-            <div id="carnet-box" class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between aspect-[1.58/1] min-h-[240px] shadow-lg">
-              <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/5 rounded-full blur-2xl"></div>
+            <!-- TARJETA CON MEDIDAS Y ASPECTO CR80 (CREDIT CARD) - DISEÑO PROFESIONAL -->
+            <div id="carnet-box" class="bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white p-5 rounded-2xl relative overflow-hidden flex flex-col justify-between aspect-[1.58/1] min-h-[260px] shadow-2xl border border-amber-500/20">
+              <!-- Capas estéticas holográficas -->
+              <div class="absolute -right-12 -bottom-12 w-48 h-48 bg-gradient-to-br from-orange-500/10 to-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+              <div class="absolute -left-12 -top-12 w-36 h-36 bg-blue-500/5 rounded-full blur-xl pointer-events-none"></div>
+
               <div class="flex justify-between items-start z-10">
                 <div class="flex items-center gap-2">
-                  <div class="p-1.5 bg-white/10 rounded-full text-orange-400"><i data-lucide="paw-print" class="w-5 h-5"></i></div>
+                  <div class="p-2 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl text-white shadow-md"><i data-lucide="paw-print" class="w-6 h-6"></i></div>
                   <div>
-                    <h4 class="text-xs font-black tracking-wider uppercase">Proyecto Patitas</h4>
-                    <p class="text-[8px] opacity-60">Red de Protección Animal</p>
+                    <h4 class="text-sm font-black tracking-widest uppercase bg-gradient-to-r from-orange-400 to-amber-300 bg-clip-text text-transparent leading-none">Proyecto Patitas</h4>
+                    <p class="text-[8px] uppercase tracking-widest font-bold opacity-50 mt-1">Red de Protección Animal</p>
                   </div>
                 </div>
-                <div id="carnet-status" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-full">Activo</div>
+                <div id="carnet-status" class="bg-emerald-500 text-white text-[9px] font-black uppercase px-3 py-1 rounded-full shadow-md tracking-wider">Activo</div>
               </div>
               
-              <div class="flex gap-4 items-center mt-4 z-10">
-                <div class="w-20 h-20 rounded-full overflow-hidden border-2 border-white/20 flex-shrink-0 bg-slate-800">
+              <div class="flex gap-4 items-center mt-3 z-10">
+                <div class="w-24 h-24 rounded-2xl overflow-hidden border-2 border-amber-500/30 flex-shrink-0 bg-slate-800 shadow-lg">
                   <img id="carnet-foto" src="" class="w-full h-full object-cover">
                 </div>
-                <div class="flex-grow min-w-0">
-                  <h3 id="carnet-nombre" class="text-base font-black truncate"></h3>
-                  <p id="carnet-role" class="text-[9px] font-black text-orange-400 uppercase tracking-widest"></p>
-                  <p id="carnet-refugio" class="text-[10px] opacity-80 truncate"></p>
-                  <p id="carnet-id" class="text-[9px] font-mono opacity-50 mt-1"></p>
+                <div class="flex-grow min-w-0 space-y-1">
+                  <!-- Letras significativamente más grandes y legibles -->
+                  <h3 id="carnet-nombre" class="text-xl font-black truncate text-white tracking-wide leading-none"></h3>
+                  <p id="carnet-role" class="text-xs font-black text-orange-400 uppercase tracking-widest leading-none"></p>
+                  
+                  <div class="flex items-center gap-1.5 pt-0.5 opacity-90">
+                    <i data-lucide="tent" class="w-4 h-4 text-indigo-400"></i>
+                    <p id="carnet-refugio" class="text-xs font-bold text-slate-200 truncate"></p>
+                  </div>
+                  <!-- Código Único del Carnet -->
+                  <p id="carnet-id" class="text-sm font-mono font-black text-amber-300 tracking-wider pt-0.5"></p>
                 </div>
               </div>
 
-              <div class="flex justify-between items-end mt-4 border-t border-white/10 pt-3 z-10">
-                <p class="text-[8px] opacity-40">Identificación Oficial Certificada</p>
-                <div id="carnet-qr" class="w-12 h-12 bg-white p-1 rounded"></div>
+              <div class="flex justify-between items-end mt-2 border-t border-white/10 pt-2.5 z-10">
+                <div>
+                  <p class="text-[8px] uppercase tracking-widest font-black opacity-40 leading-none">Identificación Oficial</p>
+                  <p class="text-[7px] font-semibold opacity-30 mt-0.5">Válida en territorio nacional</p>
+                </div>
+                <div id="carnet-qr" class="w-14 h-14 bg-white p-1 rounded-xl shadow-md border border-slate-700"></div>
               </div>
             </div>
-            <button onclick="imprimirCarnet()" class="w-full py-2 bg-slate-100 text-slate-800 font-bold rounded-xl text-xs flex justify-center items-center gap-1"><i data-lucide="printer" class="w-4 h-4"></i> Imprimir Credencial</button>
+            <button onclick="imprimirCarnet()" class="w-full py-2 bg-slate-100 text-slate-800 font-bold rounded-xl text-xs flex justify-center items-center gap-1"><i data-lucide="printer" class="w-4 h-4"></i> Imprimir Credencial (CR80)</button>
           </div>
 
           <!-- Editar Perfil con Redes Sociales -->
@@ -416,6 +436,12 @@
               </div>
               <input type="text" id="prof-direccion" placeholder="Dirección Completa" required class="input-custom text-xs">
               
+              <!-- SELECTOR DE ASOCIACIÓN EN EL PERFIL -->
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold uppercase text-slate-500 block">Tu Refugio / Agrupación</label>
+                <select id="prof-refugio" class="input-custom text-xs bg-white"></select>
+              </div>
+
               <!-- FOTO DE CARNET EN PANEL EDITAR -->
               <div class="space-y-2 border-t pt-3">
                 <label class="block text-xs font-bold uppercase text-slate-500">Actualizar Foto de Perfil</label>
@@ -481,6 +507,7 @@
             </table>
           </div>
 
+          <!-- TABLA DE GESTIÓN DE USUARIOS ROLES Y ASOCIACIÓN DE REFUGIOS -->
           <div class="bg-white border rounded-3xl p-6 overflow-x-auto">
             <h3 class="font-extrabold text-lg mb-4">Gestión de Usuarios y Permisos Globales</h3>
             <table class="w-full text-left text-sm whitespace-nowrap">
@@ -489,6 +516,7 @@
                   <th class="p-3">Nombre</th>
                   <th class="p-3">Correo</th>
                   <th class="p-3">Rol</th>
+                  <th class="p-3">Refugio / Agrupación</th>
                   <th class="p-3">Estatus</th>
                   <th class="p-3 text-right">Acciones</th>
                 </tr>
@@ -648,6 +676,20 @@
     let globalMarkers = {};
     let carnetQrGenerator = null;
 
+    // GENERADOR DE CÓDIGO ÚNICO DE CARNET DE ALTA CATEGORÍA
+    window.calcularIdCarnet = function(refugioId, refugioNombre) {
+      let siglas = 'IND';
+      if (refugioId && refugioNombre) {
+        // Obtenemos iniciales sin espacios o símbolos
+        const cleanName = refugioNombre.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+        siglas = cleanName.substring(0, 3);
+        if (siglas.length < 3) siglas = (siglas + 'PAT').substring(0, 3);
+      }
+      const anio = new Date().getFullYear();
+      const numUnico = Math.floor(1000 + Math.random() * 9000);
+      return `${siglas}-${anio}-${numUnico}`;
+    };
+
     // Obtención segura de bypass con try/catch defensivo contra parseados corruptos
     let initBypass = null;
     try {
@@ -765,7 +807,7 @@
     }
 
     function actualizarDropsRefugios() {
-      const sels = document.querySelectorAll('#refugio-e, #ed-ref');
+      const sels = document.querySelectorAll('#refugio-e, #ed-ref, #auth-refugio, #prof-refugio');
       sels.forEach(sel => {
         if(!sel) return;
         const valActual = sel.value;
@@ -896,10 +938,16 @@
           const tel = document.getElementById('auth-telefono').value.trim();
           const cod = document.getElementById('auth-code').value.trim().toUpperCase();
           
-          let rol = 'Voluntario'; 
-          let refId = '';
+          // OBTENEMOS EL REFUGIO SELECCIONADO AL REGISTRARSE
+          const refSelect = document.getElementById('auth-refugio');
+          let refId = refSelect ? refSelect.value : '';
           let refNom = 'Rescatista Independiente';
-          let rCarnetId = `IND-${Date.now().toString().slice(-4)}`;
+          if (refId) {
+            const foundRef = baseRefugios.find(r => r.id === refId);
+            if (foundRef) refNom = foundRef.nombre;
+          }
+
+          let rol = 'Voluntario'; 
 
           if (cod) {
             const snapCode = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invitationCodes', cod));
@@ -908,12 +956,14 @@
               rol = codeData.assignedRole;
               refId = codeData.shelterId;
               refNom = codeData.shelterName;
-              rCarnetId = cod;
               await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invitationCodes', cod), { status: 'used' });
             } else {
               window.mostrarAlerta('Código Invitación', 'Código inválido o usado. Registro como independiente.', 'info');
             }
           }
+
+          // Generación de Carnet ID Único
+          const rCarnetId = window.calcularIdCarnet(refId, refNom);
 
           const cred = await createUserWithEmailAndPassword(auth, email, pass);
           const pPayload = { 
@@ -1028,6 +1078,10 @@
         
         const profDir = document.getElementById('prof-direccion');
         if (profDir) profDir.value = usuarioActual.direccion || '';
+
+        // Sincronizar el dropdown de refugio en el perfil de usuario
+        const profRefSelect = document.getElementById('prof-refugio');
+        if (profRefSelect) profRefSelect.value = usuarioActual.refugioId || '';
         
         // Cargar imagen existente en el previsualizador del editor
         const prevImgEdit = document.getElementById('prev-rescatista-edit-img');
@@ -1089,18 +1143,17 @@
       if (carnetRole) carnetRole.innerText = usuarioActual.rol || 'Voluntario';
       
       const carnetRef = document.getElementById('carnet-refugio');
-      if (carnetRef) carnetRef.innerText = usuarioActual.refugioNombre || 'Independiente';
+      if (carnetRef) carnetRef.innerText = usuarioActual.refugioNombre || 'Independiente / Particular';
       
       const carnetId = document.getElementById('carnet-id');
-      if (carnetId) carnetId.innerText = `ID: ${usuarioActual.idCarnet || 'N/A'}`;
+      if (carnetId) carnetId.innerText = `N° CARNET: ${usuarioActual.idCarnet || 'Generando...'}`;
       
       const st = usuarioActual.estatus || 'Activo';
       const badge = document.getElementById('carnet-status');
       if (badge) {
         badge.innerText = st;
-        if (st === 'Activo') badge.className = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-full";
-        else if (st === 'Inactivo (Sancionado)') badge.className = "bg-amber-500/20 text-amber-400 border border-emerald-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-full";
-        else badge.className = "bg-red-500/20 text-red-400 border border-red-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-full";
+        if (st === 'Activo') badge.className = "bg-emerald-500 text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-full shadow-md tracking-wider";
+        else badge.className = "bg-red-500 text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-full shadow-md tracking-wider";
       }
 
       const carnetFoto = document.getElementById('carnet-foto');
@@ -1115,9 +1168,9 @@
           try {
             carnetQrGenerator = new QRCode(qrContainer, {
               text: verURL,
-              width: 48,
-              height: 48,
-              colorDark : "#0f172a",
+              width: 56,
+              height: 56,
+              colorDark : "#020617",
               colorLight : "#ffffff",
               correctLevel : QRCode.CorrectLevel.H
             });
@@ -1178,24 +1231,47 @@
       const nom = document.getElementById('prof-nombre').value.trim();
       const tel = document.getElementById('prof-telefono').value.trim();
       const dir = document.getElementById('prof-direccion').value.trim();
+      
+      // Obtenemos el refugio del selector del perfil
+      const profRefSelect = document.getElementById('prof-refugio');
+      let refId = profRefSelect ? profRefSelect.value : '';
+      let refNom = 'Rescatista Independiente';
+      if (refId) {
+        const foundRef = baseRefugios.find(r => r.id === refId);
+        if (foundRef) refNom = foundRef.nombre;
+      }
 
       try {
         if(user && !user.isAnonymous) {
           const uRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid);
+          
+          // Recalculamos el carnet si el refugio cambió o si aún no tiene código asignado
+          let carnetIdFinal = usuarioActual.idCarnet;
+          if (usuarioActual.refugioId !== refId || !carnetIdFinal || carnetIdFinal.startsWith('IND-')) {
+            carnetIdFinal = window.calcularIdCarnet(refId, refNom);
+          }
+
           const updates = {
             nombre: nom,
             telefono: tel,
             direccion: dir,
+            refugioId: refId,
+            refugioNombre: refNom,
+            idCarnet: carnetIdFinal,
             socials: socList
           };
           if (temporalFotoRescatista) {
             updates.foto = temporalFotoRescatista;
           }
           await updateDoc(uRef, updates);
+          
+          usuarioActual.idCarnet = carnetIdFinal;
         }
         usuarioActual.nombre = nom;
         usuarioActual.telefono = tel;
         usuarioActual.direccion = dir;
+        usuarioActual.refugioId = refId;
+        usuarioActual.refugioNombre = refNom;
         usuarioActual.socials = socList;
         if (temporalFotoRescatista) {
           usuarioActual.foto = temporalFotoRescatista;
@@ -1217,21 +1293,68 @@
       }
     };
 
+    // FUNCIÓN DE IMPRESIÓN ADAPTATIVA CON ESCALA EXACTA CR80 (85.6mm x 53.98mm)
     window.imprimirCarnet = function() {
       const carnetBox = document.getElementById('carnet-box');
       if (!carnetBox) return;
+      
       const w = window.open('', '_blank');
-      const box = carnetBox.outerHTML;
+      // Clonamos el nodo para mantener propiedades originales sin alterar pantalla del usuario
+      const clonedCard = carnetBox.cloneNode(true);
+      clonedCard.style.width = '85.6mm';
+      clonedCard.style.height = '53.98mm';
+      clonedCard.style.borderRadius = '3.18mm';
+      clonedCard.style.boxShadow = 'none';
+      clonedCard.style.border = '1px solid #1e293b';
+
       w.document.write(`
         <html>
         <head>
-          <title>Credencial Proyecto Patitas</title>
+          <title>Credencial Proyecto Patitas - ${usuarioActual.nombre || 'Carnet'}</title>
           <script src="https://cdn.tailwindcss.com"><\/script>
-          <style>body { font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #fff; }</style>
+          <script src="https://unpkg.com/lucide@latest"><\/script>
+          <style>
+            @page {
+              size: 85.6mm 53.98mm;
+              margin: 0;
+            }
+            body { 
+              font-family: system-ui, sans-serif; 
+              display: flex; 
+              justify-content: center; 
+              align-items: center; 
+              height: 100vh; 
+              background: #fff; 
+              margin: 0; 
+              padding: 0;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+            .print-card {
+              width: 85.6mm;
+              height: 53.98mm;
+              box-sizing: border-box;
+              border-radius: 3.18mm;
+              overflow: hidden;
+              position: relative;
+              background-image: linear-gradient(to bottom right, #020617, #0f172a, #1e1b4b);
+            }
+          </style>
         </head>
         <body>
-          <div class="scale-125">${box}</div>
-          <script>window.onload = function() { window.print(); }<\/script>
+          <div class="print-card p-4 text-white flex flex-col justify-between">
+            ${clonedCard.innerHTML}
+          </div>
+          <script>
+            if (typeof lucide !== 'undefined') {
+              lucide.createIcons();
+            }
+            window.onload = function() { 
+              setTimeout(() => {
+                window.print(); 
+              }, 500);
+            }
+          <\/script>
         </body>
         </html>
       `);
@@ -1439,10 +1562,16 @@
       if (!tb) return;
       tb.innerHTML = '';
       if (baseUsuarios.length === 0) {
-        tb.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-slate-400">No hay voluntarios registrados en los servidores públicos.</td></tr>';
+        tb.innerHTML = '<tr><td colspan="6" class="p-3 text-center text-slate-400">No hay voluntarios registrados en los servidores públicos.</td></tr>';
         return;
       }
       baseUsuarios.forEach(u => {
+        // Construimos de forma dinámica las opciones del selector de refugios públicos
+        let shelterOptions = `<option value="">-- Independiente --</option>`;
+        baseRefugios.forEach(r => {
+          shelterOptions += `<option value="${r.id}" ${u.refugioId === r.id ? 'selected' : ''}>${r.nombre}</option>`;
+        });
+
         tb.innerHTML += `
           <tr class="border-b hover:bg-slate-50 text-xs">
             <td class="p-3 font-bold text-slate-800">${u.nombre || 'Invitado'}</td>
@@ -1454,6 +1583,12 @@
                 <option value="Administración" ${u.rol === 'Administración' ? 'selected' : ''}>Administración</option>
                 <option value="Responsable" ${u.rol === 'Responsable' ? 'selected' : ''}>Responsable (Encargado)</option>
                 <option value="admin" ${u.rol === 'admin' ? 'selected' : ''}>Admin Global</option>
+              </select>
+            </td>
+            <td class="p-3">
+              <!-- SELECTOR INTERACTIVO DIRECTO PARA QUE EL ADMIN CONECTE USUARIOS CON REFUGIOS -->
+              <select onchange="cambiarAsociacionRefugioGlobal('${u.id}', this.value)" class="p-1 border rounded bg-white text-slate-800 text-xs font-bold">
+                ${shelterOptions}
               </select>
             </td>
             <td class="p-3">
@@ -1470,6 +1605,29 @@
         `;
       });
     }
+
+    // OPERACIÓN CRÍTICA: CAMBIAR LA ASOCIACIÓN DEL REFUGIO DE UN USUARIO Y SU CARNET EN SEGUNDOS
+    window.cambiarAsociacionRefugioGlobal = async function(userId, nuevoRefId) {
+      let nuevoRefNom = 'Rescatista Independiente';
+      if (nuevoRefId) {
+        const foundRef = baseRefugios.find(r => r.id === nuevoRefId);
+        if (foundRef) nuevoRefNom = foundRef.nombre;
+      }
+
+      // Generamos el ID único formateado
+      const nuevoCarnetId = window.calcularIdCarnet(nuevoRefId, nuevoRefNom);
+
+      try {
+        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', userId), { 
+          refugioId: nuevoRefId, 
+          refugioNombre: nuevoRefNom,
+          idCarnet: nuevoCarnetId
+        });
+        window.mostrarAlerta('Asociación Guardada', `Usuario asignado a "${nuevoRefNom}". Carnet ID: ${nuevoCarnetId}`, 'success');
+      } catch(e) { 
+        window.mostrarAlerta('Error', 'No se pudo actualizar la asociación global.', 'error'); 
+      }
+    };
 
     window.cambiarRolGlobal = async function(userId, nuevoRol) {
       try {
