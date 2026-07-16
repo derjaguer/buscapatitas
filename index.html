@@ -247,6 +247,7 @@
             <div id="d-map-evt-wrap" class="mt-4 hidden z-0"><h4 id="d-map-tit" class="text-xs font-bold uppercase mb-2">Evento</h4><div id="map-det-evt" class="w-full h-32 rounded-xl z-0"></div></div>
             <div id="d-map-ref-wrap" class="mt-4 bg-indigo-50 p-4 rounded-xl hidden z-0"><h4 class="text-xs font-bold text-indigo-800 uppercase">Custodia:</h4><p id="d-ref-nom" class="text-base font-black text-indigo-900"></p><p id="d-ref-con" class="text-xs mb-2"></p><div id="map-det-ref" class="w-full h-32 rounded-xl z-0 mb-3 border border-indigo-200"></div><a id="d-ref-ruta" target="_blank" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-xl text-sm flex justify-center gap-1"><i data-lucide="map" class="w-4 h-4"></i> ¿Cómo llegar?</a></div>
             <div class="grid grid-cols-2 gap-4 mt-6 bg-slate-50 p-4 rounded-2xl text-sm"><div><span class="font-bold">Especie:</span> <span id="d-esp"></span></div><div><span class="font-bold">Sexo:</span> <span id="d-sex"></span></div><div><span class="font-bold">Raza:</span> <span id="d-raz"></span></div><div><span class="font-bold">Fecha:</span> <span id="d-fec"></span></div></div>
+            <div class="mt-4 border-t pt-4"><p class="text-xs font-bold text-slate-400 block mb-1">Descripción / Rasgos:</p><p id="d-rasgos" class="text-sm italic pl-2 border-l-2 border-orange-500"></p></div>
             <div class="mt-4 border-t pt-4 flex gap-2"><a id="d-wa" target="_blank" class="w-1/2 justify-center bg-emerald-500 text-white font-bold py-3 rounded-xl flex items-center gap-1"><i data-lucide="message-circle" class="w-5 h-5"></i> WhatsApp</a><button id="d-chat" class="w-1/2 justify-center bg-sky-600 text-white font-bold py-3 rounded-xl flex items-center gap-1"><i data-lucide="message-square" class="w-5 h-5"></i> Chat Local</button></div>
           </div>
         </div>
@@ -257,7 +258,7 @@
     <div id="vista-perfil" class="hidden space-y-6 fade-in w-full">
       
       <!-- Bloque de Autenticación (Login / Registro) -->
-      <div id="auth-panel" class="max-w-md mx-auto bg-white border rounded-3xl p-8 text-center space-y-6">
+      <div id="auth-panel" class="max-w-md mx-auto bg-white border rounded-3xl p-8 text-center space-y-6 shadow-sm">
         <i data-lucide="user-circle" class="w-16 h-16 text-slate-400 mx-auto"></i><h3 class="text-2xl font-extrabold">Acceso al Sistema</h3>
         <p class="text-xs text-slate-500">Inicia sesión o regístrate para gestionar tus reportes o refugios.</p>
         <div class="flex bg-slate-100 p-1 rounded-xl mb-4">
@@ -272,6 +273,16 @@
           <input type="password" id="auth-code" placeholder="Código de Invitación (Solo Fundaciones/Admin)" class="input-custom text-sm hidden">
           <button type="submit" id="btn-auth-submit" class="w-full py-3 bg-slate-900 text-white font-bold rounded-xl text-sm submit-btn">Entrar</button>
         </form>
+
+        <!-- ACCESO DE EMERGENCIA CLÁSICO PARA PATTY -->
+        <div class="border-t pt-6 mt-4">
+          <p class="text-xs font-bold text-slate-700 mb-2">🔐 Acceso de Emergencia (Clave Clásica)</p>
+          <p class="text-[10px] text-slate-400 mb-3">Si eras Administrador con la clave clásica, escribe tu clave aquí para desbloquear tus controles.</p>
+          <div class="flex gap-2">
+            <input type="password" id="auth-bypass-pass" placeholder="Tu clave clásica..." class="input-custom text-sm text-center">
+            <button type="button" onclick="procesarBypassClasico()" class="bg-orange-500 text-white px-5 rounded-xl text-xs font-bold min-w-[90px]">Entrar</button>
+          </div>
+        </div>
       </div>
 
       <!-- Dashboard del Usuario Logueado -->
@@ -330,18 +341,9 @@
     <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col"><div class="bg-indigo-600 text-white p-5 flex justify-between rounded-t-3xl"><h3 class="font-bold">Refugio</h3><button onclick="cerrarModalRefugio()"><i data-lucide="x"></i></button></div><form onsubmit="guardarRefugio(event)" class="p-6 overflow-y-auto space-y-4"><div class="grid grid-cols-2 gap-4"><input type="text" id="ref-nom" placeholder="Nombre" required class="input-custom"><input type="text" id="ref-pai" placeholder="País" required class="input-custom"><input type="text" id="ref-res" placeholder="Responsable" required class="input-custom"><input type="tel" id="ref-tel" placeholder="Teléfono" required class="input-custom"></div><input type="text" id="ref-dir" placeholder="Dirección" required class="input-custom"><div class="flex flex-col"><div id="map-r" class="w-full h-32 bg-slate-200 rounded-xl mb-2 relative z-0"></div><div class="flex gap-2"><input type="text" id="ref-gps" readonly class="input-custom text-xs"><button type="button" onclick="obtenerGPSConMapa('ref-gps', 'map-r')" class="bg-slate-800 text-white px-3 rounded-xl text-xs font-bold">📍 GPS</button></div></div><div class="flex gap-4"><button type="button" onclick="cerrarModalRefugio()" class="w-1/2 py-2 bg-slate-100 font-bold rounded-xl">Cancelar</button><button type="submit" class="w-1/2 py-2 bg-indigo-600 text-white font-bold rounded-xl submit-btn">Guardar</button></div></form></div>
   </div>
 
-  <!-- FOOTER SOCIAL -->
-  <footer class="bg-slate-900 text-white py-8 mt-12 text-center pb-28 md:pb-8">
-    <div class="max-w-6xl mx-auto px-4 flex flex-col items-center gap-6">
-      <h4 class="font-bold flex items-center gap-1"><i data-lucide="heart" class="text-orange-500 fill-orange-500"></i> Proyecto Patitas Venezuela</h4>
-      <div class="flex gap-4"><button onclick="compartirWeb('whatsapp')" class="p-3 bg-green-500 rounded-full"><i data-lucide="message-circle"></i></button><button onclick="compartirWeb('facebook')" class="p-3 bg-blue-600 rounded-full"><i data-lucide="facebook"></i></button><button onclick="compartirWeb('copiar')" class="p-3 bg-slate-800 rounded-full"><i data-lucide="link"></i></button></div>
-      <div class="text-xs text-slate-500 border-t border-slate-800 pt-4 w-full">Desarrollado por voluntarios independientes: <span class="font-bold text-slate-300">Zeus Mantilla</span> y <span class="font-bold text-slate-300">Patricia Pineda</span> 🇻🇪</div>
-    </div>
-  </footer>
-
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, signInAnonymously } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
     import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, getDoc, collection, onSnapshot, addDoc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
     import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js';
 
@@ -362,24 +364,57 @@
     let cropperInst = null; let currentCropTarget = '';
     let globalMaps = {}; let globalMarkers = {};
 
+    // 0. CARGA INICIAL INMEDIATA DE LA BASE DE DATOS (No bloqueante, ¡carga tus datos reales ya!)
+    sincronizarDB();
+
+    // Comprobar si hay un inicio de sesión por Clave Clásica guardado en el celular
+    const savedBypass = localStorage.getItem('patitas_bypass_user');
+    if (savedBypass) {
+      usuarioActual = JSON.parse(savedBypass);
+    }
+
     onAuthStateChanged(auth, async (authUser) => {
       user = authUser;
       if (user) {
-        const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid));
-        if(snap.exists()) usuarioActual = { uid: user.uid, ...snap.data() };
-        else usuarioActual = { uid: user.uid, rol: 'voluntario', nombre: user.email };
-        renderizarPerfil();
-        actualizarOpcionesEstado();
-        sincronizarDB();
+        // Solo si no estamos usando la Clave Clásica (bypass) leemos el usuario real de Firebase Auth
+        if (!localStorage.getItem('patitas_bypass_user')) {
+          if (!user.isAnonymous) {
+            try {
+              const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid));
+              if(snap.exists()) usuarioActual = { uid: user.uid, ...snap.data() };
+              else usuarioActual = { uid: user.uid, rol: 'voluntario', nombre: user.email };
+            } catch(e) { usuarioActual = { uid: user.uid, rol: 'voluntario', nombre: user.email }; }
+          } else {
+            usuarioActual = { uid: user.uid, rol: 'anonimo' };
+          }
+        }
       } else {
-        usuarioActual = { rol: 'anonimo' }; renderizarPerfil(); actualizarOpcionesEstado();
+        if (!localStorage.getItem('patitas_bypass_user')) {
+          usuarioActual = { rol: 'anonimo' };
+        }
+        // Hacemos el login anónimo de forma silenciosa para que no interrumpa el flujo
+        signInAnonymously(auth).catch(() => {
+          console.log("Firebase Auth Anónimo no habilitado o sin conexión.");
+        });
       }
+      renderizarPerfil();
+      actualizarOpcionesEstado();
     });
 
     function sincronizarDB() {
       onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'global'), (s) => { if(s.exists()) { geminiApiKeyGlobal = s.data().geminiApiKey||''; const ak = document.getElementById('admin-gemini-key'); if(ak) ak.value = geminiApiKeyGlobal;} });
       onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'pets'), (s) => { baseMascotas = []; s.forEach(d => baseMascotas.push({ id: d.id, ...d.data() })); baseMascotas.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)); renderizarMascotas(); renderizarTablaMascotasPerfil(); actualizarContadores(); });
       onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'shelters'), (s) => { baseRefugios = []; s.forEach(d => baseRefugios.push({ id: d.id, ...d.data() })); renderizarRefugios(); renderizarTablaRefugios(); actualizarDropsRefugios(); });
+    }
+
+    function actualizarDropsRefugios() {
+      const sels = document.querySelectorAll('#refugio-e, #ed-ref');
+      sels.forEach(sel => {
+        if(!sel) return;
+        const valActual = sel.value;
+        sel.innerHTML = '<option value="">-- No / Particular --</option>';
+        baseRefugios.forEach(r => { sel.innerHTML += `<option value="${r.id}" ${r.id===valActual?'selected':''}>${r.nombre}</option>`; });
+      });
     }
 
     // ==========================================
@@ -410,10 +445,32 @@
       } catch(err) { window.mostrarAlerta('Error', 'Verifica tus credenciales.', 'error'); } finally { bloqBtn(btn, false, isLoginMode?'Entrar':'Registrarse'); }
     };
 
-    window.cerrarSesion = () => { signOut(auth); };
+    // ACCESO DE EMERGENCIA CLÁSICO (Bypass local)
+    window.procesarBypassClasico = function() {
+      const pass = document.getElementById('auth-bypass-pass').value.trim();
+      if (pass === ".2411Patty..") {
+        usuarioActual = { uid: "emergency-admin", rol: 'admin', nombre: "Patty (Administradora)" };
+        localStorage.setItem('patitas_bypass_user', JSON.stringify(usuarioActual));
+        window.mostrarAlerta('Bypass Exitoso', '¡Bienvenida de vuelta Patty! Controles de Administradora activados.', 'success');
+        renderizarPerfil();
+        actualizarOpcionesEstado();
+        renderizarTablaMascotasPerfil();
+      } else {
+        window.mostrarAlerta('Clave incorrecta', 'Verifica e intenta de nuevo.', 'error');
+      }
+    };
+
+    window.cerrarSesion = () => { 
+      localStorage.removeItem('patitas_bypass_user');
+      signOut(auth).then(() => {
+        usuarioActual = { rol: 'anonimo' };
+        renderizarPerfil();
+        actualizarOpcionesEstado();
+      });
+    };
 
     function renderizarPerfil() {
-      if(user && usuarioActual.rol !== 'anonimo') {
+      if(usuarioActual.rol !== 'anonimo') {
         document.getElementById('auth-panel').classList.add('hidden'); document.getElementById('user-dashboard').classList.remove('hidden');
         document.getElementById('dash-name').innerText = `Hola, ${usuarioActual.nombre || 'Voluntario'}`;
         document.getElementById('dash-role').innerText = `Rol: ${usuarioActual.rol}`;
@@ -476,7 +533,7 @@
           const vRef = sRef(storage, `videos/${appId}/${Date.now()}_${file.name}`);
           await uploadBytes(vRef, file); temporalVideoUrl = await getDownloadURL(vRef);
           window.mostrarAlerta('Video Listo', 'El video fue adjuntado correctamente.', 'success');
-        } catch(e) { window.mostrarAlerta('Error de Storage', 'El servicio de almacenamiento de videos no está habilitado en tu base de datos Firebase.', 'error'); input.value=''; }
+        } catch(e) { window.mostrarAlerta('Servicio de Video Inactivo', 'Para habilitar videos, debes activar Storage en tu panel de Firebase. Se publicará sin video por ahora.', 'error'); input.value=''; }
       }; v.src = URL.createObjectURL(file);
     };
 
@@ -518,14 +575,14 @@
     const bloqBtn = (btn, lock, text="Procesando...") => { if(!btn)return; btn.disabled = lock; btn.innerHTML = lock ? `<i class="lucide-loader animate-spin inline w-4 h-4 mr-1"></i> ${text}` : text; };
 
     window.guardarMascota = async function(e, tipo) {
-      e.preventDefault(); if (!user) return window.mostrarAlerta('Atención', 'Debes iniciar sesión para reportar.', 'error');
+      e.preventDefault(); if (usuarioActual.rol === 'anonimo') return window.mostrarAlerta('Atención', 'Debes iniciar sesión para reportar o usar el Bypass.', 'error');
       const btn = e.target.querySelector('.submit-btn'); bloqBtn(btn, true);
       const fArr = temporalFotosSeleccionadas.length > 0 ? temporalFotosSeleccionadas : ["data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150'><rect width='100%' height='100%' fill='%23ccc'/></svg>"];
       const sId = tipo === 'perdido' ? '-p' : '-e';
       const payload = {
         estado: tipo, nombre: tipo==='perdido'?document.getElementById('nombre-p').value.trim():'Avistado', especie: document.getElementById('especie'+sId).value, sexo: document.getElementById('sexo'+sId).value, raza: document.getElementById('raza'+sId).value.trim(),
         zona: document.getElementById('zona'+sId).value, gps: document.getElementById('gps'+sId).value, direccionExtra: document.getElementById('dir-texto'+sId).value.trim(),
-        contacto: document.getElementById(tipo==='perdido'?'tel-p':'tel-e').value.trim(), fecha: new Date().toISOString().split('T')[0], fotos: fArr, videoUrl: temporalVideoUrl, creadorId: user.uid
+        contacto: document.getElementById(tipo==='perdido'?'tel-p':'tel-e').value.trim(), fecha: new Date().toISOString().split('T')[0], fotos: fArr, videoUrl: temporalVideoUrl, creadorId: usuarioActual.uid || 'bypass-admin'
       };
       if(tipo==='perdido') { payload.rasgos = document.getElementById('rasgos-p').value.trim(); payload.email = document.getElementById('email-p').value.trim(); } 
       else { payload.color = document.getElementById('color-e').value.trim(); payload.rasgos = `${payload.color} - ${document.getElementById('detalles-e').value.trim()}`; payload.refugioId = document.getElementById('refugio-e').value; payload.lugarActual = document.getElementById('lugar-e').value.trim(); payload.fotoRescatista = temporalFotoRescatista; }
@@ -548,9 +605,9 @@
     function actualizarContadores() { document.getElementById('p-count-buscando').innerText = baseMascotas.filter(m=>m.estado==='perdido').length; document.getElementById('p-count-avistados').innerText = baseMascotas.filter(m=>m.estado==='encontrado').length; document.getElementById('p-count-rescatados').innerText = baseMascotas.filter(m=>m.estado==='rescatado').length; document.getElementById('p-count-reunidos').innerText = baseMascotas.filter(m=>m.estado==='reunido').length; document.getElementById('p-count-adopcion').innerText = baseMascotas.filter(m=>m.estado==='adopcion').length; }
 
     function renderizarMascotas() {
-      const grid = document.getElementById('listado-mascotas'); const vacio = document.getElementById('sin-resultados'); grid.innerHTML = '';
+      const grid = document.getElementById('listado-mascotas'); grid.innerHTML = '';
       const f = baseMascotas.filter(m => { const t = filtroActual.texto===''||m.nombre.toLowerCase().includes(filtroActual.texto)||m.raza.toLowerCase().includes(filtroActual.texto); const e = filtroActual.especie==='todos'||m.especie===filtroActual.especie; const st = filtroActual.estado==='todos'||m.estado===filtroActual.estado; const z = filtroActual.zona==='todas'||m.zona===filtroActual.zona; return t&&e&&st&&z; });
-      if(f.length===0){vacio.classList.remove('hidden');return;} vacio.classList.add('hidden');
+      if(f.length===0){grid.innerHTML='<div class="col-span-full text-center py-12 text-slate-400">Sin resultados con este filtro</div>'; return;}
       f.forEach(m => {
         let bc='bg-red-600', bt='Buscando'; if(m.estado==='encontrado'){bc='bg-sky-600';bt='Localizado';}else if(m.estado==='rescatado'){bc='bg-indigo-600';bt='Rescatado 🏠';}else if(m.estado==='reunido'){bc='bg-emerald-600';bt='Reunido 🎉';}else if(m.estado==='fallecido'){bc='bg-slate-600';bt='Fallecido 🕯️';}else if(m.estado==='adopcion'){bc='bg-amber-500';bt='En Adopción';}
         grid.innerHTML += `<div class="tarjeta-mascota border overflow-hidden flex flex-col cursor-pointer snap-start" onclick="verDetalleMascota('${m.id}')"><div class="relative h-48 w-full bg-slate-100"><img src="${m.fotos?m.fotos[0]:''}" class="w-full h-full object-cover" loading="lazy"><span class="absolute top-3 left-3 ${bc} text-white font-extrabold text-[10px] px-2.5 py-1 rounded-full uppercase shadow-sm">${bt}</span>${m.videoUrl?`<i data-lucide="video" class="absolute top-3 right-3 text-white drop-shadow-md"></i>`:''}</div><div class="p-5 flex-grow flex flex-col justify-between"><div><div class="flex justify-between items-start"><h4 class="font-extrabold text-lg truncate">${m.nombre}</h4><span class="text-[10px] text-slate-400">${m.fecha}</span></div><p class="text-xs font-semibold text-orange-600 mt-1 flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i> ${m.zona}</p><p class="text-sm text-slate-600 mt-3 line-clamp-2 italic">"${m.rasgos}"</p></div></div></div>`;
@@ -558,7 +615,7 @@
     }
 
     window.verDetalleMascota = function(id) {
-      mascotaSeleccionadaId=id; const m=baseMascotas.find(p=>p.id===id); if(!m)return; cambiarVista('detalle-mascota');
+      const m=baseMascotas.find(p=>p.id===id); if(!m)return; cambiarVista('detalle-mascota');
       const fp=document.getElementById('d-img'); fp.src=m.fotos?m.fotos[0]:'';
       let bc='bg-red-600', bt='Buscando', titM="Pérdida"; if(m.estado==='encontrado'){bc='bg-sky-600';bt='Localizado';titM="Avistamiento";}else if(m.estado==='rescatado'){bc='bg-indigo-600';bt='Rescatado 🏠';titM="Rescate";}else if(m.estado==='reunido'){bc='bg-emerald-600';bt='Reunido 🎉';titM="Reencuentro";}else if(m.estado==='fallecido'){bc='bg-slate-600';bt='Fallecido 🕯️';titM="Hallazgo";}else if(m.estado==='adopcion'){bc='bg-amber-500';bt='En Adopción';}
       document.getElementById('d-badge').className=`absolute top-4 left-4 text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase shadow-md ${bc}`; document.getElementById('d-badge').innerText=bt;
@@ -572,7 +629,7 @@
       const resc=document.getElementById('d-resc-wrap'); if(m.fotoRescatista){ resc.classList.remove('hidden'); resc.classList.add('flex'); document.getElementById('d-resc-img').src=m.fotoRescatista; } else { resc.classList.add('hidden'); resc.classList.remove('flex'); }
 
       document.getElementById('d-nombre').innerText=m.nombre; document.getElementById('d-zona').innerHTML=`<i data-lucide="map-pin" class="w-4 h-4 inline"></i> ${m.zona}`; document.getElementById('d-dir').innerText=m.direccionExtra||'';
-      document.getElementById('d-esp').innerText=m.especie; document.getElementById('d-sex').innerText=m.sexo; document.getElementById('d-raz').innerText=m.raza; document.getElementById('d-fec').innerText=m.fecha; document.getElementById('d-rasgos').innerText=m.rasgos;
+      document.getElementById('d-esp').innerText=m.especie; document.getElementById('d-sex').innerText=m.sexo; document.getElementById('d-raz').innerText=m.raza; document.getElementById('d-fec').innerText=m.fecha; document.getElementById('d-rasgos').innerText=m.rasgos||'Sin rasgos específicos.';
 
       const mEvt=document.getElementById('d-map-evt-wrap');
       if(m.gps&&m.gps.includes(',')){ mEvt.classList.remove('hidden'); document.getElementById('d-map-tit').innerText=titM; const p=m.gps.split(','); window.inicializarMapasForm('map-det-evt',null,null,false,parseFloat(p[0]),parseFloat(p[1])); } else { mEvt.classList.add('hidden'); }
@@ -580,7 +637,7 @@
       const mRef=document.getElementById('d-map-ref-wrap'); let rVinc=m.refugioId?baseRefugios.find(r=>r.id===m.refugioId):null;
       if(rVinc){ mRef.classList.remove('hidden'); document.getElementById('d-ref-nom').innerText=rVinc.nombre; document.getElementById('d-ref-con').innerText=`Resp: ${rVinc.responsable} | Tel: ${rVinc.telefono}`; if(rVinc.gps&&rVinc.gps.includes(',')){ document.getElementById('map-det-ref').classList.remove('hidden'); const p=rVinc.gps.split(','); window.inicializarMapasForm('map-det-ref',null,null,false,parseFloat(p[0]),parseFloat(p[1])); document.getElementById('d-ref-ruta').href=`https://www.google.com/maps/dir/?api=1&destination=${p[0]},${p[1]}`; }else{ document.getElementById('map-det-ref').classList.add('hidden'); document.getElementById('d-ref-ruta').href="#"; } } else { mRef.classList.add('hidden'); }
       
-      document.getElementById('d-wa').href=`https://wa.me/${m.contacto.replace(/[^0-9]/g, '')}`; document.getElementById('d-contacto').innerText=m.contacto;
+      document.getElementById('d-wa').href=`https://wa.me/${m.contacto.replace(/[^0-9]/g, '')}`; 
       lucide.createIcons();
     };
 
@@ -590,9 +647,10 @@
     function renderizarTablaMascotasPerfil() {
       const tb=document.getElementById('tb-mis-mascotas'); tb.innerHTML='';
       let filtradas = [];
+      const uidActual = usuarioActual.uid || 'emergency-admin';
       if(usuarioActual.rol === 'admin') filtradas = baseMascotas;
-      else if(usuarioActual.rol === 'fundacion') filtradas = baseMascotas.filter(m => m.creadorId === user.uid || (usuarioActual.refugioId && m.refugioId === usuarioActual.refugioId));
-      else filtradas = baseMascotas.filter(m => m.creadorId === user.uid);
+      else if(usuarioActual.rol === 'fundacion') filtradas = baseMascotas.filter(m => m.creadorId === uidActual || (usuarioActual.refugioId && m.refugioId === usuarioActual.refugioId));
+      else filtradas = baseMascotas.filter(m => m.creadorId === uidActual);
       
       if(filtradas.length===0){tb.innerHTML=`<tr><td colspan="3" class="p-4 text-center text-slate-400">No tienes reportes gestionables.</td></tr>`;return;}
       filtradas.forEach(m=>{
