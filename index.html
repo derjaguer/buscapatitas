@@ -845,7 +845,7 @@
       const badge = document.getElementById('carnet-status');
       badge.innerText = st;
       if (st === 'Activo') badge.className = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-full";
-      else if (st === 'Inactivo (Sancionado)') badge.className = "bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-full";
+      else if (st === 'Inactivo (Sancionado)') badge.className = "bg-amber-500/20 text-amber-400 border border-emerald-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-full";
       else badge.className = "bg-red-500/20 text-red-400 border border-red-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-full";
 
       document.getElementById('carnet-foto').src = usuarioActual.foto || 'https://placehold.co/100x100/slate/white?text=Foto';
