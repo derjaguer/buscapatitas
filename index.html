@@ -530,7 +530,7 @@
         <div class="grid grid-cols-2 gap-4"><div class="flex flex-col"><label class="text-xs font-bold text-slate-500">Nombre</label><input type="text" id="ed-nom" class="input-custom"></div><div class="flex flex-col"><label class="text-xs font-bold text-slate-500">Raza</label><input type="text" id="ed-raz" class="input-custom"></div></div>
         <div class="grid grid-cols-2 gap-4"><div class="flex flex-col"><label class="text-xs font-bold text-slate-500">Teléfono</label><input type="text" id="ed-tel" class="input-custom"></div><div class="flex flex-col"><label class="text-xs font-bold text-slate-500">Refugio Asignado</label><select id="ed-ref" class="input-custom bg-white"></select></div></div>
         <div class="flex flex-col border-t pt-4"><label class="text-xs font-bold mb-2 text-slate-500">Editar Mapa</label><div class="flex gap-2 mb-2"><input type="text" id="ed-dir" class="input-custom"><button type="button" onclick="buscarDir('ed-dir', 'ed-gps', 'map-ed')" class="bg-slate-800 text-white px-3 rounded-xl font-bold text-xs">Buscar</button></div><div id="map-ed" class="w-full h-32 bg-slate-200 rounded-xl relative z-0"></div><input type="hidden" id="ed-gps"></div>
-        <div class="flex gap-4 pt-4"><button type="button" onclick="cerrarEditar()" class="w-1/2 py-2 bg-slate-100 font-bold rounded-xl">Cancelar</button><button type="submit" class="w-1/2 py-2 bg-slate-900 text-white font-bold rounded-xl submit-btn">Guardar</button></div>
+        <div class="flex gap-4 pt-4"><button type="button" onclick="cerrarEditar()" class="w-1/2 py-2 bg-slate-100 font-bold rounded-xl text-slate-700">Cancelar</button><button type="submit" class="w-1/2 py-2 bg-slate-900 text-white font-bold rounded-xl submit-btn">Guardar</button></div>
       </form>
     </div>
   </div>
@@ -648,6 +648,23 @@
     let globalMarkers = {};
     let carnetQrGenerator = null;
 
+    // Obtención segura de bypass con try/catch defensivo contra parseados corruptos
+    let initBypass = null;
+    try {
+      const savedBypass = localStorage.getItem('patitas_bypass_user');
+      if (savedBypass) {
+        initBypass = JSON.parse(savedBypass);
+        usuarioActual = initBypass;
+      }
+    } catch(e) {
+      console.error("Error cargando bypass local de inicio:", e);
+      localStorage.removeItem('patitas_bypass_user');
+    }
+
+    // Checking for QR verification triggers in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const verId = urlParams.get('verify');
+
     // Inicialización de la sesión de autenticación (Regla de Oro 3)
     const initAuth = async () => {
       try {
@@ -664,12 +681,17 @@
     onAuthStateChanged(auth, async (authUser) => {
       user = authUser;
       if (user) {
-        const savedBypass = localStorage.getItem('patitas_bypass_user');
+        let savedBypass = null;
+        try {
+          savedBypass = localStorage.getItem('patitas_bypass_user');
+        } catch(e) {}
+
         if (savedBypass) {
-          // Alinear el UID local de bypass con el UID autenticado real de Firebase para permitir escrituras permitidas
-          const bypassObj = JSON.parse(savedBypass);
-          usuarioActual = { ...bypassObj, uid: user.uid, rol: 'admin' };
-          localStorage.setItem('patitas_bypass_user', JSON.stringify(usuarioActual));
+          try {
+            const bypassObj = JSON.parse(savedBypass);
+            usuarioActual = { ...bypassObj, uid: user.uid, rol: 'admin' };
+            localStorage.setItem('patitas_bypass_user', JSON.stringify(usuarioActual));
+          } catch(e) { usuarioActual = { uid: user.uid, rol: 'anonimo' }; }
         } else {
           if (!user.isAnonymous) {
             try {
@@ -682,7 +704,9 @@
           }
         }
       } else {
-        if (!localStorage.getItem('patitas_bypass_user')) {
+        let localBypassCheck = null;
+        try { localBypassCheck = localStorage.getItem('patitas_bypass_user'); } catch(e) {}
+        if (!localBypassCheck) {
           usuarioActual = { rol: 'anonimo' };
         }
       }
@@ -696,7 +720,7 @@
       }
     });
 
-    // Trazado de Colecciones Públicas (Firestore Regla 2 - No queries complejas)
+    // Sincronización protegida de Firestore con callbacks de error robustos (Firestore Regla 2 - No queries complejas)
     function sincronizarDB() {
       if (!user) return;
       
@@ -719,7 +743,7 @@
         actualizarDropsRefugios(); 
       }, (e) => console.error("Error cargando refugios:", e));
       
-      // Trazado de Usuarios y Miembros locales según privilegios
+      // Sincronización de perfiles
       if (usuarioActual.rol === 'admin') {
         onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'users'), (s) => {
           baseUsuarios = []; 
@@ -774,32 +798,38 @@
         </div>
       `;
       container.appendChild(toast);
-      lucide.createIcons();
+      
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
       setTimeout(() => { toast.remove(); }, 4000);
     };
 
     window.confirmacionPersonalizada = function(titulo, mensaje, callbackAceptar) {
       const modal = document.getElementById('modal-confirmacion');
+      if (!modal) return;
       const t = document.getElementById('confirm-titulo');
       const m = document.getElementById('confirm-mensaje');
       const btnAceptar = document.getElementById('btn-confirm-aceptar');
       const btnCancelar = document.getElementById('btn-confirm-cancelar');
 
-      t.innerText = titulo;
-      m.innerText = mensaje;
+      if (t) t.innerText = titulo;
+      if (m) m.innerText = mensaje;
       modal.classList.remove('hidden');
 
       const limpiarEventos = () => {
-        btnAceptar.onclick = null;
-        btnCancelar.onclick = null;
+        if (btnAceptar) btnAceptar.onclick = null;
+        if (btnCancelar) btnCancelar.onclick = null;
         modal.classList.add('hidden');
       };
 
-      btnCancelar.onclick = limpiarEventos;
-      btnAceptar.onclick = () => {
-        callbackAceptar();
-        limpiarEventos();
-      };
+      if (btnCancelar) btnCancelar.onclick = limpiarEventos;
+      if (btnAceptar) {
+        btnAceptar.onclick = () => {
+          callbackAceptar();
+          limpiarEventos();
+        };
+      }
     };
 
     // ==========================================
@@ -835,14 +865,19 @@
     let isLoginMode = true;
     window.setAuthTab = function(mode) {
       isLoginMode = mode === 'login';
-      document.getElementById('tab-login').className = `w-1/2 py-2 text-sm font-bold ${isLoginMode ? 'bg-white rounded-lg shadow-sm text-slate-900' : 'text-slate-500'}`;
-      document.getElementById('tab-reg').className = `w-1/2 py-2 text-sm font-bold ${!isLoginMode ? 'bg-white rounded-lg shadow-sm text-slate-900' : 'text-slate-500'}`;
+      const loginTab = document.getElementById('tab-login');
+      const regTab = document.getElementById('tab-reg');
+      if (loginTab) loginTab.className = `w-1/2 py-2 text-sm font-bold ${isLoginMode ? 'bg-white rounded-lg shadow-sm text-slate-900' : 'text-slate-500'}`;
+      if (regTab) regTab.className = `w-1/2 py-2 text-sm font-bold ${!isLoginMode ? 'bg-white rounded-lg shadow-sm text-slate-900' : 'text-slate-500'}`;
       
       const rFields = document.getElementById('reg-fields');
-      if (isLoginMode) rFields.classList.add('hidden');
-      else rFields.classList.remove('hidden');
+      if (rFields) {
+        if (isLoginMode) rFields.classList.add('hidden');
+        else rFields.classList.remove('hidden');
+      }
       
-      document.getElementById('btn-auth-submit').innerText = isLoginMode ? 'Entrar' : 'Registrarse';
+      const submitBtn = document.getElementById('btn-auth-submit');
+      if (submitBtn) submitBtn.innerText = isLoginMode ? 'Entrar' : 'Registrarse';
     };
 
     window.procesarAuth = async function(e) {
@@ -900,10 +935,11 @@
         window.mostrarAlerta('Acceso Concedido', 'Bienvenido al sistema.', 'success'); 
         e.target.reset();
         temporalFotoRescatista = '';
-        document.getElementById('prev-rescatista-img').classList.add('hidden');
+        const prevImg = document.getElementById('prev-rescatista-img');
+        if (prevImg) prevImg.classList.add('hidden');
         renderizarPerfil();
       } catch(err) { 
-        window.mostrarAlerta('Acceso Denegado', 'Correo o contraseña incorrectos.', 'error'); 
+        window.mostrarAlerta('Acceso Denegado', 'Correo o contraseña incorrectos o inválidos.', 'error'); 
       } finally { 
         bloqBtn(btn, false, isLoginMode?'Entrar':'Registrarse'); 
       }
@@ -914,10 +950,9 @@
       const pass = document.getElementById('auth-bypass-pass').value.trim();
       if (pass === ".2411Patty..") {
         if (!user) {
-          window.mostrarAlerta('Cargando', 'Estableciendo conexión segura...', 'info');
+          window.mostrarAlerta('Cargando', 'Estableciendo conexión segura con los servidores...', 'info');
           return;
         }
-        // Registrar o actualizar datos maestros de Patty bajo su UID autenticado real
         const pPayload = {
           nombre: "Patty (Administradora)",
           rol: 'admin',
@@ -925,7 +960,7 @@
           idCarnet: 'ADM-MASTER',
           foto: 'https://placehold.co/100x100/slate/white?text=Patty',
           email: 'admin@patitas.org',
-          direccion: 'Catia La Mar, Venezuela',
+          direccion: 'La Guaira, Venezuela',
           telefono: '+584120000000',
           socials: []
         };
@@ -953,8 +988,13 @@
     };
 
     window.cerrarSesion = () => { 
-      localStorage.removeItem('patitas_bypass_user');
+      try { localStorage.removeItem('patitas_bypass_user'); } catch(e) {}
       signOut(auth).then(() => {
+        usuarioActual = { rol: 'anonimo' };
+        renderizarPerfil();
+        actualizarOpcionesEstado();
+        cambiarVista('inicio');
+      }).catch(() => {
         usuarioActual = { rol: 'anonimo' };
         renderizarPerfil();
         actualizarOpcionesEstado();
@@ -967,16 +1007,27 @@
     // ==========================================
     function renderizarPerfil() {
       if(usuarioActual.rol !== 'anonimo') {
-        document.getElementById('auth-panel').classList.add('hidden'); 
-        document.getElementById('user-dashboard').classList.remove('hidden');
+        const authPanel = document.getElementById('auth-panel');
+        if (authPanel) authPanel.classList.add('hidden'); 
         
-        document.getElementById('dash-name').innerText = `¡Hola, ${usuarioActual.nombre || 'Voluntario'}!`;
-        document.getElementById('dash-role').innerText = `Rango: ${usuarioActual.rol}`;
+        const userDash = document.getElementById('user-dashboard');
+        if (userDash) userDash.classList.remove('hidden');
+        
+        const dashName = document.getElementById('dash-name');
+        if (dashName) dashName.innerText = `¡Hola, ${usuarioActual.nombre || 'Voluntario'}!`;
+        
+        const dashRole = document.getElementById('dash-role');
+        if (dashRole) dashRole.innerText = `Rango: ${usuarioActual.rol}`;
         
         // Cargar datos en el formulario de edición de perfil
-        document.getElementById('prof-nombre').value = usuarioActual.nombre || '';
-        document.getElementById('prof-telefono').value = usuarioActual.telefono || '';
-        document.getElementById('prof-direccion').value = usuarioActual.direccion || '';
+        const profNombre = document.getElementById('prof-nombre');
+        if (profNombre) profNombre.value = usuarioActual.nombre || '';
+        
+        const profTel = document.getElementById('prof-telefono');
+        if (profTel) profTel.value = usuarioActual.telefono || '';
+        
+        const profDir = document.getElementById('prof-direccion');
+        if (profDir) profDir.value = usuarioActual.direccion || '';
         
         // Cargar imagen existente en el previsualizador del editor
         const prevImgEdit = document.getElementById('prev-rescatista-edit-img');
@@ -990,66 +1041,99 @@
 
         // Cargar Redes Sociales en pantalla
         const scContainer = document.getElementById('socials-inputs-container');
-        scContainer.innerHTML = '';
-        const socials = usuarioActual.socials || [];
-        socials.forEach((sc) => {
-          agregarInputSocial(sc.red, sc.enlace);
-        });
-        if (socials.length === 0) agregarInputSocial();
+        if (scContainer) {
+          scContainer.innerHTML = '';
+          const socials = usuarioActual.socials || [];
+          socials.forEach((sc) => {
+            agregarInputSocial(sc.red, sc.enlace);
+          });
+          if (socials.length === 0) agregarInputSocial();
+        }
 
         const mgrPanel = document.getElementById('shelter-manager-panel');
-        if (usuarioActual.refugioId && (usuarioActual.rol === 'Responsable' || usuarioActual.rol === 'Administración')) {
-          mgrPanel.classList.remove('hidden');
-        } else {
-          mgrPanel.classList.add('hidden');
+        if (mgrPanel) {
+          if (usuarioActual.refugioId && (usuarioActual.rol === 'Responsable' || usuarioActual.rol === 'Administración')) {
+            mgrPanel.classList.remove('hidden');
+          } else {
+            mgrPanel.classList.add('hidden');
+          }
         }
 
-        if(usuarioActual.rol === 'admin') {
-          document.getElementById('panel-admin').classList.remove('hidden');
-        } else {
-          document.getElementById('panel-admin').classList.add('hidden');
+        const adminPanel = document.getElementById('panel-admin');
+        if (adminPanel) {
+          if(usuarioActual.rol === 'admin') {
+            adminPanel.classList.remove('hidden');
+          } else {
+            adminPanel.classList.add('hidden');
+          }
         }
         
-        document.getElementById('titulo-mis-mascotas').innerText = usuarioActual.rol === 'admin' ? "Todas las Mascotas (Control Maestro)" : "Mis Reportes Publicados";
+        const misMasTitle = document.getElementById('titulo-mis-mascotas');
+        if (misMasTitle) misMasTitle.innerText = usuarioActual.rol === 'admin' ? "Todas las Mascotas (Control Maestro)" : "Mis Reportes Publicados";
         
         generarCarnetVisual();
       } else {
-        document.getElementById('auth-panel').classList.remove('hidden'); 
-        document.getElementById('user-dashboard').classList.add('hidden');
+        const authPanel = document.getElementById('auth-panel');
+        if (authPanel) authPanel.classList.remove('hidden'); 
+        
+        const userDash = document.getElementById('user-dashboard');
+        if (userDash) userDash.classList.add('hidden');
       }
     }
 
     function generarCarnetVisual() {
-      document.getElementById('carnet-nombre').innerText = usuarioActual.nombre || 'Sin Nombre';
-      document.getElementById('carnet-role').innerText = usuarioActual.rol || 'Voluntario';
-      document.getElementById('carnet-refugio').innerText = usuarioActual.refugioNombre || 'Independiente';
-      document.getElementById('carnet-id').innerText = `ID: ${usuarioActual.idCarnet || 'N/A'}`;
+      const carnetNom = document.getElementById('carnet-nombre');
+      if (carnetNom) carnetNom.innerText = usuarioActual.nombre || 'Sin Nombre';
+      
+      const carnetRole = document.getElementById('carnet-role');
+      if (carnetRole) carnetRole.innerText = usuarioActual.rol || 'Voluntario';
+      
+      const carnetRef = document.getElementById('carnet-refugio');
+      if (carnetRef) carnetRef.innerText = usuarioActual.refugioNombre || 'Independiente';
+      
+      const carnetId = document.getElementById('carnet-id');
+      if (carnetId) carnetId.innerText = `ID: ${usuarioActual.idCarnet || 'N/A'}`;
       
       const st = usuarioActual.estatus || 'Activo';
       const badge = document.getElementById('carnet-status');
-      badge.innerText = st;
-      if (st === 'Activo') badge.className = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-full";
-      else if (st === 'Inactivo (Sancionado)') badge.className = "bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-full";
-      else badge.className = "bg-red-500/20 text-red-400 border border-red-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-full";
+      if (badge) {
+        badge.innerText = st;
+        if (st === 'Activo') badge.className = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-full";
+        else if (st === 'Inactivo (Sancionado)') badge.className = "bg-amber-500/20 text-amber-400 border border-emerald-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-full";
+        else badge.className = "bg-red-500/20 text-red-400 border border-red-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-full";
+      }
 
-      document.getElementById('carnet-foto').src = usuarioActual.foto || 'https://placehold.co/100x100/slate/white?text=Foto';
+      const carnetFoto = document.getElementById('carnet-foto');
+      if (carnetFoto) carnetFoto.src = usuarioActual.foto || 'https://placehold.co/100x100/slate/white?text=Foto';
 
       const qrContainer = document.getElementById('carnet-qr');
-      qrContainer.innerHTML = '';
-      const verURL = `${window.location.origin}${window.location.pathname}?verify=${usuarioActual.uid || 'bypass'}`;
-      
-      carnetQrGenerator = new QRCode(qrContainer, {
-        text: verURL,
-        width: 48,
-        height: 48,
-        colorDark : "#0f172a",
-        colorLight : "#ffffff",
-        correctLevel : QRCode.CorrectLevel.H
-      });
+      if (qrContainer) {
+        qrContainer.innerHTML = '';
+        const verURL = `${window.location.origin}${window.location.pathname}?verify=${usuarioActual.uid || 'bypass'}`;
+        
+        if (typeof QRCode !== 'undefined') {
+          try {
+            carnetQrGenerator = new QRCode(qrContainer, {
+              text: verURL,
+              width: 48,
+              height: 48,
+              colorDark : "#0f172a",
+              colorLight : "#ffffff",
+              correctLevel : QRCode.CorrectLevel.H
+            });
+          } catch(e) {
+            console.error("Error QRCode:", e);
+            qrContainer.innerHTML = `<span class="text-[8px] text-slate-400">QR Error</span>`;
+          }
+        } else {
+          qrContainer.innerHTML = `<span class="text-[8px] text-slate-400">QR No Disp.</span>`;
+        }
+      }
     }
 
     window.agregarInputSocial = function(redDef = 'Instagram', enlaceDef = '') {
       const container = document.getElementById('socials-inputs-container');
+      if (!container) return;
       if (container.children.length >= 4) {
         window.mostrarAlerta('Límite Alcanzado', 'Puedes vincular hasta un máximo de 4 redes sociales.', 'info');
         return;
@@ -1068,7 +1152,10 @@
         <button type="button" onclick="this.parentElement.remove()" class="text-red-500 px-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
       `;
       container.appendChild(div);
-      lucide.createIcons();
+      
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
     };
 
     window.actualizarPerfilPersonal = async function(e) {
@@ -1079,9 +1166,13 @@
       const socList = [];
       const blocks = document.querySelectorAll('#socials-inputs-container > div');
       blocks.forEach(bl => {
-        const red = bl.querySelector('.social-red-sel').value;
-        const enlace = bl.querySelector('.social-link-input').value.trim();
-        if (enlace) socList.push({ red, enlace });
+        const redSel = bl.querySelector('.social-red-sel');
+        const linkInp = bl.querySelector('.social-link-input');
+        if (redSel && linkInp) {
+          const red = redSel.value;
+          const enlace = linkInp.value.trim();
+          if (enlace) socList.push({ red, enlace });
+        }
       });
 
       const nom = document.getElementById('prof-nombre').value.trim();
@@ -1110,9 +1201,11 @@
           usuarioActual.foto = temporalFotoRescatista;
         }
 
-        if (localStorage.getItem('patitas_bypass_user')) {
-          localStorage.setItem('patitas_bypass_user', JSON.stringify(usuarioActual));
-        }
+        try {
+          if (localStorage.getItem('patitas_bypass_user')) {
+            localStorage.setItem('patitas_bypass_user', JSON.stringify(usuarioActual));
+          }
+        } catch(e) {}
 
         window.mostrarAlerta('Actualizado', 'Tus datos de credencial fueron guardados exitosamente.', 'success');
         generarCarnetVisual();
@@ -1125,8 +1218,10 @@
     };
 
     window.imprimirCarnet = function() {
+      const carnetBox = document.getElementById('carnet-box');
+      if (!carnetBox) return;
       const w = window.open('', '_blank');
-      const box = document.getElementById('carnet-box').outerHTML;
+      const box = carnetBox.outerHTML;
       w.document.write(`
         <html>
         <head>
@@ -1147,48 +1242,71 @@
     // ESCANEO Y VERIFICACIÓN EN TIEMPO REAL
     // ==========================================
     async function procesarVerificacionIDPublica(uid) {
-      document.getElementById('app-header').classList.add('hidden');
-      document.getElementById('public-counters-dashboard').classList.add('hidden');
-      document.getElementById('vista-inicio').classList.add('hidden');
+      const appHeader = document.getElementById('app-header');
+      if (appHeader) appHeader.classList.add('hidden');
+      
+      const counters = document.getElementById('public-counters-dashboard');
+      if (counters) counters.classList.add('hidden');
+      
+      const vInicio = document.getElementById('vista-inicio');
+      if (vInicio) vInicio.classList.add('hidden');
       
       const vView = document.getElementById('vista-verificar-credencial');
-      vView.classList.remove('hidden');
+      if (vView) vView.classList.remove('hidden');
 
       try {
         const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', uid));
         if (snap.exists()) {
           const d = snap.data();
           const badge = document.getElementById('v-status-badge');
-          badge.innerText = d.estatus || 'Activo';
-          
-          if (d.estatus === 'Activo') badge.className = "mx-auto px-4 py-2 rounded-full text-xs font-extrabold uppercase w-fit bg-emerald-100 text-emerald-800 border border-emerald-200";
-          else if (d.estatus === 'Inactivo (Sancionado)') badge.className = "mx-auto px-4 py-2 rounded-full text-xs font-extrabold uppercase w-fit bg-amber-100 text-amber-800 border border-amber-200";
-          else badge.className = "mx-auto px-4 py-2 rounded-full text-xs font-extrabold uppercase w-fit bg-red-100 text-red-800 border border-red-200";
+          if (badge) {
+            badge.innerText = d.estatus || 'Activo';
+            if (d.estatus === 'Activo') badge.className = "mx-auto px-4 py-2 rounded-full text-xs font-extrabold uppercase w-fit bg-emerald-100 text-emerald-800 border border-emerald-200";
+            else if (d.estatus === 'Inactivo (Sancionado)') badge.className = "mx-auto px-4 py-2 rounded-full text-xs font-extrabold uppercase w-fit bg-amber-100 text-amber-800 border border-amber-200";
+            else badge.className = "mx-auto px-4 py-2 rounded-full text-xs font-extrabold uppercase w-fit bg-red-100 text-red-800 border border-red-200";
+          }
 
-          document.getElementById('v-foto').src = d.foto || 'https://placehold.co/100x100/slate/white?text=Foto';
-          document.getElementById('v-nombre').innerText = d.nombre || 'Sin Nombre';
-          document.getElementById('v-role').innerText = d.rol || 'Voluntario';
-          document.getElementById('v-refugio').innerText = d.refugioNombre || 'Rescatista Independiente';
-          document.getElementById('v-id').innerText = `CÓDIGO CARNET: ${d.idCarnet || 'N/A'}`;
-          document.getElementById('v-dir').innerText = d.direccion || 'Dirección de contacto no declarada';
+          const vFoto = document.getElementById('v-foto');
+          if (vFoto) vFoto.src = d.foto || 'https://placehold.co/100x100/slate/white?text=Foto';
+          
+          const vNombre = document.getElementById('v-nombre');
+          if (vNombre) vNombre.innerText = d.nombre || 'Sin Nombre';
+          
+          const vRole = document.getElementById('v-role');
+          if (vRole) vRole.innerText = d.rol || 'Voluntario';
+          
+          const vRef = document.getElementById('v-refugio');
+          if (vRef) vRef.innerText = d.refugioNombre || 'Rescatista Independiente';
+          
+          const vId = document.getElementById('v-id');
+          if (vId) vId.innerText = `CÓDIGO CARNET: ${d.idCarnet || 'N/A'}`;
+          
+          const vDir = document.getElementById('v-dir');
+          if (vDir) vDir.innerText = d.direccion || 'Dirección de contacto no dectectada';
 
           const scs = document.getElementById('v-socials');
-          scs.innerHTML = '';
-          const socials = d.socials || [];
-          socials.forEach(sc => {
-            scs.innerHTML += `<span class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded-lg text-xs font-bold">${sc.red}: ${sc.enlace}</span>`;
-          });
-          if (socials.length === 0) scs.innerHTML = '<span class="text-xs text-slate-400">Sin redes admitidas</span>';
+          if (scs) {
+            scs.innerHTML = '';
+            const socials = d.socials || [];
+            socials.forEach(sc => {
+              scs.innerHTML += `<span class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded-lg text-xs font-bold">${sc.red}: ${sc.enlace}</span>`;
+            });
+            if (socials.length === 0) scs.innerHTML = '<span class="text-xs text-slate-400">Sin redes admitidas</span>';
+          }
         } else {
-          vView.innerHTML = `
-            <div class="bg-red-50 text-red-800 border border-red-200 rounded-3xl p-6 text-center space-y-4 max-w-sm mx-auto">
-              <i data-lucide="shield-alert" class="w-12 h-12 mx-auto text-red-600"></i>
-              <h2 class="text-xl font-bold">Credencial Inválida</h2>
-              <p class="text-xs">Este código QR o ID de credencial no figura registrado oficialmente en nuestros servidores.</p>
-              <button onclick="window.location.reload();" class="w-full py-2.5 bg-slate-900 text-white font-bold rounded-xl text-xs">Volver al Inicio</button>
-            </div>
-          `;
-          lucide.createIcons();
+          if (vView) {
+            vView.innerHTML = `
+              <div class="bg-red-50 text-red-800 border border-red-200 rounded-3xl p-6 text-center space-y-4 max-w-sm mx-auto">
+                <i data-lucide="shield-alert" class="w-12 h-12 mx-auto text-red-600"></i>
+                <h2 class="text-xl font-bold">Credencial Inválida</h2>
+                <p class="text-xs">Este código QR o ID de credencial no figura registrado oficialmente en nuestros servidores.</p>
+                <button onclick="window.location.reload();" class="w-full py-2.5 bg-slate-900 text-white font-bold rounded-xl text-xs">Volver al Inicio</button>
+              </div>
+            `;
+          }
+          if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+          }
         }
       } catch(e) {
         window.mostrarAlerta('Error Verificación', 'Fallo de sincronización con el validador.', 'error');
@@ -1199,16 +1317,20 @@
     // SISTEMA DE CÓDIGOS DE INVITACIÓN SECUENCIALES
     // ==========================================
     window.abrirGeneradorInvitacion = function() {
-      document.getElementById('inv-codigo-res').value = '';
-      document.getElementById('modal-invitacion').classList.remove('hidden');
+      const invCode = document.getElementById('inv-codigo-res');
+      if (invCode) invCode.value = '';
+      const invModal = document.getElementById('modal-invitacion');
+      if (invModal) invModal.classList.remove('hidden');
     };
     
     window.cerrarGeneradorInvitacion = function() {
-      document.getElementById('modal-invitacion').classList.add('hidden');
+      const invModal = document.getElementById('modal-invitacion');
+      if (invModal) invModal.classList.add('hidden');
     };
     
     window.procesarGeneracionCodigo = async function() {
-      const rol = document.getElementById('inv-rol').value;
+      const rolSelect = document.getElementById('inv-rol');
+      const rol = rolSelect ? rolSelect.value : 'Voluntario';
       const ref = baseRefugios.find(r => r.id === usuarioActual.refugioId);
       if (!ref) {
         window.mostrarAlerta('Denegado', 'Debes estar vinculado a un refugio verificado para poder emitir invitaciones.', 'error');
@@ -1239,7 +1361,8 @@
           assignedRole: rol,
           status: 'unused'
         });
-        document.getElementById('inv-codigo-res').value = codeGenerated;
+        const codeRes = document.getElementById('inv-codigo-res');
+        if (codeRes) codeRes.value = codeGenerated;
         window.mostrarAlerta('Código Generado', `La invitación ${codeGenerated} ha sido inscrita.`, 'success');
       } catch(e) {
         window.mostrarAlerta('Error', 'No se pudo registrar la invitación.', 'error');
@@ -1248,7 +1371,7 @@
     
     window.copiarCodigoInvitacion = function() {
       const cInput = document.getElementById('inv-codigo-res');
-      if (cInput.value) {
+      if (cInput && cInput.value) {
         const temp = document.createElement("input");
         temp.value = cInput.value; 
         document.body.appendChild(temp); 
@@ -1298,14 +1421,14 @@
       try {
         await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', userId), { rol: nuevoRol });
         window.mostrarAlerta('Actualizado', 'Se reasignó el rol interno correctamente.', 'success');
-      } catch(e) { window.mostrarAlerta('Error', 'Sin permisos.', 'error'); }
+      } catch(e) { window.mostrarAlerta('Error', 'Sin permisos suficientes.', 'error'); }
     };
 
     window.cambiarEstatusMiembro = async function(userId, nuevoEstatus) {
       try {
         await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', userId), { estatus: nuevoEstatus });
         window.mostrarAlerta('Actualizado', 'Se cambió el estatus del voluntario.', 'success');
-      } catch(e) { window.mostrarAlerta('Error', 'Sin permisos.', 'error'); }
+      } catch(e) { window.mostrarAlerta('Error', 'Sin privilegios suficientes.', 'error'); }
     };
 
     // ==========================================
@@ -1316,7 +1439,7 @@
       if (!tb) return;
       tb.innerHTML = '';
       if (baseUsuarios.length === 0) {
-        tb.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-slate-400">No hay voluntarios registrados.</td></tr>';
+        tb.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-slate-400">No hay voluntarios registrados en los servidores públicos.</td></tr>';
         return;
       }
       baseUsuarios.forEach(u => {
@@ -1375,9 +1498,10 @@
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
             
-            document.getElementById(coordsInputId).value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            const coordsInp = document.getElementById(coordsInputId);
+            if (coordsInp) coordsInp.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
             
-            if (globalMaps[mapId]) {
+            if (typeof L !== 'undefined' && globalMaps[mapId]) {
               globalMaps[mapId].setView([lat, lng], 16);
               globalMarkers[mapId].setLatLng([lat, lng]);
             }
@@ -1386,7 +1510,8 @@
               .then(res => res.json())
               .then(data => {
                 if (addressInputId) {
-                  document.getElementById(addressInputId).value = data.display_name || '';
+                  const addrInp = document.getElementById(addressInputId);
+                  if (addrInp) addrInp.value = data.display_name || '';
                 }
                 const paisInput = document.getElementById('ref-pai');
                 if (paisInput && data.address && data.address.country) {
@@ -1405,8 +1530,14 @@
       }
     };
 
-    // Inicializador del mapa con redimensionamiento defensivo de Leaflet
+    // Inicializador del mapa con redimensionamiento defensivo de Leaflet y comprobaciones contra caídas
     window.inicializarMapasForm = function(mId, cId, aId, defaultCustom = false, cLat = 10.6, cLng = -66.93) {
+      if (typeof L === 'undefined') {
+        console.warn("Leaflet Map CDN failed to load properly. Map rendering skipped gracefully.");
+        const mapContainer = document.getElementById(mId);
+        if (mapContainer) mapContainer.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">Mapas temporalmente no disponibles de forma offline.</div>`;
+        return;
+      }
       setTimeout(() => {
         const cInp = cId ? document.getElementById(cId) : null;
         let lt = cLat, lg = cLng;
@@ -1418,52 +1549,63 @@
         }
         
         if (globalMaps[mId]) {
-          globalMaps[mId].invalidateSize();
-          globalMaps[mId].setView([lt, lg], 15);
-          globalMarkers[mId].setLatLng([lt, lg]);
+          try {
+            globalMaps[mId].invalidateSize();
+            globalMaps[mId].setView([lt, lg], 15);
+            if(globalMarkers[mId]) globalMarkers[mId].setLatLng([lt, lg]);
+          } catch(e) { console.error("Map refresh warning:", e); }
           return;
         }
         
-        const map = L.map(mId).setView([lt, lg], 15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        
-        const draggableOption = (cId !== null);
-        const mk = L.marker([lt, lg], { draggable: draggableOption }).addTo(map);
-        
-        if(draggableOption) {
-          const actualizarDatosGeográficos = (lat, lng) => {
-            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
-              .then(res => res.json())
-              .then(data => {
-                if (aId) document.getElementById(aId).value = data.display_name || '';
-                const paisInput = document.getElementById('ref-pai');
-                if (paisInput && data.address && data.address.country) {
-                  paisInput.value = data.address.country;
-                }
-              });
-          };
+        const mapDom = document.getElementById(mId);
+        if(!mapDom) return;
 
-          mk.on('dragend', () => {
-            const p = mk.getLatLng();
-            if(cInp) cInp.value = `${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`;
-            actualizarDatosGeográficos(p.lat, p.lng);
-          });
+        try {
+          const map = L.map(mId).setView([lt, lg], 15);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+          
+          const draggableOption = (cId !== null);
+          const mk = L.marker([lt, lg], { draggable: draggableOption }).addTo(map);
+          
+          if(draggableOption) {
+            const actualizarDatosGeográficos = (lat, lng) => {
+              fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                .then(res => res.json())
+                .then(data => {
+                  if (aId) {
+                    const addrInp = document.getElementById(aId);
+                    if (addrInp) addrInp.value = data.display_name || '';
+                  }
+                  const paisInput = document.getElementById('ref-pai');
+                  if (paisInput && data.address && data.address.country) {
+                    paisInput.value = data.address.country;
+                  }
+                }).catch(() => {});
+            };
 
-          map.on('click', (e) => {
-            mk.setLatLng(e.latlng);
-            if(cInp) cInp.value = `${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`;
-            actualizarDatosGeográficos(e.latlng.lat, e.latlng.lng);
-          });
-        }
+            mk.on('dragend', () => {
+              const p = mk.getLatLng();
+              if(cInp) cInp.value = `${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`;
+              actualizarDatosGeográficos(p.lat, p.lng);
+            });
 
-        globalMaps[mId] = map;
-        globalMarkers[mId] = mk;
+            map.on('click', (e) => {
+              mk.setLatLng(e.latlng);
+              if(cInp) cInp.value = `${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`;
+              actualizarDatosGeográficos(e.latlng.lat, e.latlng.lng);
+            });
+          }
+
+          globalMaps[mId] = map;
+          globalMarkers[mId] = mk;
+        } catch(e) { console.error("Error Map Init:", e); }
       }, 450);
     };
 
     // BUSCADOR LIBERADO A NIVEL INTERNACIONAL SIN RESTRICCIONES DE PAÍS
     window.buscarDir = async function(addressInputId, coordsInputId, mapId) {
-      const q = document.getElementById(addressInputId).value.trim();
+      const addrInp = document.getElementById(addressInputId);
+      const q = addrInp ? addrInp.value.trim() : '';
       if (!q) return;
       window.mostrarAlerta('Buscando...', 'Buscando dirección en el mapa...', 'info');
       try {
@@ -1472,13 +1614,17 @@
         if (data.length > 0) {
           const lat = parseFloat(data[0].lat);
           const lon = parseFloat(data[0].lon);
-          document.getElementById(coordsInputId).value = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
-          document.getElementById(addressInputId).value = data[0].display_name;
+          
+          const coordsInp = document.getElementById(coordsInputId);
+          if (coordsInp) coordsInp.value = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+          if (addrInp) addrInp.value = data[0].display_name;
           
           if (globalMaps[mapId]) {
             globalMaps[mapId].setView([lat, lon], 16);
-            globalMarkers[mapId].setLatLng([lat, lon]);
-            setTimeout(() => { globalMaps[mapId].invalidateSize(); }, 200);
+            if(globalMarkers[mapId]) globalMarkers[mapId].setLatLng([lat, lon]);
+            setTimeout(() => { 
+              if(globalMaps[mapId]) globalMaps[mapId].invalidateSize(); 
+            }, 200);
           }
           
           const paisInput = document.getElementById('ref-pai');
@@ -1489,7 +1635,7 @@
                 if(details.address && details.address.country) {
                   paisInput.value = details.address.country;
                 }
-              });
+              }).catch(() => {});
           }
 
           window.mostrarAlerta('Éxito', 'Ubicación localizada en el mapa.', 'success');
@@ -1505,21 +1651,48 @@
     // EDITOR DE FOTOS CROPPER.JS
     // ==========================================
     window.abrirEditorRecorte = function(input, target) {
+      if (typeof Cropper === 'undefined') {
+        console.warn("Editor de recorte temporalmente desactivado.");
+        if (input.files && input.files[0]) {
+          const r = new FileReader();
+          r.onload = (e) => {
+            if(target === 'rescatista' || target === 'rescatista-edit') {
+              temporalFotoRescatista = e.target.result;
+              const prev = document.getElementById('prev-rescatista-img'); if(prev) prev.src = e.target.result;
+              const prevEdit = document.getElementById('prev-rescatista-edit-img'); if(prevEdit) prevEdit.src = e.target.result;
+            } else if (target === 'refugios-prev') {
+              temporalFotoRefugio = e.target.result;
+              const prev = document.getElementById('prev-ref-img'); if(prev) prev.src = e.target.result;
+            } else {
+              temporalFotosSeleccionadas.push(e.target.result);
+              renderizarPrevisualizadoresMascotas(target);
+            }
+          };
+          r.readAsDataURL(input.files[0]);
+        }
+        return;
+      }
       if (input.files && input.files[0]) {
         currentCropTarget = target;
         const reader = new FileReader();
         reader.onload = function(e) {
-          document.getElementById('image-to-crop').src = e.target.result;
-          document.getElementById('modal-cropper').classList.remove('hidden');
+          const imgCrop = document.getElementById('image-to-crop');
+          if (imgCrop) imgCrop.src = e.target.result;
+          
+          const cropperModal = document.getElementById('modal-cropper');
+          if (cropperModal) cropperModal.classList.remove('hidden');
           
           if(cropperInst) cropperInst.destroy();
           setTimeout(() => {
             const aspect = (target === 'rescatista' || target === 'rescatista-edit') ? 1 : 1.58;
-            cropperInst = new Cropper(document.getElementById('image-to-crop'), {
-              aspectRatio: aspect,
-              viewMode: 1,
-              background: false
-            });
+            const imgCropCheck = document.getElementById('image-to-crop');
+            if (imgCropCheck) {
+              cropperInst = new Cropper(imgCropCheck, {
+                aspectRatio: aspect,
+                viewMode: 1,
+                background: false
+              });
+            }
           }, 300);
         };
         reader.readAsDataURL(input.files[0]);
@@ -1527,7 +1700,8 @@
     };
 
     window.cerrarCropper = function() {
-      document.getElementById('modal-cropper').classList.add('hidden');
+      const cropperModal = document.getElementById('modal-cropper');
+      if (cropperModal) cropperModal.classList.add('hidden');
       if (cropperInst) cropperInst.destroy();
     };
 
@@ -1555,7 +1729,6 @@
           prevImgEdit.src = croppedBase64;
           prevImgEdit.classList.remove('hidden');
         }
-        // Actualizar visualización del carnet inmediatamente para feedback estético
         const carnetFoto = document.getElementById('carnet-foto');
         if (carnetFoto) {
           carnetFoto.src = croppedBase64;
@@ -1584,7 +1757,9 @@
           </div>
         `;
       });
-      lucide.createIcons();
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
     }
 
     window.removerFotoTemporal = function(idx, targetId) {
@@ -1608,11 +1783,12 @@
         return matchTexto && matchEspecie && matchEstado && matchZona;
       });
 
+      const sinRes = document.getElementById('sin-resultados');
       if (filtradas.length === 0) {
-        document.getElementById('sin-resultados').classList.remove('hidden');
+        if (sinRes) sinRes.classList.remove('hidden');
         return;
       }
-      document.getElementById('sin-resultados').classList.add('hidden');
+      if (sinRes) sinRes.classList.add('hidden');
 
       filtradas.forEach(m => {
         let bColor = 'bg-red-600', bText = 'Buscando';
@@ -1637,14 +1813,21 @@
           </div>
         `;
       });
-      lucide.createIcons();
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
     }
 
     window.aplicarFiltros = function() {
-      filtroActual.texto = document.getElementById('filtro-texto').value;
-      filtroActual.especie = document.getElementById('filtro-especie').value;
-      filtroActual.estado = document.getElementById('filtro-estado').value;
-      filtroActual.zona = document.getElementById('filtro-zona').value;
+      const flTexto = document.getElementById('filtro-texto');
+      const flEspecie = document.getElementById('filtro-especie');
+      const flEstado = document.getElementById('filtro-estado');
+      const flZona = document.getElementById('filtro-zona');
+
+      filtroActual.texto = flTexto ? flTexto.value : '';
+      filtroActual.especie = flEspecie ? flEspecie.value : 'todos';
+      filtroActual.estado = flEstado ? flEstado.value : 'todos';
+      filtroActual.zona = flZona ? flZona.value : 'todas';
       renderizarMascotas();
     };
 
@@ -1697,52 +1880,63 @@
       mascotaSeleccionadaId = id;
       cambiarVista('detalle-mascota');
 
-      document.getElementById('d-img').src = m.fotos[0];
-      document.getElementById('d-badge').innerText = m.estado === 'perdido' ? 'Buscando' : m.estado.toUpperCase();
-      document.getElementById('d-badge').className = `absolute top-4 left-4 text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase shadow-md ${m.estado==='perdido'?'bg-red-600':m.estado==='encontrado'?'bg-sky-600':'bg-indigo-600'}`;
+      const dImg = document.getElementById('d-img');
+      if (dImg) dImg.src = m.fotos[0];
 
-      document.getElementById('d-nombre').innerText = m.nombre;
-      document.getElementById('d-zona').innerText = m.zona;
-      document.getElementById('d-dir').innerText = m.direccion || '';
-      document.getElementById('d-esp').innerText = m.especie;
-      document.getElementById('d-sex').innerText = m.sexo;
-      document.getElementById('d-raz').innerText = m.raza;
-      document.getElementById('d-fec').innerText = new Date(m.fecha).toLocaleDateString();
-      document.getElementById('d-rasgos').innerText = m.rasgos;
-      document.getElementById('d-wa').href = `https://wa.me/${m.telefono.replace(/[^0-9]/g, '')}`;
+      const dBadge = document.getElementById('d-badge');
+      if (dBadge) {
+        dBadge.innerText = m.estado === 'perdido' ? 'Buscando' : m.estado.toUpperCase();
+        dBadge.className = `absolute top-4 left-4 text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase shadow-md ${m.estado==='perdido'?'bg-red-600':m.estado==='encontrado'?'bg-sky-600':'bg-indigo-600'}`;
+      }
+
+      const dNombre = document.getElementById('d-nombre'); if (dNombre) dNombre.innerText = m.nombre;
+      const dZona = document.getElementById('d-zona'); if (dZona) dZona.innerText = m.zona;
+      const dDir = document.getElementById('d-dir'); if (dDir) dDir.innerText = m.direccion || '';
+      const dEsp = document.getElementById('d-esp'); if (dEsp) dEsp.innerText = m.especie;
+      const dSex = document.getElementById('d-sex'); if (dSex) dSex.innerText = m.sexo;
+      const dRaz = document.getElementById('d-raz'); if (dRaz) dRaz.innerText = m.raza;
+      const dFec = document.getElementById('d-fec'); if (dFec) dFec.innerText = new Date(m.fecha).toLocaleDateString();
+      const dRasgos = document.getElementById('d-rasgos'); if (dRasgos) dRasgos.innerText = m.rasgos;
+      
+      const dWa = document.getElementById('d-wa');
+      if (dWa) dWa.href = `https://wa.me/${m.telefono.replace(/[^0-9]/g, '')}`;
 
       const minis = document.getElementById('d-minis');
-      minis.innerHTML = '';
-      m.fotos.forEach(f => {
-        minis.innerHTML += `<img src="${f}" onclick="document.getElementById('d-img').src='${f}'" class="w-16 h-16 object-cover border rounded-xl cursor-pointer hover:border-orange-500">`;
-      });
+      if (minis) {
+        minis.innerHTML = '';
+        m.fotos.forEach(f => {
+          minis.innerHTML += `<img src="${f}" onclick="document.getElementById('d-img').src='${f}'" class="w-16 h-16 object-cover border rounded-xl cursor-pointer hover:border-orange-500">`;
+        });
+      }
 
+      const dMapEvtWrap = document.getElementById('d-map-evt-wrap');
       if(m.gps && m.gps.includes(',')) {
-        document.getElementById('d-map-evt-wrap').classList.remove('hidden');
+        if (dMapEvtWrap) dMapEvtWrap.classList.remove('hidden');
         const p = m.gps.split(',');
         window.inicializarMapasForm('map-det-evt', null, null, false, parseFloat(p[0]), parseFloat(p[1]));
       } else {
-        document.getElementById('d-map-evt-wrap').classList.add('hidden');
+        if (dMapEvtWrap) dMapEvtWrap.classList.add('hidden');
       }
 
       const refWrap = document.getElementById('d-map-ref-wrap');
       if (m.refugioId) {
         const refObj = baseRefugios.find(r => r.id === m.refugioId);
         if (refObj) {
-          refWrap.classList.remove('hidden');
-          document.getElementById('d-ref-nom').innerText = refObj.nombre;
-          document.getElementById('d-ref-con').innerText = `Dirección: ${refObj.direccion}`;
+          if (refWrap) refWrap.classList.remove('hidden');
+          const dRefNom = document.getElementById('d-ref-nom'); if (dRefNom) dRefNom.innerText = refObj.nombre;
+          const dRefCon = document.getElementById('d-ref-con'); if (dRefCon) dRefCon.innerText = `Dirección: ${refObj.direccion}`;
           
           if(refObj.gps && refObj.gps.includes(',')) {
             const pr = refObj.gps.split(',');
             window.inicializarMapasForm('map-det-ref', null, null, false, parseFloat(pr[0]), parseFloat(pr[1]));
-            document.getElementById('d-ref-ruta').href = `https://www.google.com/maps/dir/?api=1&destination=${refObj.gps.replace(/\s/g, '')}`;
+            const dRefRuta = document.getElementById('d-ref-ruta');
+            if (dRefRuta) dRefRuta.href = `https://www.google.com/maps/dir/?api=1&destination=${refObj.gps.replace(/\s/g, '')}`;
           }
         } else {
-          refWrap.classList.add('hidden');
+          if (refWrap) refWrap.classList.add('hidden');
         }
       } else {
-        refWrap.classList.add('hidden');
+        if (refWrap) refWrap.classList.add('hidden');
       }
     };
 
@@ -1791,7 +1985,7 @@
       window.confirmacionPersonalizada('¿Eliminar Reporte?', 'Esta acción removerá el reporte y sus fotos de forma permanente.', async () => {
         try {
           await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pets', id));
-          window.mostrarAlerta('Eliminado', 'Se ha removido el registro.', 'success');
+          window.mostrarAlerta('Eliminado', 'Se ha removido el registro de la base de datos.', 'success');
         } catch(e) {}
       });
     };
@@ -1808,13 +2002,17 @@
       document.getElementById('ed-gps').value = m.gps || '';
       
       const dropRef = document.getElementById('ed-ref');
-      dropRef.value = m.refugioId || '';
+      if (dropRef) dropRef.value = m.refugioId || '';
 
-      document.getElementById('modal-editar-mascota').classList.remove('hidden');
+      const edModal = document.getElementById('modal-editar-mascota');
+      if (edModal) edModal.classList.remove('hidden');
       window.inicializarMapasForm('map-ed', 'ed-gps', 'ed-dir');
     };
 
-    window.cerrarEditar = () => { document.getElementById('modal-editar-mascota').classList.add('hidden'); };
+    window.cerrarEditar = () => { 
+      const edModal = document.getElementById('modal-editar-mascota');
+      if (edModal) edModal.classList.add('hidden'); 
+    };
 
     window.guardarEdicion = async function(e) {
       e.preventDefault();
@@ -1864,7 +2062,9 @@
           </div>
         `;
       });
-      lucide.createIcons();
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
     };
 
     window.verDetalleRefugio = function(refId) {
@@ -1872,52 +2072,60 @@
       if(!r) return;
       
       cambiarVista('detalle-refugio');
-      document.getElementById('dr-img').src = r.foto || 'https://placehold.co/400x250/indigo/white?text=Refugio';
-      document.getElementById('dr-pais').innerText = r.pais || 'No especificado';
-      document.getElementById('dr-nombre').innerText = r.nombre;
-      document.getElementById('dr-responsable').innerText = `Responsable: ${r.responsable}`;
-      document.getElementById('dr-direccion').innerText = r.direccion;
+      
+      const drImg = document.getElementById('dr-img'); if (drImg) drImg.src = r.foto || 'https://placehold.co/400x250/indigo/white?text=Refugio';
+      const drPais = document.getElementById('dr-pais'); if (drPais) drPais.innerText = r.pais || 'No especificado';
+      const drNombre = document.getElementById('dr-nombre'); if (drNombre) drNombre.innerText = r.nombre;
+      const drResp = document.getElementById('dr-responsable'); if (drResp) drResp.innerText = `Responsable: ${r.responsable}`;
+      const drDir = document.getElementById('dr-direccion'); if (drDir) drDir.innerText = r.direccion;
 
-      document.getElementById('dr-wa').href = `https://wa.me/${r.telefono.replace(/[^0-9]/g, '')}`;
+      const drWa = document.getElementById('dr-wa'); if (drWa) drWa.href = `https://wa.me/${r.telefono.replace(/[^0-9]/g, '')}`;
+      
+      const drRuta = document.getElementById('dr-ruta');
+      const mapView = document.getElementById('map-det-refugio-view');
+
       if (r.gps && r.gps.includes(',')) {
-        document.getElementById('dr-ruta').classList.remove('hidden');
-        document.getElementById('dr-ruta').href = `https://www.google.com/maps/dir/?api=1&destination=${r.gps.replace(/\s/g, '')}`;
-        
-        document.getElementById('map-det-refugio-view').classList.remove('hidden');
+        if (drRuta) {
+          drRuta.classList.remove('hidden');
+          drRuta.href = `https://www.google.com/maps/dir/?api=1&destination=${r.gps.replace(/\s/g, '')}`;
+        }
+        if (mapView) mapView.classList.remove('hidden');
         const pos = r.gps.split(',');
         window.inicializarMapasForm('map-det-refugio-view', null, null, false, parseFloat(pos[0]), parseFloat(pos[1]));
       } else {
-        document.getElementById('dr-ruta').classList.add('hidden');
-        document.getElementById('map-det-refugio-view').classList.add('hidden');
+        if (drRuta) drRuta.classList.add('hidden');
+        if (mapView) mapView.classList.add('hidden');
       }
 
       // Renderizar mascotas que pertenecen a esta sede
       const masContainer = document.getElementById('dr-mascotas');
-      masContainer.innerHTML = '';
-      const huespedes = baseMascotas.filter(m => m.refugioId === refId);
-      
-      if(huespedes.length === 0) {
-        masContainer.innerHTML = '<p class="text-xs text-slate-400 py-6 text-center col-span-full">Este refugio no posee mascotas bajo su custodia temporal actualmente.</p>';
-      } else {
-        huespedes.forEach(m => {
-          let bc = 'bg-red-600', bt = 'Buscando';
-          if(m.estado === 'encontrado') { bc = 'bg-sky-600'; bt = 'Localizado'; }
-          else if(m.estado === 'rescatado') { bc = 'bg-indigo-600'; bt = 'Rescatado 🏠'; }
-          else if(m.estado === 'adopcion') { bc = 'bg-amber-500'; bt = 'En Adopción'; }
+      if (masContainer) {
+        masContainer.innerHTML = '';
+        const huespedes = baseMascotas.filter(m => m.refugioId === refId);
+        
+        if(huespedes.length === 0) {
+          masContainer.innerHTML = '<p class="text-xs text-slate-400 py-6 text-center col-span-full">Este refugio no posee mascotas bajo su custodia temporal actualmente.</p>';
+        } else {
+          huespedes.forEach(m => {
+            let bc = 'bg-red-600', bt = 'Buscando';
+            if(m.estado === 'encontrado') { bc = 'bg-sky-600'; bt = 'Localizado'; }
+            else if(m.estado === 'rescatado') { bc = 'bg-indigo-600'; bt = 'Rescatado 🏠'; }
+            else if(m.estado === 'adopcion') { bc = 'bg-amber-500'; bt = 'En Adopción'; }
 
-          masContainer.innerHTML += `
-            <div class="border rounded-2xl overflow-hidden cursor-pointer bg-white flex flex-col shadow-sm" onclick="verDetalleMascota('${m.id}')">
-              <div class="h-32 bg-slate-100 relative">
-                <img src="${m.fotos ? m.fotos[0] : ''}" class="w-full h-full object-cover">
-                <span class="absolute top-2 left-2 ${bc} text-white font-extrabold text-[8px] px-2 py-0.5 rounded-full uppercase">${bt}</span>
+            masContainer.innerHTML += `
+              <div class="border rounded-2xl overflow-hidden cursor-pointer bg-white flex flex-col shadow-sm" onclick="verDetalleMascota('${m.id}')">
+                <div class="h-32 bg-slate-100 relative">
+                  <img src="${m.fotos ? m.fotos[0] : ''}" class="w-full h-full object-cover">
+                  <span class="absolute top-2 left-2 ${bc} text-white font-extrabold text-[8px] px-2 py-0.5 rounded-full uppercase">${bt}</span>
+                </div>
+                <div class="p-3">
+                  <h4 class="font-bold text-slate-900 truncate">${m.nombre}</h4>
+                  <p class="text-[10px] text-orange-600 font-semibold mt-1">${m.zona}</p>
+                </div>
               </div>
-              <div class="p-3">
-                <h4 class="font-bold text-slate-900 truncate">${m.nombre}</h4>
-                <p class="text-[10px] text-orange-600 font-semibold mt-1">${m.zona}</p>
-              </div>
-            </div>
-          `;
-        });
+            `;
+          });
+        }
       }
     };
 
@@ -1930,14 +2138,18 @@
       document.getElementById('ref-pai').value = '';
       document.getElementById('ref-gps').value = '';
       temporalFotoRefugio = '';
-      document.getElementById('prev-ref-img').classList.add('hidden');
+      
+      const prevRefImg = document.getElementById('prev-ref-img');
+      if (prevRefImg) prevRefImg.classList.add('hidden');
 
-      document.getElementById('admin-modal-refugio').classList.remove('hidden');
+      const refModal = document.getElementById('admin-modal-refugio');
+      if (refModal) refModal.classList.remove('hidden');
       window.inicializarMapasForm('map-r', 'ref-gps', 'ref-dir');
     };
 
     window.cerrarModalRefugio = function() {
-      document.getElementById('admin-modal-refugio').classList.add('hidden');
+      const refModal = document.getElementById('admin-modal-refugio');
+      if (refModal) refModal.classList.add('hidden');
     };
 
     window.editarRefugioAdmin = function(id) {
@@ -1955,13 +2167,16 @@
       const prevImg = document.getElementById('prev-ref-img');
       if (r.foto) {
         temporalFotoRefugio = r.foto;
-        prevImg.src = r.foto;
-        prevImg.classList.remove('hidden');
+        if (prevImg) {
+          prevImg.src = r.foto;
+          prevImg.classList.remove('hidden');
+        }
       } else {
-        prevImg.classList.add('hidden');
+        if (prevImg) prevImg.classList.add('hidden');
       }
 
-      document.getElementById('admin-modal-refugio').classList.remove('hidden');
+      const refModal = document.getElementById('admin-modal-refugio');
+      if (refModal) refModal.classList.remove('hidden');
       window.inicializarMapasForm('map-r', 'ref-gps', 'ref-dir');
     };
 
@@ -2071,7 +2286,9 @@
 
     const bloqBtn = (btn, lock, text = "Procesando...") => { if (!btn) return; btn.disabled = lock; btn.innerHTML = lock ? `<i class="lucide-loader animate-spin inline w-4 h-4 mr-1"></i> ${text}` : text; };
 
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
   </script>
 </body>
 </html>
