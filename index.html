@@ -18,23 +18,14 @@
   <!-- QRCode.js (Generador de QR) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js" type="module"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js" type="module"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js" type="module"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js" type="module"></script>
-
   <script>
+    // Configuración básica para simular PWA (Web App instalable)
     const manifest = {
       "name": "Proyecto Patitas - Ayuda", "short_name": "Patitas", "start_url": ".", "display": "standalone", "background_color": "#f8fafc", "theme_color": "#ffffff",
       "icons": [{"src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f97316'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z'/></svg>", "sizes": "192x192", "type": "image/svg+xml"}]
     };
     document.querySelector('head').insertAdjacentHTML('beforeend', `<link rel="manifest" href="data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(manifest))}">`);
     document.querySelector('head').insertAdjacentHTML('beforeend', `<meta name="theme-color" content="#ffffff">`);
-    if ('serviceWorker' in navigator) {
-      const swCode = `const CACHE_NAME='patitas-v3';self.addEventListener('install', e=>e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(['/','https://cdn.tailwindcss.com/']))));self.addEventListener('fetch', e=>{if(e.request.url.includes('firestore')||e.request.url.includes('storage'))return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));});`;
-      navigator.serviceWorker.register(URL.createObjectURL(new Blob([swCode], {type:'application/javascript'}))).catch(e=>{});
-    }
   </script>
 
   <style>
@@ -55,6 +46,11 @@
     .menu-scroll-x::-webkit-scrollbar { display: none; } .menu-scroll-x { scrollbar-width: none; }
     .pb-safe { padding-bottom: max(env(safe-area-inset-bottom), 12px); }
     .fade-in { animation: fadeIn 0.3s; } @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    
+    /* Toast Alert Custom Container */
+    #custom-toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 999; display: flex; flex-col: column; gap: 0.5rem; pointer-events: none; }
+    .toast-alert { pointer-events: auto; animation: slideIn 0.3s ease-out forwards; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
   </style>
 </head>
 <body class="min-h-screen flex flex-col text-sm md:text-base">
@@ -65,21 +61,24 @@
         <div class="p-2 bg-orange-100 rounded-full text-orange-600"><i data-lucide="paw-print" class="w-7 h-7"></i></div>
         <div class="text-center xl:text-left">
           <h1 class="text-lg md:text-2xl font-black text-slate-900 flex items-center gap-2 justify-center xl:justify-start">
-            Proyecto Patitas <span class="bg-red-500 text-white text-[9px] px-2 py-0.5 rounded-full uppercase">Emergencia</span>
+            Proyecto Patitas <span class="bg-red-500 text-white text-[9px] px-2 py-0.5 rounded-full uppercase">PWA</span>
           </h1>
-          <p class="text-[10px] md:text-xs text-slate-500">Mascotas Salvadas Venezuela</p>
+          <p class="text-[10px] md:text-xs text-slate-500">Red Unificada de Rescate</p>
         </div>
       </div>
       
-      <nav class="fixed bottom-0 left-0 w-full bg-white border-t z-[60] flex md:static md:w-auto md:border-t-0 md:bg-transparent items-center justify-start gap-1 overflow-x-auto menu-scroll-x pb-safe px-2 pt-2 md:p-0 snap-x">
+      <nav class="fixed bottom-0 left-0 w-full bg-white border-t z-[60] flex md:static md:w-auto md:border-t-0 md:bg-transparent items-center justify-around md:justify-start gap-1 overflow-x-auto menu-scroll-x pb-safe px-2 pt-2 md:p-0 snap-x">
         <button onclick="cambiarVista('inicio')" class="snap-start flex-shrink-0 flex flex-col md:flex-row items-center gap-1 md:gap-1.5 px-3 py-1 md:px-4 md:py-2.5 rounded-xl font-bold text-slate-600 w-[68px] md:w-auto min-h-[48px]"><i data-lucide="home" class="w-5 h-5"></i><span>Inicio</span></button>
-        <button onclick="cambiarVista('refugios')" class="snap-start flex-shrink-0 flex flex-col md:flex-row items-center gap-1 md:gap-1.5 px-3 py-1 md:px-4 md:py-2.5 rounded-xl font-bold text-indigo-600 bg-indigo-50/50 w-[68px] md:w-auto min-h-[48px]"><i data-lucide="tent" class="w-5 h-5"></i><span>Refugios</span></button>
-        <button onclick="cambiarVista('reportar-perdido')" class="snap-start flex-shrink-0 flex flex-col md:flex-row items-center gap-1 md:gap-1.5 px-3 py-1 md:px-4 md:py-2.5 rounded-xl font-bold text-orange-600 bg-orange-50/50 w-[68px] md:w-auto min-h-[48px]"><i data-lucide="megaphone" class="w-5 h-5"></i><span>Perdido</span></button>
-        <button onclick="cambiarVista('reportar-encontrado')" class="snap-start flex-shrink-0 flex flex-col md:flex-row items-center gap-1 md:gap-1.5 px-3 py-1 md:px-4 md:py-2.5 rounded-xl font-bold text-sky-600 bg-sky-50/50 w-[68px] md:w-auto min-h-[48px]"><i data-lucide="heart" class="w-5 h-5"></i><span>Avistado</span></button>
-        <button onclick="cambiarVista('perfil')" class="snap-start flex-shrink-0 flex flex-col md:flex-row items-center gap-1 md:gap-1.5 px-3 py-1 md:px-4 md:py-2.5 rounded-xl font-bold text-slate-700 bg-slate-100 md:bg-slate-800 md:text-white w-[68px] md:w-auto min-h-[48px]"><i data-lucide="user" class="w-5 h-5"></i><span>Perfil</span></button>
+        <button onclick="cambiarVista('refugios')" class="snap-start flex-shrink-0 flex flex-col md:flex-row items-center gap-1 md:gap-1.5 px-3 py-1 md:px-4 md:py-2.5 rounded-xl font-bold text-indigo-600 w-[68px] md:w-auto min-h-[48px]"><i data-lucide="tent" class="w-5 h-5"></i><span>Refugios</span></button>
+        <button onclick="cambiarVista('reportar-perdido')" class="snap-start flex-shrink-0 flex flex-col md:flex-row items-center gap-1 md:gap-1.5 px-3 py-1 md:px-4 md:py-2.5 rounded-xl font-bold text-orange-600 w-[68px] md:w-auto min-h-[48px]"><i data-lucide="megaphone" class="w-5 h-5"></i><span>Perdido</span></button>
+        <button onclick="cambiarVista('reportar-encontrado')" class="snap-start flex-shrink-0 flex flex-col md:flex-row items-center gap-1 md:gap-1.5 px-3 py-1 md:px-4 md:py-2.5 rounded-xl font-bold text-sky-600 w-[68px] md:w-auto min-h-[48px]"><i data-lucide="heart" class="w-5 h-5"></i><span>Avistado</span></button>
+        <button onclick="cambiarVista('perfil')" class="snap-start flex-shrink-0 flex flex-col md:flex-row items-center gap-1 md:gap-1.5 px-3 py-1 md:px-4 md:py-2.5 rounded-xl font-bold text-slate-700 w-[68px] md:w-auto min-h-[48px]"><i data-lucide="user" class="w-5 h-5"></i><span>Perfil</span></button>
       </nav>
     </div>
   </header>
+
+  <!-- Container de Toasts personalizados -->
+  <div id="custom-toast-container"></div>
 
   <main class="flex-grow w-full max-w-7xl mx-auto px-4 py-6 md:py-8 space-y-6 overflow-x-hidden relative pb-28 md:pb-8">
     
@@ -92,7 +91,7 @@
         <h3 class="text-lg font-black text-slate-900" id="confirm-titulo">¿Confirmar Acción?</h3>
         <p class="text-sm text-slate-500" id="confirm-mensaje">Esta acción es permanente y afectará los registros públicos.</p>
         <div class="flex gap-3 pt-2">
-          <button id="btn-confirm-cancelar" class="w-1/2 py-2.5 bg-slate-100 font-bold rounded-xl">Cancelar</button>
+          <button id="btn-confirm-cancelar" class="w-1/2 py-2.5 bg-slate-100 font-bold rounded-xl text-slate-700">Cancelar</button>
           <button id="btn-confirm-aceptar" class="w-1/2 py-2.5 bg-red-600 text-white font-bold rounded-xl">Confirmar</button>
         </div>
       </div>
@@ -110,31 +109,32 @@
     <!-- INICIO -->
     <div id="vista-inicio" class="space-y-6 fade-in">
       <div class="bg-gradient-to-r from-orange-500 to-amber-500 rounded-3xl p-6 sm:p-10 text-white shadow-xl">
-        <span class="bg-white/20 text-white text-xs px-3 py-1 rounded-full font-bold uppercase">Red de Ayuda y Rescate</span>
-        <h2 class="text-2xl sm:text-4xl font-extrabold mt-3">Base de Datos Proyecto Patitas</h2>
+        <span class="bg-white/20 text-white text-xs px-3 py-1 rounded-full font-bold uppercase">Base de Datos Unificada</span>
+        <h2 class="text-2xl sm:text-4xl font-extrabold mt-3">Proyecto Patitas</h2>
+        <p class="text-sm mt-2 opacity-90 max-w-xl">Encuentra, reporta o adopta mascotas en tu zona de forma geolocalizada e interactiva.</p>
         <div class="flex flex-wrap gap-3 mt-6">
-          <button onclick="cambiarVista('reportar-perdido')" class="bg-white text-orange-600 px-5 py-3 rounded-xl font-bold shadow-md"><i data-lucide="megaphone" class="inline w-5 h-5 mr-1"></i> Se Perdió</button>
-          <button onclick="cambiarVista('reportar-encontrado')" class="bg-slate-900 text-white px-5 py-3 rounded-xl font-bold shadow-md"><i data-lucide="heart" class="inline w-5 h-5 mr-1"></i> Lo Encontré</button>
+          <button onclick="cambiarVista('reportar-perdido')" class="bg-white text-orange-600 px-5 py-3 rounded-xl font-bold shadow-md flex items-center gap-2"><i data-lucide="megaphone" class="w-5 h-5"></i> Registrar Perdido</button>
+          <button onclick="cambiarVista('reportar-encontrado')" class="bg-slate-900 text-white px-5 py-3 rounded-xl font-bold shadow-md flex items-center gap-2"><i data-lucide="heart" class="w-5 h-5"></i> Reportar Encontrado</button>
         </div>
       </div>
 
       <div class="bg-white border rounded-2xl p-6 shadow-sm">
-        <h3 class="text-lg font-bold mb-4 flex items-center gap-2"><i data-lucide="sliders-horizontal" class="text-orange-500"></i> Filtros</h3>
+        <h3 class="text-lg font-bold mb-4 flex items-center gap-2"><i data-lucide="sliders-horizontal" class="text-orange-500"></i> Filtros de Búsqueda</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <input type="text" id="filtro-texto" oninput="aplicarFiltros()" placeholder="Buscar raza, detalles..." class="input-custom text-sm">
           <select id="filtro-especie" onchange="aplicarFiltros()" class="input-custom text-sm bg-white"><option value="todos">Todas las Especies</option><option value="perro">Perro</option><option value="gato">Gato</option><option value="otro">Otro</option></select>
-          <select id="filtro-estado" onchange="aplicarFiltros()" class="input-custom text-sm bg-white dropdown-estado"><option value="todos">Todos los Estados</option><option value="perdido">Buscando</option><option value="encontrado">Localizados</option><option value="rescatado">Rescatados 🏠</option><option value="reunido">Reunidos 🎉</option><option value="fallecido">Fallecidos 🕯️</option><option value="adopcion" class="opcion-adopcion">En Adopción</option></select>
+          <select id="filtro-estado" onchange="aplicarFiltros()" class="input-custom text-sm bg-white dropdown-estado"><option value="todos">Todos los Estados</option><option value="perdido">Buscando</option><option value="encontrado">Localizados</option><option value="rescatado">Rescatados 🏠</option><option value="reunido">Reunidos 🎉</option><option value="adopcion">En Adopción</option></select>
           <select id="filtro-zona" onchange="aplicarFiltros()" class="input-custom text-sm bg-white"><option value="todas">Todas las zonas</option><option value="Catia La Mar">Catia La Mar</option><option value="Maiquetia">Maiquetía</option><option value="Caraballeda">Caraballeda</option><option value="Caracas">Caracas</option><option value="Otro">Otro</option></select>
         </div>
       </div>
 
       <div id="listado-mascotas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
-      <div id="sin-resultados" class="hidden text-center py-12 bg-white border rounded-2xl">No hay coincidencias en este momento.</div>
+      <div id="sin-resultados" class="hidden text-center py-12 bg-white border rounded-2xl text-slate-400 font-bold">No hay coincidencias en este momento.</div>
     </div>
 
     <!-- REFUGIOS -->
     <div id="vista-refugios" class="hidden space-y-6 fade-in">
-      <div class="bg-indigo-600 rounded-3xl p-6 sm:p-10 text-white"><h2 class="text-2xl sm:text-4xl font-extrabold flex items-center gap-3"><i data-lucide="tent"></i> Equipos de Rescate</h2></div>
+      <div class="bg-indigo-600 rounded-3xl p-6 sm:p-10 text-white"><h2 class="text-2xl sm:text-4xl font-extrabold flex items-center gap-3"><i data-lucide="tent"></i> Equipos de Rescate y Refugios</h2></div>
       <div id="listado-refugios" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </div>
 
@@ -142,20 +142,14 @@
     <div id="vista-reportar-perdido" class="hidden max-w-2xl mx-auto fade-in">
       <div class="bg-white border rounded-3xl p-6 sm:p-8 shadow-sm">
         <h3 class="text-xl font-bold mb-6 flex items-center gap-2"><i data-lucide="megaphone" class="text-orange-500"></i> Registrar Mascota Perdida</h3>
-        <form onsubmit="guardarMascota(event, 'perdido')" class="space-y-6">
+        <form id="form-perdido" onsubmit="guardarMascota(event, 'perdido')" class="space-y-6">
           <div class="space-y-2">
-            <label class="block text-sm font-semibold">Subir Fotos (Máximo 3, puedes recortarlas)</label>
+            <label class="block text-sm font-semibold">Subir Fotos (Hasta 3)</label>
             <input type="file" id="foto-input-p" accept="image/*" onchange="abrirEditorRecorte(this, 'prevs-p')" class="hidden">
-            <div onclick="document.getElementById('foto-input-p').click()" class="border-2 border-dashed p-6 text-center cursor-pointer bg-slate-50 rounded-2xl"><i data-lucide="image" class="mx-auto mb-2 text-slate-400"></i><p class="text-sm">Seleccionar foto</p></div>
-            <div id="prevs-p" class="flex gap-2 overflow-x-auto"></div>
+            <div onclick="document.getElementById('foto-input-p').click()" class="border-2 border-dashed p-6 text-center cursor-pointer bg-slate-50 rounded-2xl hover:bg-slate-100 transition"><i data-lucide="image" class="mx-auto mb-2 text-slate-400"></i><p class="text-sm">Seleccionar foto</p></div>
+            <div id="prevs-p" class="flex gap-2 overflow-x-auto pt-2"></div>
           </div>
           
-          <div class="space-y-2 border-t pt-4">
-            <label class="block text-sm font-semibold">Añadir Video Corto (Opcional, Máx 30s)</label>
-            <input type="file" id="video-p" accept="video/mp4,video/webm" onchange="validarVideo(this)" class="input-custom bg-white">
-            <p class="text-[10px] text-slate-500">Recorta el video en tu galería antes de subirlo si dura más de 30s.</p>
-          </div>
-
           <div class="grid grid-cols-2 gap-4">
             <div><label class="text-xs font-bold uppercase">Nombre</label><input type="text" id="nombre-p" required class="input-custom"></div>
             <div><label class="text-xs font-bold uppercase">Especie</label><select id="especie-p" class="input-custom"><option value="perro">Perro</option><option value="gato">Gato</option><option value="otro">Otro</option></select></div>
@@ -165,22 +159,22 @@
 
           <div class="flex flex-col border-t pt-4">
             <label class="text-xs font-bold uppercase mb-2">Lugar de pérdida (Mapa interactivo)</label>
-            <div class="flex gap-2 mb-3"><input type="text" id="dir-texto-p" placeholder="Ej. Calle 1" class="input-custom"><button type="button" onclick="buscarDir('dir-texto-p', 'gps-p', 'map-p')" class="bg-slate-800 text-white px-4 rounded-xl font-bold">Buscar</button></div>
+            <div class="flex gap-2 mb-3"><input type="text" id="dir-texto-p" placeholder="Ej. Avenida Principal Catia La Mar" class="input-custom"><button type="button" onclick="buscarDir('dir-texto-p', 'gps-p', 'map-p')" class="bg-slate-800 text-white px-4 rounded-xl font-bold">Buscar</button></div>
             <div id="map-p" class="w-full h-40 bg-slate-200 rounded-xl mb-2 relative z-0"></div>
-            <div class="flex gap-2"><input type="text" id="gps-p" readonly class="input-custom text-xs bg-slate-50"><button type="button" onclick="obtenerGPSConMapa('gps-p', 'map-p', 'dir-texto-p')" class="bg-sky-100 text-sky-700 px-3 py-2 rounded-xl text-xs font-bold min-w-fit">📍 GPS</button></div>
+            <div class="flex gap-2"><input type="text" id="gps-p" readonly class="input-custom text-xs bg-slate-50"><button type="button" onclick="obtenerGPSConMapa('gps-p', 'map-p', 'dir-texto-p')" class="bg-sky-100 text-sky-700 px-3 py-2 rounded-xl text-xs font-bold min-w-fit">📍 Obtener GPS</button></div>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
-            <div><label class="text-xs font-bold uppercase">Zona</label><select id="zona-p" class="input-custom"><option value="Catia La Mar">Catia La Mar</option><option value="Maiquetia">Maiquetía</option><option value="Caracas">Caracas</option><option value="Otro">Otro</option></select></div>
-            <div><label class="text-xs font-bold uppercase">Rasgos</label><input type="text" id="rasgos-p" required class="input-custom"></div>
+            <div><label class="text-xs font-bold uppercase">Zona de Referencia</label><select id="zona-p" class="input-custom"><option value="Catia La Mar">Catia La Mar</option><option value="Maiquetia">Maiquetía</option><option value="Caracas">Caracas</option><option value="Otro">Otro</option></select></div>
+            <div><label class="text-xs font-bold uppercase">Rasgos / Detalles</label><input type="text" id="rasgos-p" required class="input-custom"></div>
           </div>
 
           <div class="bg-orange-50 p-4 rounded-2xl border space-y-4">
             <h4 class="text-xs font-extrabold text-orange-800 uppercase">Contacto Directo</h4>
-            <div class="grid grid-cols-2 gap-4"><input type="tel" id="tel-p" required placeholder="WhatsApp" class="input-custom"><input type="email" id="email-p" placeholder="Email (Opcional)" class="input-custom"></div>
+            <div class="grid grid-cols-2 gap-4"><input type="tel" id="tel-p" required placeholder="Número de WhatsApp" class="input-custom"><input type="email" id="email-p" placeholder="Email (Opcional)" class="input-custom"></div>
           </div>
 
-          <div class="flex gap-4"><button type="button" onclick="cambiarVista('inicio')" class="w-1/2 py-3 bg-slate-100 font-bold rounded-xl">Cancelar</button><button type="submit" class="w-1/2 py-3 btn-primary font-bold shadow-md submit-btn">Publicar</button></div>
+          <div class="flex gap-4"><button type="button" onclick="cambiarVista('inicio')" class="w-1/2 py-3 bg-slate-100 font-bold rounded-xl text-slate-700">Cancelar</button><button type="submit" class="w-1/2 py-3 btn-primary font-bold shadow-md submit-btn">Publicar Reporte</button></div>
         </form>
       </div>
     </div>
@@ -189,53 +183,39 @@
     <div id="vista-reportar-encontrado" class="hidden max-w-2xl mx-auto fade-in">
       <div class="bg-white border rounded-3xl p-6 sm:p-8 shadow-sm">
         <h3 class="text-xl font-bold mb-6 flex items-center gap-2"><i data-lucide="heart" class="text-sky-500"></i> Reportar Localizado / Rescatado</h3>
-        <form onsubmit="guardarMascota(event, 'encontrado')" class="space-y-6">
+        <form id="form-encontrado" onsubmit="guardarMascota(event, 'encontrado')" class="space-y-6">
           <div class="space-y-2">
-            <div class="flex justify-between"><label class="block text-sm font-semibold">Subir Fotos (Con IA y Recorte)</label><span class="bg-emerald-50 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full font-bold">✨ IA</span></div>
+            <div class="flex justify-between"><label class="block text-sm font-semibold">Subir Fotos (Hasta 3)</label></div>
             <input type="file" id="foto-input-e" accept="image/*" onchange="abrirEditorRecorte(this, 'prevs-e')" class="hidden">
-            <div onclick="document.getElementById('foto-input-e').click()" class="border-2 border-dashed p-6 text-center cursor-pointer bg-slate-50 rounded-2xl relative">
-              <div id="ia-loader" class="hidden absolute inset-0 bg-white/90 z-20 flex flex-col items-center justify-center"><i class="lucide-loader animate-spin w-6 h-6 text-sky-500"></i></div>
+            <div onclick="document.getElementById('foto-input-e').click()" class="border-2 border-dashed p-6 text-center cursor-pointer bg-slate-50 rounded-2xl hover:bg-slate-100 transition relative">
               <i data-lucide="camera" class="mx-auto mb-2 text-slate-400"></i><p class="text-sm">Seleccionar foto</p>
             </div>
-            <div id="prevs-e" class="flex gap-2 overflow-x-auto"></div>
-          </div>
-          
-          <div class="space-y-2 border-t pt-4">
-            <label class="block text-sm font-semibold">Foto del Rescatista (Opcional)</label>
-            <input type="file" id="foto-rescatista-input" accept="image/*" onchange="abrirEditorRecorte(this, 'rescatista')" class="hidden">
-            <div class="flex items-center gap-4">
-              <div onclick="document.getElementById('foto-rescatista-input').click()" class="w-16 h-16 border-2 border-dashed rounded-xl flex items-center justify-center cursor-pointer bg-slate-50 overflow-hidden"><i data-lucide="user" class="absolute text-slate-300"></i><img id="prev-rescatista-img" class="w-full h-full object-cover relative z-10 hidden"></div>
-            </div>
-          </div>
-
-          <div class="space-y-2 border-t pt-4">
-            <label class="block text-sm font-semibold">Añadir Video Corto (Opcional, Máx 30s)</label>
-            <input type="file" id="video-e" accept="video/mp4,video/webm" onchange="validarVideo(this)" class="input-custom bg-white">
+            <div id="prevs-e" class="flex gap-2 overflow-x-auto pt-2"></div>
           </div>
 
           <div class="flex flex-col border-t pt-4">
             <label class="text-xs font-bold uppercase mb-2">Lugar de Avistamiento (Mapa)</label>
-            <div class="flex gap-2 mb-3"><input type="text" id="dir-texto-e" placeholder="Ej. Plaza" class="input-custom"><button type="button" onclick="buscarDir('dir-texto-e', 'gps-e', 'map-e')" class="bg-slate-800 text-white px-4 rounded-xl font-bold">Buscar</button></div>
+            <div class="flex gap-2 mb-3"><input type="text" id="dir-texto-e" placeholder="Ej. Frente al puerto de La Guaira" class="input-custom"><button type="button" onclick="buscarDir('dir-texto-e', 'gps-e', 'map-e')" class="bg-slate-800 text-white px-4 rounded-xl font-bold">Buscar</button></div>
             <div id="map-e" class="w-full h-40 bg-slate-200 rounded-xl mb-2 relative z-0"></div>
-            <div class="flex gap-2"><input type="text" id="gps-e" readonly class="input-custom text-xs bg-slate-50"><button type="button" onclick="obtenerGPSConMapa('gps-e', 'map-e', 'dir-texto-e')" class="bg-sky-100 text-sky-700 px-3 py-2 rounded-xl text-xs font-bold min-w-fit">📍 GPS</button></div>
+            <div class="flex gap-2"><input type="text" id="gps-e" readonly class="input-custom text-xs bg-slate-50"><button type="button" onclick="obtenerGPSConMapa('gps-e', 'map-e', 'dir-texto-e')" class="bg-sky-100 text-sky-700 px-3 py-2 rounded-xl text-xs font-bold min-w-fit">📍 Obtener GPS</button></div>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div><label class="text-xs font-bold uppercase">Especie</label><select id="especie-e" class="input-custom"><option value="perro">Perro</option><option value="gato">Gato</option><option value="otro">Otro</option></select></div>
             <div><label class="text-xs font-bold uppercase">Sexo</label><select id="sexo-e" class="input-custom"><option value="Macho">Macho</option><option value="Hembra">Hembra</option><option value="No sé">No lo sé</option></select></div>
-            <div><label class="text-xs font-bold uppercase">Raza</label><input type="text" id="raza-e" required class="input-custom"></div>
-            <div><label class="text-xs font-bold uppercase">Color</label><input type="text" id="color-e" required class="input-custom"></div>
-            <div><label class="text-xs font-bold uppercase">Zona</label><select id="zona-e" class="input-custom"><option value="Catia La Mar">Catia La Mar</option><option value="Maiquetia">Maiquetía</option><option value="Caracas">Caracas</option><option value="Otro">Otro</option></select></div>
-            <div><label class="text-xs font-bold uppercase">Detalles</label><input type="text" id="detalles-e" required class="input-custom"></div>
+            <div><label class="text-xs font-bold uppercase">Raza aproximada</label><input type="text" id="raza-e" required class="input-custom"></div>
+            <div><label class="text-xs font-bold uppercase">Color / Patrón</label><input type="text" id="color-e" required class="input-custom"></div>
+            <div><label class="text-xs font-bold uppercase">Zona de Referencia</label><select id="zona-e" class="input-custom"><option value="Catia La Mar">Catia La Mar</option><option value="Maiquetia">Maiquetía</option><option value="Caracas">Caracas</option><option value="Otro">Otro</option></select></div>
+            <div><label class="text-xs font-bold uppercase">Estado de la mascota</label><select id="estado-e" class="input-custom"><option value="encontrado">Localizado (En la Calle)</option><option value="rescatado">Rescatado Temporalmente</option><option value="adopcion">En Adopción Activa</option></select></div>
           </div>
 
           <div class="bg-sky-50 p-4 rounded-2xl border space-y-4">
-            <h4 class="text-xs font-extrabold text-sky-800 uppercase">Resguardo y Contacto</h4>
-            <div class="flex flex-col"><label class="text-xs font-bold uppercase mb-1">Entregado a Fundación Oficial:</label><select id="refugio-e" class="input-custom bg-white"><option value="">-- No / Particular --</option></select></div>
-            <div class="grid grid-cols-2 gap-4"><input type="tel" id="tel-e" required placeholder="Teléfono" class="input-custom"><input type="text" id="lugar-e" placeholder="Lugar actual" class="input-custom"></div>
+            <h4 class="text-xs font-extrabold text-sky-800 uppercase">Resguardo y Contacto de Ayuda</h4>
+            <div class="flex flex-col"><label class="text-xs font-bold uppercase mb-1">Entregado a Refugio Asociado:</label><select id="refugio-e" class="input-custom bg-white"><option value="">-- No (Independiente/Particular) --</option></select></div>
+            <div class="grid grid-cols-2 gap-4"><input type="tel" id="tel-e" required placeholder="Teléfono" class="input-custom"><input type="text" id="lugar-e" placeholder="Dirección Actual" class="input-custom"></div>
           </div>
 
-          <div class="flex gap-4"><button type="button" onclick="cambiarVista('inicio')" class="w-1/2 py-3 bg-slate-100 font-bold rounded-xl">Cancelar</button><button type="submit" class="w-1/2 py-3 btn-secondary font-bold shadow-md submit-btn">Publicar</button></div>
+          <div class="flex gap-4"><button type="button" onclick="cambiarVista('inicio')" class="w-1/2 py-3 bg-slate-100 font-bold rounded-xl text-slate-700">Cancelar</button><button type="submit" class="w-1/2 py-3 btn-secondary font-bold shadow-md submit-btn">Publicar Reporte</button></div>
         </form>
       </div>
     </div>
@@ -247,19 +227,30 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div class="space-y-4">
             <div class="aspect-square sm:aspect-video w-full rounded-2xl bg-slate-100 relative overflow-hidden"><img id="d-img" class="w-full h-full object-cover"><span id="d-badge" class="absolute top-4 left-4 text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase shadow-md"></span></div>
-            <div id="d-minis" class="flex gap-2 overflow-x-auto"></div>
-            <div id="d-video-wrapper" class="hidden mt-4 bg-slate-900 rounded-xl p-2 overflow-hidden aspect-video">
-                <video id="d-video" controls class="w-full h-full object-contain bg-black"></video>
-            </div>
-            <div id="d-resc-wrap" class="hidden items-center gap-3 bg-slate-50 p-3 rounded-xl border"><img id="d-resc-img" class="w-12 h-12 rounded-full object-cover"><p class="text-xs font-bold">Rescatista</p></div>
+            <div id="d-minis" class="flex gap-2 overflow-x-auto pt-2"></div>
           </div>
-          <div>
-            <h2 id="d-nombre" class="text-3xl font-extrabold"></h2><p id="d-zona" class="font-bold text-orange-600 mt-1"></p><p id="d-dir" class="text-sm mt-1"></p>
-            <div id="d-map-evt-wrap" class="mt-4 hidden z-0"><h4 id="d-map-tit" class="text-xs font-bold uppercase mb-2">Evento</h4><div id="map-det-evt" class="w-full h-32 rounded-xl z-0"></div></div>
-            <div id="d-map-ref-wrap" class="mt-4 bg-indigo-50 p-4 rounded-xl hidden z-0"><h4 class="text-xs font-bold text-indigo-800 uppercase">Custodia:</h4><p id="d-ref-nom" class="text-base font-black text-indigo-900"></p><p id="d-ref-con" class="text-xs mb-2"></p><div id="map-det-ref" class="w-full h-32 rounded-xl z-0 mb-3 border border-indigo-200"></div><a id="d-ref-ruta" target="_blank" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-xl text-sm flex justify-center gap-1"><i data-lucide="map" class="w-4 h-4"></i> ¿Cómo llegar?</a></div>
-            <div class="grid grid-cols-2 gap-4 mt-6 bg-slate-50 p-4 rounded-2xl text-sm"><div><span class="font-bold">Especie:</span> <span id="d-esp"></span></div><div><span class="font-bold">Sexo:</span> <span id="d-sex"></span></div><div><span class="font-bold">Raza:</span> <span id="d-raz"></span></div><div><span class="font-bold">Fecha:</span> <span id="d-fec"></span></div></div>
-            <div class="mt-4 border-t pt-4"><p class="text-xs font-bold text-slate-400 block mb-1">Descripción / Rasgos:</p><p id="d-rasgos" class="text-sm italic pl-2 border-l-2 border-orange-500"></p></div>
-            <div class="mt-4 border-t pt-4 flex gap-2"><a id="d-wa" target="_blank" class="w-1/2 justify-center bg-emerald-500 text-white font-bold py-3 rounded-xl flex items-center gap-1"><i data-lucide="message-circle" class="w-5 h-5"></i> WhatsApp</a><span id="d-contacto" class="hidden"></span></div>
+          <div class="space-y-4">
+            <h2 id="d-nombre" class="text-3xl font-extrabold"></h2><p id="d-zona" class="font-bold text-orange-600 mt-1"></p><p id="d-dir" class="text-sm text-slate-500"></p>
+            
+            <div id="d-map-evt-wrap" class="mt-4 hidden"><h4 class="text-xs font-bold uppercase text-slate-400 mb-2">Punto Geográfico de Reporte</h4><div id="map-det-evt" class="w-full h-32 rounded-xl"></div></div>
+            
+            <div id="d-map-ref-wrap" class="mt-4 bg-indigo-50 p-4 rounded-xl hidden">
+              <h4 class="text-xs font-bold text-indigo-800 uppercase">Custodia Oficial por Refugio:</h4>
+              <p id="d-ref-nom" class="text-base font-black text-indigo-900"></p>
+              <p id="d-ref-con" class="text-xs mb-2"></p>
+              <div id="map-det-ref" class="w-full h-32 rounded-xl border border-indigo-200"></div>
+              <a id="d-ref-ruta" target="_blank" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-xl text-sm flex justify-center gap-1 mt-2 text-center items-center"><i data-lucide="map" class="w-4 h-4"></i> ¿Cómo llegar al refugio?</a>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl text-sm">
+              <div><span class="font-bold text-slate-400">Especie:</span> <span id="d-esp" class="font-semibold text-slate-800"></span></div>
+              <div><span class="font-bold text-slate-400">Sexo:</span> <span id="d-sex" class="font-semibold text-slate-800"></span></div>
+              <div><span class="font-bold text-slate-400">Raza:</span> <span id="d-raz" class="font-semibold text-slate-800"></span></div>
+              <div><span class="font-bold text-slate-400">Reportado:</span> <span id="d-fec" class="font-semibold text-slate-800"></span></div>
+            </div>
+            
+            <div class="pt-2"><span class="font-bold text-slate-400 block mb-1">Descripción / Rasgos:</span><p id="d-rasgos" class="text-sm italic pl-2 border-l-2 border-orange-500 text-slate-700"></p></div>
+            <div class="pt-4 flex gap-2"><a id="d-wa" target="_blank" class="w-full justify-center bg-emerald-500 text-white font-bold py-3 rounded-xl flex items-center gap-1"><i data-lucide="message-circle" class="w-5 h-5"></i> Contactar vía WhatsApp</a></div>
           </div>
         </div>
       </div>
@@ -275,18 +266,18 @@
               <img id="dr-img" class="w-full h-full object-cover">
             </div>
           </div>
-          <div>
+          <div class="space-y-4">
             <span id="dr-pais" class="bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full uppercase"></span>
-            <h2 id="dr-nombre" class="text-3xl font-extrabold mt-2 text-slate-900"></h2>
-            <p id="dr-responsable" class="text-slate-600 mt-1 font-bold"></p>
-            <p id="dr-direccion" class="text-sm text-slate-500 mt-1"></p>
+            <h2 id="dr-nombre" class="text-3xl font-extrabold text-slate-900"></h2>
+            <p id="dr-responsable" class="text-slate-600 font-bold"></p>
+            <p id="dr-direccion" class="text-sm text-slate-500"></p>
             
-            <div id="dr-map-wrap" class="mt-4 z-0">
-              <h4 class="text-xs font-bold uppercase mb-2">Ubicación de la Sede</h4>
-              <div id="map-det-refugio-view" class="w-full h-40 bg-slate-200 rounded-xl z-0"></div>
+            <div id="dr-map-wrap" class="mt-4">
+              <h4 class="text-xs font-bold uppercase text-slate-400 mb-2">Ubicación de la Sede</h4>
+              <div id="map-det-refugio-view" class="w-full h-40 bg-slate-200 rounded-xl"></div>
             </div>
 
-            <div class="mt-6 border-t pt-4 flex gap-2">
+            <div class="mt-6 flex gap-2">
               <a id="dr-wa" target="_blank" class="w-1/2 justify-center bg-emerald-500 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-1"><i data-lucide="message-circle" class="w-5 h-5"></i> WhatsApp</a>
               <a id="dr-ruta" target="_blank" class="w-1/2 justify-center bg-indigo-600 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-1"><i data-lucide="map" class="w-5 h-5"></i> ¿Cómo llegar?</a>
             </div>
@@ -294,7 +285,7 @@
         </div>
 
         <div class="mt-8 border-t pt-6">
-          <h3 class="text-lg font-bold mb-4 flex items-center gap-2"><i data-lucide="paw-print" class="text-indigo-600"></i> Mascotas Bajo su Custodia</h3>
+          <h3 class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-800"><i data-lucide="paw-print" class="text-indigo-600"></i> Mascotas Actualmente Custodiadas</h3>
           <div id="dr-mascotas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
         </div>
       </div>
@@ -304,7 +295,7 @@
     <div id="vista-verificar-credencial" class="hidden max-w-md mx-auto fade-in py-10">
       <div class="bg-white border rounded-3xl p-6 text-center shadow-xl space-y-6">
         <div id="v-status-badge" class="mx-auto px-4 py-2 rounded-full text-xs font-extrabold uppercase w-fit">Verificando...</div>
-        <div class="relative w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-indigo-100">
+        <div class="relative w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-indigo-100 bg-slate-100">
           <img id="v-foto" src="" class="w-full h-full object-cover">
         </div>
         <div>
@@ -314,44 +305,44 @@
           <p id="v-id" class="text-xs font-mono text-slate-400 mt-2"></p>
         </div>
         <div class="border-t pt-4 text-left space-y-3">
-          <div><span class="text-[10px] font-bold text-slate-400 block">DIRECCIÓN:</span><p id="v-dir" class="text-xs font-semibold text-slate-700"></p></div>
-          <div><span class="text-[10px] font-bold text-slate-400 block">REDES SOCIALES:</span><div id="v-socials" class="flex gap-2 mt-1"></div></div>
+          <div><span class="text-[10px] font-bold text-slate-400 block">DIRECCIÓN DE CONTACTO:</span><p id="v-dir" class="text-xs font-semibold text-slate-700"></p></div>
+          <div><span class="text-[10px] font-bold text-slate-400 block">REDES SOCIALES ASOCIADAS:</span><div id="v-socials" class="flex flex-wrap gap-2 mt-1"></div></div>
         </div>
-        <button onclick="cambiarVista('inicio')" class="w-full py-3 bg-slate-900 text-white font-bold rounded-xl text-sm">Entrar a la Aplicación</button>
+        <button onclick="window.location.reload();" class="w-full py-3 bg-slate-900 text-white font-bold rounded-xl text-sm">Entrar a la Aplicación</button>
       </div>
     </div>
 
     <!-- PERFIL / AUTH / ADMIN DASHBOARD -->
-    <div id="vista-perfil" class="hidden space-y-6 fade-in w-full">
+    <div id="vista-perfil" class="hidden space-y-6 w-full">
       
       <!-- Bloque de Autenticación (Login / Registro) -->
       <div id="auth-panel" class="max-w-md mx-auto bg-white border rounded-3xl p-8 text-center space-y-6 shadow-sm">
-        <i data-lucide="user-circle" class="w-16 h-16 text-slate-400 mx-auto"></i><h3 class="text-2xl font-extrabold">Acceso al Sistema</h3>
-        <p class="text-xs text-slate-500">Inicia sesión o regístrate para gestionar tus reportes o refugios.</p>
+        <i data-lucide="user-circle" class="w-16 h-16 text-slate-400 mx-auto"></i><h3 class="text-2xl font-extrabold">Acceso Voluntario</h3>
+        <p class="text-xs text-slate-500">Inicia sesión para gestionar credenciales o registrar tus mascotas.</p>
         <div class="flex bg-slate-100 p-1 rounded-xl mb-4">
           <button id="tab-login" onclick="setAuthTab('login')" class="w-1/2 py-2 text-sm font-bold bg-white rounded-lg shadow-sm">Iniciar Sesión</button>
           <button id="tab-reg" onclick="setAuthTab('reg')" class="w-1/2 py-2 text-sm font-bold text-slate-500 rounded-lg">Regístrate</button>
         </div>
         <form id="form-auth" onsubmit="procesarAuth(event)" class="space-y-4">
           <div id="reg-fields" class="hidden space-y-4">
-            <input type="text" id="auth-nombre" placeholder="Tu Nombre Completo" class="input-custom text-sm">
+            <input type="text" id="auth-nombre" placeholder="Nombre y Apellido" class="input-custom text-sm">
             
             <div class="space-y-2 text-left">
-              <label class="block text-xs font-bold uppercase">Foto de Perfil (Opcional)</label>
+              <label class="block text-xs font-bold uppercase text-slate-500">Foto de Perfil (Para Carnet)</label>
               <input type="file" id="foto-perfil-input" accept="image/*" onchange="abrirEditorRecorte(this, 'rescatista')" class="hidden">
               <div class="flex items-center gap-4">
                 <div onclick="document.getElementById('foto-perfil-input').click()" class="w-20 h-20 border-2 border-dashed rounded-2xl flex items-center justify-center cursor-pointer bg-slate-50 overflow-hidden relative">
                   <i data-lucide="user" class="absolute text-slate-300"></i>
                   <img id="prev-rescatista-img" class="w-full h-full object-cover relative z-10 hidden">
                 </div>
-                <span class="text-xs text-slate-500">Haz clic para subir y recortar tu foto de perfil.</span>
+                <span class="text-xs text-slate-500">Sube tu foto de carnet recortada.</span>
               </div>
             </div>
 
-            <input type="text" id="auth-direccion" placeholder="Dirección Física Completa" class="input-custom text-sm">
-            <input type="tel" id="auth-telefono" placeholder="Número de Teléfono" class="input-custom text-sm">
-            <input type="text" id="auth-code" placeholder="Código de Invitación de tu Refugio" class="input-custom text-sm">
-            <p class="text-[10px] text-slate-500 text-left">Si no tienes un código de invitación de un refugio, te registrarás como un Rescatista Independiente por defecto.</p>
+            <input type="text" id="auth-direccion" placeholder="Dirección Física" class="input-custom text-sm">
+            <input type="tel" id="auth-telefono" placeholder="WhatsApp (Ej: +584120000000)" class="input-custom text-sm">
+            <input type="text" id="auth-code" placeholder="Código de Invitación del Refugio" class="input-custom text-sm">
+            <p class="text-[10px] text-slate-500 text-left">Si no dispones de código de tu refugio, se te registrará como Rescatista Independiente por defecto.</p>
           </div>
           
           <input type="email" id="auth-email" required placeholder="Correo Electrónico" class="input-custom text-sm">
@@ -362,17 +353,24 @@
         <!-- ACCESO DE EMERGENCIA CLÁSICO PARA PATTY -->
         <div class="border-t pt-6 mt-4">
           <p class="text-xs font-bold text-slate-700 mb-2">🔐 Acceso de Emergencia (Clave Clásica)</p>
-          <p class="text-[10px] text-slate-400 mb-3">Si eres Administrador de emergencia, escribe tu clave aquí para desbloquear tus controles.</p>
+          <p class="text-[10px] text-slate-400 mb-3 font-semibold text-orange-600">Usa la contraseña clásica ".2411Patty.." de Patty para privilegios de administración local.</p>
           <div class="flex gap-2">
-            <input type="password" id="auth-bypass-pass" placeholder="Tu clave clásica..." class="input-custom text-sm text-center">
-            <button type="button" onclick="procesarBypassClasico()" class="bg-orange-500 text-white px-5 rounded-xl text-xs font-bold min-w-[90px]">Entrar</button>
+            <input type="password" id="auth-bypass-pass" placeholder="Contraseña clásica..." class="input-custom text-sm text-center">
+            <button type="button" onclick="procesarBypassClasico()" class="bg-orange-500 text-white px-5 rounded-xl text-xs font-bold min-w-[90px] hover:bg-orange-600 transition">Entrar</button>
           </div>
         </div>
       </div>
 
       <!-- Dashboard del Usuario Logueado -->
       <div id="user-dashboard" class="hidden space-y-6 w-full">
-        
+        <div class="bg-white border rounded-3xl p-6 flex justify-between items-center flex-wrap gap-4">
+          <div>
+            <h2 id="dash-name" class="text-2xl font-black"></h2>
+            <p id="dash-role" class="text-sm text-slate-500 font-bold uppercase"></p>
+          </div>
+          <button onclick="cerrarSesion()" class="bg-red-50 text-red-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-100">Cerrar Sesión</button>
+        </div>
+
         <!-- Credencial / Carnet Digital Real -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="bg-white border rounded-3xl p-6 shadow-sm space-y-4">
@@ -455,14 +453,9 @@
 
         <!-- Panel de Administración Patty Global -->
         <div id="panel-admin" class="hidden space-y-6">
-          <div class="bg-amber-50 p-6 rounded-3xl border border-amber-200">
-            <h3 class="font-bold text-amber-900 mb-2"><i data-lucide="key" class="inline"></i> API Key Gemini Global</h3>
-            <div class="flex gap-2"><input type="password" id="admin-gemini-key" class="input-custom flex-grow"><button onclick="guardarKeyAdmin()" class="bg-amber-600 text-white px-5 py-2 rounded-xl font-bold">Guardar</button></div>
-          </div>
-          
           <div class="bg-white border rounded-3xl p-6 overflow-x-auto">
-            <div class="flex justify-between mb-4">
-              <h3 class="font-extrabold">Gestión de Refugios</h3>
+            <div class="flex justify-between mb-4 items-center">
+              <h3 class="font-extrabold text-lg">Gestión de Refugios (Global)</h3>
               <button onclick="abrirModalRefugio()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold">+ Nuevo Refugio</button>
             </div>
             <table class="w-full text-left text-sm whitespace-nowrap">
@@ -478,13 +471,14 @@
           </div>
 
           <div class="bg-white border rounded-3xl p-6 overflow-x-auto">
-            <h3 class="font-extrabold mb-4">Gestión de Usuarios y Permisos Globales</h3>
+            <h3 class="font-extrabold text-lg mb-4">Gestión de Usuarios y Permisos Globales</h3>
             <table class="w-full text-left text-sm whitespace-nowrap">
               <thead>
                 <tr class="bg-slate-50 text-slate-400 text-xs border-b">
                   <th class="p-3">Nombre</th>
                   <th class="p-3">Correo</th>
                   <th class="p-3">Rol</th>
+                  <th class="p-3">Estatus</th>
                   <th class="p-3 text-right">Acciones</th>
                 </tr>
               </thead>
@@ -494,7 +488,7 @@
         </div>
 
         <div class="bg-white border rounded-3xl p-6 overflow-x-auto">
-          <h3 class="font-extrabold mb-4" id="titulo-mis-mascotas">Mascotas Gestionables</h3>
+          <h3 class="font-extrabold mb-4 text-lg" id="titulo-mis-mascotas">Mascotas Gestionables</h3>
           <table class="w-full text-left text-sm whitespace-nowrap">
             <thead><tr class="bg-slate-50 text-slate-400 text-xs border-b"><th class="p-3">Mascota</th><th class="p-3">Estado</th><th class="p-3 text-right">Acciones</th></tr></thead>
             <tbody id="tb-mis-mascotas"></tbody>
@@ -511,7 +505,7 @@
       <div class="p-4 bg-slate-900 text-white flex justify-between items-center"><h3 class="font-bold">Ajustar Foto</h3><button onclick="cerrarCropper()"><i data-lucide="x"></i></button></div>
       <div class="flex-grow bg-slate-800 p-2 relative flex items-center justify-center overflow-hidden"><img id="image-to-crop" class="max-w-full max-h-full block"></div>
       <div class="p-4 flex gap-2 justify-center bg-slate-900">
-        <button onclick="rotarCropper()" class="bg-slate-700 text-white px-4 py-3 rounded-xl"><i data-lucide="rotate-cw"></i> Rotar</button>
+        <button onclick="rotarCropper()" class="bg-slate-700 text-white px-4 py-3 rounded-xl flex items-center gap-1 justify-center"><i data-lucide="rotate-cw" class="w-4 h-4"></i> Rotar</button>
         <button onclick="guardarRecorte()" class="bg-orange-500 text-white px-6 py-3 rounded-xl font-bold flex-grow">Recortar y Guardar</button>
       </div>
     </div>
@@ -520,11 +514,11 @@
   <div id="modal-editar-mascota" class="hidden fixed inset-0 bg-black/60 z-[100] flex justify-center items-center p-4">
     <div class="bg-white rounded-3xl w-full max-w-2xl fade-in flex flex-col max-h-[90vh]">
       <div class="bg-slate-900 text-white p-5 flex justify-between rounded-t-3xl"><h3 class="font-bold">Editar Mascota</h3><button onclick="cerrarEditar()"><i data-lucide="x"></i></button></div>
-      <form onsubmit="guardarEdicion(event)" class="p-6 overflow-y-auto space-y-4">
+      <form onsubmit="guardarEdicion(event)" class="p-6 overflow-y-auto space-y-4 text-slate-800">
         <input type="hidden" id="ed-id">
-        <div class="grid grid-cols-2 gap-4"><div class="flex flex-col"><label class="text-xs font-bold">Nombre</label><input type="text" id="ed-nom" class="input-custom"></div><div class="flex flex-col"><label class="text-xs font-bold">Raza</label><input type="text" id="ed-raz" class="input-custom"></div></div>
-        <div class="grid grid-cols-2 gap-4"><div class="flex flex-col"><label class="text-xs font-bold">Teléfono</label><input type="text" id="ed-tel" class="input-custom"></div><div class="flex flex-col"><label class="text-xs font-bold">Refugio Asignado</label><select id="ed-ref" class="input-custom bg-white"></select></div></div>
-        <div class="flex flex-col border-t pt-4"><label class="text-xs font-bold mb-2">Editar Mapa</label><div class="flex gap-2 mb-2"><input type="text" id="ed-dir" class="input-custom"><button type="button" onclick="buscarDir('ed-dir', 'ed-gps', 'map-ed')" class="bg-slate-800 text-white px-3 rounded-xl font-bold text-xs">Buscar</button></div><div id="map-ed" class="w-full h-32 bg-slate-200 rounded-xl relative z-0"></div><input type="hidden" id="ed-gps"></div>
+        <div class="grid grid-cols-2 gap-4"><div class="flex flex-col"><label class="text-xs font-bold text-slate-500">Nombre</label><input type="text" id="ed-nom" class="input-custom"></div><div class="flex flex-col"><label class="text-xs font-bold text-slate-500">Raza</label><input type="text" id="ed-raz" class="input-custom"></div></div>
+        <div class="grid grid-cols-2 gap-4"><div class="flex flex-col"><label class="text-xs font-bold text-slate-500">Teléfono</label><input type="text" id="ed-tel" class="input-custom"></div><div class="flex flex-col"><label class="text-xs font-bold text-slate-500">Refugio Asignado</label><select id="ed-ref" class="input-custom bg-white"></select></div></div>
+        <div class="flex flex-col border-t pt-4"><label class="text-xs font-bold mb-2 text-slate-500">Editar Mapa</label><div class="flex gap-2 mb-2"><input type="text" id="ed-dir" class="input-custom"><button type="button" onclick="buscarDir('ed-dir', 'ed-gps', 'map-ed')" class="bg-slate-800 text-white px-3 rounded-xl font-bold text-xs">Buscar</button></div><div id="map-ed" class="w-full h-32 bg-slate-200 rounded-xl relative z-0"></div><input type="hidden" id="ed-gps"></div>
         <div class="flex gap-4 pt-4"><button type="button" onclick="cerrarEditar()" class="w-1/2 py-2 bg-slate-100 font-bold rounded-xl">Cancelar</button><button type="submit" class="w-1/2 py-2 bg-slate-900 text-white font-bold rounded-xl submit-btn">Guardar</button></div>
       </form>
     </div>
@@ -532,27 +526,41 @@
 
   <div id="admin-modal-refugio" class="hidden fixed inset-0 bg-black/60 z-[100] flex justify-center items-center p-4">
     <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-      <div class="bg-indigo-600 text-white p-5 flex justify-between rounded-t-3xl"><h3 class="font-bold">Refugio</h3><button onclick="cerrarModalRefugio()"><i data-lucide="x"></i></button></div>
+      <div class="bg-indigo-600 text-white p-5 flex justify-between rounded-t-3xl"><h3 class="font-bold">Información de Refugio</h3><button onclick="cerrarModalRefugio()"><i data-lucide="x"></i></button></div>
       <form onsubmit="guardarRefugio(event)" class="p-6 overflow-y-auto space-y-4">
         <input type="hidden" id="ref-id">
         <div class="grid grid-cols-2 gap-4">
-          <input type="text" id="ref-nom" placeholder="Nombre" required class="input-custom">
+          <input type="text" id="ref-nom" placeholder="Nombre de Refugio" required class="input-custom">
           <!-- País: deshabilitado y llenado automáticamente por reverse geocode -->
-          <input type="text" id="ref-pai" placeholder="País (Detectado por Mapa)" readonly required class="input-custom bg-slate-100">
-          <input type="text" id="ref-res" placeholder="Responsable" required class="input-custom">
-          <input type="tel" id="ref-tel" placeholder="Teléfono" required class="input-custom">
+          <input type="text" id="ref-pai" placeholder="País (Detectado por Mapa)" readonly required class="input-custom bg-slate-100 font-bold text-indigo-700">
+          <input type="text" id="ref-res" placeholder="Responsable / Director" required class="input-custom">
+          <input type="tel" id="ref-tel" placeholder="WhatsApp del Refugio" required class="input-custom">
         </div>
-        <input type="text" id="ref-dir" placeholder="Dirección" required class="input-custom">
-        <div class="flex flex-col">
+        <input type="text" id="ref-dir" placeholder="Dirección Física de la Sede" required class="input-custom">
+        
+        <div class="space-y-2 border-t pt-4">
+          <label class="block text-xs font-bold uppercase text-slate-500">Sube Foto del Refugio (Opcional)</label>
+          <input type="file" id="foto-ref-input" accept="image/*" onchange="abrirEditorRecorte(this, 'refugios-prev')" class="hidden">
+          <div class="flex items-center gap-4">
+            <div onclick="document.getElementById('foto-ref-input').click()" class="w-24 h-16 border-2 border-dashed rounded-xl flex items-center justify-center cursor-pointer bg-slate-50 overflow-hidden relative">
+              <i data-lucide="camera" class="absolute text-slate-300"></i>
+              <img id="prev-ref-img" class="w-full h-full object-cover relative z-10 hidden">
+            </div>
+            <span class="text-xs text-slate-500">Selecciona o toma una fotografía de las instalaciones.</span>
+          </div>
+        </div>
+
+        <div class="flex flex-col border-t pt-4">
+          <label class="text-xs font-bold uppercase mb-1 text-slate-500">Ubicación física en el mapa</label>
           <div id="map-r" class="w-full h-32 bg-slate-200 rounded-xl mb-2 relative z-0"></div>
           <div class="flex gap-2">
-            <input type="text" id="ref-gps" readonly class="input-custom text-xs">
-            <button type="button" onclick="obtenerGPSConMapa('ref-gps', 'map-r', 'ref-dir')" class="bg-slate-800 text-white px-3 rounded-xl text-xs font-bold">📍 GPS</button>
+            <input type="text" id="ref-gps" readonly class="input-custom text-xs bg-slate-50" placeholder="Coordenadas GPS">
+            <button type="button" onclick="obtenerGPSConMapa('ref-gps', 'map-r', 'ref-dir')" class="bg-slate-800 text-white px-4 rounded-xl text-xs font-bold">📍 GPS</button>
           </div>
         </div>
         <div class="flex gap-4">
-          <button type="button" onclick="cerrarModalRefugio()" class="w-1/2 py-2 bg-slate-100 font-bold rounded-xl">Cancelar</button>
-          <button type="submit" class="w-1/2 py-2 bg-indigo-600 text-white font-bold rounded-xl submit-btn">Guardar</button>
+          <button type="button" onclick="cerrarModalRefugio()" class="w-1/2 py-2 bg-slate-100 font-bold rounded-xl text-slate-700">Cancelar</button>
+          <button type="submit" class="w-1/2 py-2 bg-indigo-600 text-white font-bold rounded-xl submit-btn">Guardar Sede</button>
         </div>
       </form>
     </div>
@@ -564,7 +572,7 @@
       <h3 class="text-lg font-black text-slate-900">Crear Código de Invitación</h3>
       <div class="space-y-3">
         <div>
-          <label class="text-[10px] font-bold uppercase block mb-1">Rol Asignado</label>
+          <label class="text-[10px] font-bold uppercase block mb-1 text-slate-500">Rol Asignado</label>
           <select id="inv-rol" class="input-custom bg-white">
             <option value="Voluntario">Voluntario</option>
             <option value="Rescatista">Rescatista</option>
@@ -573,7 +581,7 @@
           </select>
         </div>
         <div>
-          <label class="text-[10px] font-bold uppercase block mb-1">Código Generado</label>
+          <label class="text-[10px] font-bold uppercase block mb-1 text-slate-500">Código Generado</label>
           <div class="flex gap-2">
             <input type="text" id="inv-codigo-res" readonly class="input-custom font-mono text-center text-sm bg-slate-50 flex-grow">
             <button onclick="copiarCodigoInvitacion()" class="bg-slate-800 text-white px-3 rounded-lg"><i data-lucide="copy" class="w-4 h-4"></i></button>
@@ -581,7 +589,7 @@
         </div>
       </div>
       <div class="flex gap-3 pt-2">
-        <button onclick="cerrarGeneradorInvitacion()" class="w-1/2 py-2.5 bg-slate-100 font-bold rounded-xl">Cerrar</button>
+        <button onclick="cerrarGeneradorInvitacion()" class="w-1/2 py-2.5 bg-slate-100 font-bold rounded-xl text-slate-700">Cerrar</button>
         <button onclick="procesarGeneracionCodigo()" class="w-1/2 py-2.5 bg-indigo-600 text-white font-bold rounded-xl">Generar Código</button>
       </div>
     </div>
@@ -600,36 +608,46 @@
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, signInAnonymously } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
     import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, getDoc, collection, onSnapshot, addDoc, updateDoc, deleteDoc, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
-    import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js';
 
+    // Inicialización Robusta de la Base de Datos
     const configUser = { apiKey: "AIzaSyDkeh5WVeWi1yFTHGiCSLvz9aB8auhZtT8", authDomain: "buscapatutas.firebaseapp.com", projectId: "buscapatutas", storageBucket: "buscapatutas.firebasestorage.app", messagingSenderId: "61106039176", appId: "1:61106039176:web:266707c6c9fa2c5a1b723d" };
     const fbConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : configUser;
     const app = initializeApp(fbConfig);
     const auth = getAuth(app);
     const db = initializeFirestore(app, { localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()}) });
-    const storage = getStorage(app);
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'buscapatitas';
 
-    let user = null; let usuarioActual = { rol: 'anonimo' };
-    let baseMascotas = []; let baseRefugios = []; let baseUsuarios = []; let geminiApiKeyGlobal = '';
-    let vistaActual = 'inicio'; let mascotaSeleccionadaId = null; let filtroActual = { texto: '', especie: 'todos', estado: 'todos', zona: 'todas' };
+    // Estados Globales del Sistema
+    let user = null; 
+    let usuarioActual = { rol: 'anonimo' };
+    let baseMascotas = []; 
+    let baseRefugios = []; 
+    let baseUsuarios = [];
+    let vistaActual = 'inicio'; 
+    let mascotaSeleccionadaId = null; 
+    let filtroActual = { texto: '', especie: 'todos', estado: 'todos', zona: 'todas' };
     
-    // Media globals
-    let temporalFotosSeleccionadas = []; let temporalFotoRescatista = ''; let temporalVideoUrl = '';
-    let cropperInst = null; let currentCropTarget = '';
-    let globalMaps = {}; let globalMarkers = {};
+    // Media & Crop Helpers
+    let temporalFotosSeleccionadas = []; 
+    let temporalFotoRescatista = ''; 
+    let temporalFotoRefugio = '';
+    let cropperInst = null; 
+    let currentCropTarget = ''; // 'mascotas-p', 'mascotas-e', 'rescatista', 'refugios-prev'
+    let globalMaps = {}; 
+    let globalMarkers = {};
     let carnetQrGenerator = null;
 
-    // Check if bypass logged in
+    // Sincronizar datos de Bypass (Sesión Patty guardada localmente)
     const savedBypass = localStorage.getItem('patitas_bypass_user');
     if (savedBypass) {
       usuarioActual = JSON.parse(savedBypass);
     }
 
-    // Checking for QR verification triggers in URL
+    // Comprobar si hay un QR escaneado en los parámetros de la URL
     const urlParams = new URLSearchParams(window.location.search);
     const verId = urlParams.get('verify');
 
+    // Escucha de estado de Autenticación de Firebase
     onAuthStateChanged(auth, async (authUser) => {
       user = authUser;
       if (user) {
@@ -638,8 +656,8 @@
             try {
               const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid));
               if(snap.exists()) usuarioActual = { uid: user.uid, ...snap.data() };
-              else usuarioActual = { uid: user.uid, rol: 'voluntario', nombre: user.email };
-            } catch(e) { usuarioActual = { uid: user.uid, rol: 'voluntario', nombre: user.email }; }
+              else usuarioActual = { uid: user.uid, rol: 'Voluntario', nombre: user.email, estatus: 'Activo' };
+            } catch(e) { usuarioActual = { uid: user.uid, rol: 'Voluntario', nombre: user.email, estatus: 'Activo' }; }
           } else {
             usuarioActual = { uid: user.uid, rol: 'anonimo' };
           }
@@ -660,17 +678,31 @@
       }
     });
 
+    // Sincronización en Tiempo Real de Colecciones
     function sincronizarDB() {
-      onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'global'), (s) => { if(s.exists()) { geminiApiKeyGlobal = s.data().geminiApiKey||''; const ak = document.getElementById('admin-gemini-key'); if(ak) ak.value = geminiApiKeyGlobal;} });
-      onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'pets'), (s) => { baseMascotas = []; s.forEach(d => baseMascotas.push({ id: d.id, ...d.data() })); baseMascotas.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)); renderizarMascotas(); renderizarTablaMascotasPerfil(); actualizarContadores(); });
-      onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'shelters'), (s) => { baseRefugios = []; s.forEach(d => baseRefugios.push({ id: d.id, ...d.data() })); renderizarRefugios(); renderizarTablaRefugios(); actualizarDropsRefugios(); });
+      onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'pets'), (s) => { 
+        baseMascotas = []; 
+        s.forEach(d => baseMascotas.push({ id: d.id, ...d.data() })); 
+        baseMascotas.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)); 
+        renderizarMascotas(); 
+        renderizarTablaMascotasPerfil(); 
+        actualizarContadores(); 
+      }, (e) => console.error("Error sincronizando mascotas:", e));
+
+      onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'shelters'), (s) => { 
+        baseRefugios = []; 
+        s.forEach(d => baseRefugios.push({ id: d.id, ...d.data() })); 
+        renderizarRefugios(); 
+        renderizarTablaRefugios(); 
+        actualizarDropsRefugios(); 
+      }, (e) => console.error("Error sincronizando refugios:", e));
       
-      // Sincronizar todos los usuarios para Patty Admin, o miembros específicos del refugio para el Manager
       if (usuarioActual.rol === 'admin') {
         onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'users'), (s) => {
-          baseUsuarios = []; s.forEach(d => baseUsuarios.push({ id: d.id, ...d.data() }));
+          baseUsuarios = []; 
+          s.forEach(d => baseUsuarios.push({ id: d.id, ...d.data() }));
           renderizarTablaUsuarios();
-        });
+        }, (e) => console.error("Error sincronizando usuarios:", e));
       } else if (usuarioActual.refugioId && (usuarioActual.rol === 'Responsable' || usuarioActual.rol === 'Administración')) {
         onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'users'), (s) => {
           const miembros = [];
@@ -681,22 +713,103 @@
             }
           });
           renderizarTablaMiembrosRefugio(miembros);
-        });
+        }, (e) => console.error("Error sincronizando miembros:", e));
       }
     }
 
+    // Actualizar selectores de refugio en reportes
     function actualizarDropsRefugios() {
       const sels = document.querySelectorAll('#refugio-e, #ed-ref');
       sels.forEach(sel => {
         if(!sel) return;
         const valActual = sel.value;
-        sel.innerHTML = '<option value="">-- No / Particular --</option>';
-        baseRefugios.forEach(r => { sel.innerHTML += `<option value="${r.id}" ${r.id===valActual?'selected':''}>${r.nombre}</option>`; });
+        sel.innerHTML = '<option value="">-- No (Independiente/Particular) --</option>';
+        baseRefugios.forEach(r => { 
+          sel.innerHTML += `<option value="${r.id}" ${r.id===valActual?'selected':''}>${r.nombre}</option>`; 
+        });
       });
     }
 
     // ==========================================
-    // AUTH Y ROLES
+    // SISTEMA DE ALERTAS Y CONFIRMACIONES (REEMPLAZA ALERT() Y CONFIRM())
+    // ==========================================
+    window.mostrarAlerta = function(titulo, mensaje, tipo = 'success') {
+      const container = document.getElementById('custom-toast-container');
+      const toast = document.createElement('div');
+      
+      let colorBg = 'bg-emerald-500';
+      let icon = 'check';
+      if (tipo === 'error') { colorBg = 'bg-red-500'; icon = 'alert-octagon'; }
+      else if (tipo === 'info') { colorBg = 'bg-indigo-600'; icon = 'info'; }
+      
+      toast.className = `toast-alert flex items-center p-4 space-x-3 text-white rounded-2xl shadow-xl ${colorBg} max-w-sm`;
+      toast.innerHTML = `
+        <div class="flex-shrink-0"><i data-lucide="${icon}" class="w-5 h-5"></i></div>
+        <div>
+          <h4 class="font-bold text-xs uppercase">${titulo}</h4>
+          <p class="text-[11px] opacity-90">${mensaje}</p>
+        </div>
+      `;
+      container.appendChild(toast);
+      lucide.createIcons();
+      setTimeout(() => { toast.remove(); }, 4000);
+    };
+
+    window.confirmacionPersonalizada = function(titulo, mensaje, callbackAceptar) {
+      const modal = document.getElementById('modal-confirmacion');
+      const t = document.getElementById('confirm-titulo');
+      const m = document.getElementById('confirm-mensaje');
+      const btnAceptar = document.getElementById('btn-confirm-aceptar');
+      const btnCancelar = document.getElementById('btn-confirm-cancelar');
+
+      t.innerText = titulo;
+      m.innerText = mensaje;
+      modal.classList.remove('hidden');
+
+      const limpiarEventos = () => {
+        btnAceptar.onclick = null;
+        btnCancelar.onclick = null;
+        modal.classList.add('hidden');
+      };
+
+      btnCancelar.onclick = limpiarEventos;
+      btnAceptar.onclick = () => {
+        callbackAceptar();
+        limpiarEventos();
+      };
+    };
+
+    // ==========================================
+    // VISTAS Y NAVEGACIÓN
+    // ==========================================
+    window.cambiarVista = function(vista) {
+      vistaActual = vista;
+      const vistas = ['inicio', 'refugios', 'reportar-perdido', 'reportar-encontrado', 'detalle-mascota', 'detalle-refugio', 'verificar-credencial', 'perfil'];
+      vistas.forEach(v => {
+        const el = document.getElementById(`vista-${v}`);
+        if(el) el.classList.add('hidden');
+      });
+
+      const activeEl = document.getElementById(`vista-${vista}`);
+      if(activeEl) activeEl.classList.remove('hidden');
+
+      // Invalidar mapas de Leaflet cuando se hacen visibles
+      if(vista === 'reportar-perdido') {
+        window.inicializarMapasForm('map-p', 'gps-p', 'dir-texto-p');
+      } else if (vista === 'reportar-encontrado') {
+        window.inicializarMapasForm('map-e', 'gps-e', 'dir-texto-e');
+      }
+
+      // Reiniciar filtros al volver al inicio
+      if(vista === 'inicio') {
+        aplicarFiltros();
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // ==========================================
+    // GESTIÓN DE ROLES, REGISTRO Y AUTENTICACIÓN
     // ==========================================
     let isLoginMode = true;
     window.setAuthTab = function(mode) {
@@ -712,11 +825,16 @@
     };
 
     window.procesarAuth = async function(e) {
-      e.preventDefault(); const btn = e.target.querySelector('button'); bloqBtn(btn, true);
-      const email = document.getElementById('auth-email').value.trim(); const pass = document.getElementById('auth-pass').value;
+      e.preventDefault(); 
+      const btn = e.target.querySelector('.submit-btn'); 
+      bloqBtn(btn, true);
+      const email = document.getElementById('auth-email').value.trim(); 
+      const pass = document.getElementById('auth-pass').value;
+
       try {
-        if (isLoginMode) { await signInWithEmailAndPassword(auth, email, pass); } 
-        else {
+        if (isLoginMode) { 
+          await signInWithEmailAndPassword(auth, email, pass); 
+        } else {
           const nom = document.getElementById('auth-nombre').value.trim(); 
           const dir = document.getElementById('auth-direccion').value.trim();
           const tel = document.getElementById('auth-telefono').value.trim();
@@ -736,10 +854,11 @@
               refId = codeData.shelterId;
               refNom = codeData.shelterName;
               rCarnetId = cod;
+              
               // Marcar código como utilizado
               await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invitationCodes', cod), { status: 'used' });
             } else {
-              window.mostrarAlerta('Atención', 'El código de invitación no es válido o ya fue utilizado. Te registrarás de forma independiente.', 'info');
+              window.mostrarAlerta('Código Invitación', 'El código de invitación no existe o ya fue usado. Te registrarás de forma independiente.', 'info');
             }
           }
 
@@ -753,31 +872,38 @@
             direccion: dir, 
             telefono: tel, 
             estatus: 'Activo',
-            foto: temporalFotoRescatista || '',
+            foto: temporalFotoRescatista || 'https://placehold.co/100x100/slate/white?text=Foto',
             idCarnet: rCarnetId,
             socials: []
           };
           await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', cred.user.uid), pPayload);
           usuarioActual = { uid: cred.user.uid, ...pPayload };
         }
-        window.mostrarAlerta('Éxito', 'Sesión iniciada.', 'success'); e.target.reset();
+        window.mostrarAlerta('Acceso Concedido', 'Has ingresado correctamente al sistema.', 'success'); 
+        e.target.reset();
         temporalFotoRescatista = '';
         document.getElementById('prev-rescatista-img').classList.add('hidden');
-      } catch(err) { window.mostrarAlerta('Error', 'Verifica tus credenciales.', 'error'); } finally { bloqBtn(btn, false, isLoginMode?'Entrar':'Registrarse'); }
+        renderizarPerfil();
+      } catch(err) { 
+        window.mostrarAlerta('Acceso Denegado', 'El correo o la contraseña son incorrectos.', 'error'); 
+      } finally { 
+        bloqBtn(btn, false, isLoginMode?'Entrar':'Registrarse'); 
+      }
     };
 
-    // ACCESO DE FINAL DE EMERGENCIA DE PATTY
+    // Bypass clássico de Patty
     window.procesarBypassClasico = function() {
       const pass = document.getElementById('auth-bypass-pass').value.trim();
       if (pass === ".2411Patty..") {
-        usuarioActual = { uid: "emergency-admin", rol: 'admin', nombre: "Patty (Administradora)", estatus: 'Activo' };
+        usuarioActual = { uid: "emergency-admin", rol: 'admin', nombre: "Patty (Administradora)", estatus: 'Activo', idCarnet: 'ADM-MASTER', foto: 'https://placehold.co/100x100/slate/white?text=Patty' };
         localStorage.setItem('patitas_bypass_user', JSON.stringify(usuarioActual));
-        window.mostrarAlerta('Bypass Exitoso', '¡Bienvenida Patty! Dashboard Admin activado.', 'success');
+        window.mostrarAlerta('Bypass Exitoso', 'Panel de Control de Emergencia Activado.', 'success');
+        document.getElementById('auth-bypass-pass').value = '';
         renderizarPerfil();
         actualizarOpcionesEstado();
         sincronizarDB();
       } else {
-        window.mostrarAlerta('Clave incorrecta', 'Intenta de nuevo.', 'error');
+        window.mostrarAlerta('Clave Inválida', 'Clave de emergencia de Patty incorrecta.', 'error');
       }
     };
 
@@ -787,6 +913,7 @@
         usuarioActual = { rol: 'anonimo' };
         renderizarPerfil();
         actualizarOpcionesEstado();
+        cambiarVista('inicio');
       });
     };
 
@@ -795,9 +922,11 @@
     // ==========================================
     function renderizarPerfil() {
       if(usuarioActual.rol !== 'anonimo') {
-        document.getElementById('auth-panel').classList.add('hidden'); document.getElementById('user-dashboard').classList.remove('hidden');
-        document.getElementById('dash-name').innerText = `Hola, ${usuarioActual.nombre || 'Voluntario'}`;
-        document.getElementById('dash-role').innerText = `Rol: ${usuarioActual.rol}`;
+        document.getElementById('auth-panel').classList.add('hidden'); 
+        document.getElementById('user-dashboard').classList.remove('hidden');
+        
+        document.getElementById('dash-name').innerText = `¡Hola, ${usuarioActual.nombre || 'Voluntario'}!`;
+        document.getElementById('dash-role').innerText = `Rango: ${usuarioActual.rol}`;
         
         // Cargar datos en el formulario de edición de perfil
         document.getElementById('prof-nombre').value = usuarioActual.nombre || '';
@@ -808,12 +937,12 @@
         const scContainer = document.getElementById('socials-inputs-container');
         scContainer.innerHTML = '';
         const socials = usuarioActual.socials || [];
-        socials.forEach((sc, idx) => {
+        socials.forEach((sc) => {
           agregarInputSocial(sc.red, sc.enlace);
         });
-        if (socials.length === 0) agregarInputSocial(); // Al menos un campo
+        if (socials.length === 0) agregarInputSocial(); // Al menos uno por defecto
 
-        // Mostrar u Ocultar el panel de gestión del refugio
+        // Panel de Gestión del Refugio local
         const mgrPanel = document.getElementById('shelter-manager-panel');
         if (usuarioActual.refugioId && (usuarioActual.rol === 'Responsable' || usuarioActual.rol === 'Administración')) {
           mgrPanel.classList.remove('hidden');
@@ -821,17 +950,19 @@
           mgrPanel.classList.add('hidden');
         }
 
+        // Panel de Administración de Patty (Global)
         if(usuarioActual.rol === 'admin') {
           document.getElementById('panel-admin').classList.remove('hidden');
         } else {
           document.getElementById('panel-admin').classList.add('hidden');
         }
         
-        document.getElementById('titulo-mis-mascotas').innerText = usuarioActual.rol === 'admin' ? "Todas las Mascotas (Control Admin)" : "Mis Reportes";
+        document.getElementById('titulo-mis-mascotas').innerText = usuarioActual.rol === 'admin' ? "Todas las Mascotas (Control Maestro)" : "Mis Reportes Publicados";
         
         generarCarnetVisual();
       } else {
-        document.getElementById('auth-panel').classList.remove('hidden'); document.getElementById('user-dashboard').classList.add('hidden');
+        document.getElementById('auth-panel').classList.remove('hidden'); 
+        document.getElementById('user-dashboard').classList.add('hidden');
       }
     }
 
@@ -845,21 +976,21 @@
       const badge = document.getElementById('carnet-status');
       badge.innerText = st;
       if (st === 'Activo') badge.className = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-full";
-      else if (st === 'Inactivo (Sancionado)') badge.className = "bg-amber-500/20 text-amber-400 border border-emerald-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-full";
+      else if (st === 'Inactivo (Sancionado)') badge.className = "bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-full";
       else badge.className = "bg-red-500/20 text-red-400 border border-red-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-full";
 
       document.getElementById('carnet-foto').src = usuarioActual.foto || 'https://placehold.co/100x100/slate/white?text=Foto';
 
-      // Generar código QR apuntando a la url de verificación de credencial
+      // QR Code Dinámico
       const qrContainer = document.getElementById('carnet-qr');
       qrContainer.innerHTML = '';
       const verURL = `${window.location.origin}${window.location.pathname}?verify=${usuarioActual.uid || 'bypass'}`;
       
       carnetQrGenerator = new QRCode(qrContainer, {
         text: verURL,
-        width: 42,
-        height: 42,
-        colorDark : "#000000",
+        width: 48,
+        height: 48,
+        colorDark : "#0f172a",
         colorLight : "#ffffff",
         correctLevel : QRCode.CorrectLevel.H
       });
@@ -868,7 +999,7 @@
     window.agregarInputSocial = function(redDef = 'Instagram', enlaceDef = '') {
       const container = document.getElementById('socials-inputs-container');
       if (container.children.length >= 4) {
-        window.mostrarAlerta('Límite', 'Máximo 4 redes sociales registrables.', 'info');
+        window.mostrarAlerta('Límite Alcanzado', 'Puedes vincular hasta un máximo de 4 redes sociales.', 'info');
         return;
       }
       const div = document.createElement('div');
@@ -881,19 +1012,19 @@
           <option value="WhatsApp" ${redDef==='WhatsApp'?'selected':''}>WhatsApp</option>
           <option value="Twitter/X" ${redDef==='Twitter/X'?'selected':''}>Twitter/X</option>
         </select>
-        <input type="text" placeholder="@usuario o link" value="${enlaceDef}" class="p-2 border rounded-xl text-xs flex-grow social-link-input">
+        <input type="text" placeholder="@usuario o enlace" value="${enlaceDef}" class="p-2 border rounded-xl text-xs flex-grow social-link-input">
         <button type="button" onclick="this.parentElement.remove()" class="text-red-500 px-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
       `;
       container.appendChild(div);
       lucide.createIcons();
-    }
+    };
 
     window.actualizarPerfilPersonal = async function(e) {
       e.preventDefault();
-      if (!user) return;
-      const btn = e.target.querySelector('button'); bloqBtn(btn, true);
+      const btn = e.target.querySelector('button'); 
+      bloqBtn(btn, true);
 
-      // Obtener redes sociales
+      // Agrupar redes sociales
       const socList = [];
       const blocks = document.querySelectorAll('#socials-inputs-container > div');
       blocks.forEach(bl => {
@@ -907,22 +1038,29 @@
       const dir = document.getElementById('prof-direccion').value.trim();
 
       try {
-        const uRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid);
-        await updateDoc(uRef, {
-          nombre: nom,
-          telefono: tel,
-          direccion: dir,
-          socials: socList
-        });
+        if(user && !user.isAnonymous) {
+          const uRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid);
+          await updateDoc(uRef, {
+            nombre: nom,
+            telefono: tel,
+            direccion: dir,
+            socials: socList
+          });
+        }
         usuarioActual.nombre = nom;
         usuarioActual.telefono = tel;
         usuarioActual.direccion = dir;
         usuarioActual.socials = socList;
 
-        window.mostrarAlerta('Actualizado', 'Tus datos fueron guardados exitosamente.', 'success');
+        // Guardar persistencia si está en bypass
+        if (localStorage.getItem('patitas_bypass_user')) {
+          localStorage.setItem('patitas_bypass_user', JSON.stringify(usuarioActual));
+        }
+
+        window.mostrarAlerta('Actualizado', 'Tus datos de credencial fueron guardados exitosamente.', 'success');
         generarCarnetVisual();
       } catch(err) {
-        window.mostrarAlerta('Error', 'No se pudo actualizar.', 'error');
+        window.mostrarAlerta('Error', 'No pudimos procesar los cambios.', 'error');
       } finally {
         bloqBtn(btn, false, 'Actualizar Perfil');
       }
@@ -948,7 +1086,7 @@
     };
 
     // ==========================================
-    // SISTEMA DE VERIFICACIÓN PÚBLICA DE CÓDIGO QR
+    // ESCANEO Y VERIFICACIÓN DE CREDENCIAL EN TIEMPO REAL
     // ==========================================
     async function procesarVerificacionIDPublica(uid) {
       document.getElementById('app-header').classList.add('hidden');
@@ -973,8 +1111,8 @@
           document.getElementById('v-nombre').innerText = d.nombre || 'Sin Nombre';
           document.getElementById('v-role').innerText = d.rol || 'Voluntario';
           document.getElementById('v-refugio').innerText = d.refugioNombre || 'Rescatista Independiente';
-          document.getElementById('v-id').innerText = `ID DE CARNET: ${d.idCarnet || 'N/A'}`;
-          document.getElementById('v-dir').innerText = d.direccion || 'No especificada';
+          document.getElementById('v-id').innerText = `CÓDIGO CARNET: ${d.idCarnet || 'N/A'}`;
+          document.getElementById('v-dir').innerText = d.direccion || 'Dirección de contacto no declarada';
 
           const scs = document.getElementById('v-socials');
           scs.innerHTML = '';
@@ -982,45 +1120,61 @@
           socials.forEach(sc => {
             scs.innerHTML += `<span class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded-lg text-xs font-bold">${sc.red}: ${sc.enlace}</span>`;
           });
-          if (socials.length === 0) scs.innerHTML = '<span class="text-xs text-slate-400">Sin redes admmitidas</span>';
+          if (socials.length === 0) scs.innerHTML = '<span class="text-xs text-slate-400">Sin redes admitidas</span>';
         } else {
           vView.innerHTML = `
-            <div class="bg-red-50 text-red-800 border border-red-200 rounded-3xl p-6 text-center space-y-4">
+            <div class="bg-red-50 text-red-800 border border-red-200 rounded-3xl p-6 text-center space-y-4 max-w-sm mx-auto">
               <i data-lucide="shield-alert" class="w-12 h-12 mx-auto text-red-600"></i>
-              <h2 class="text-xl font-bold">Credencial No Registrada</h2>
-              <p class="text-xs">Este código QR apunta a un perfil inexistente o deshabilitado en el servidor oficial.</p>
-              <button onclick="window.location.href=window.location.origin+window.location.pathname" class="w-full py-2.5 bg-slate-900 text-white font-bold rounded-xl text-xs">Volver al Inicio</button>
+              <h2 class="text-xl font-bold">Credencial Inválida</h2>
+              <p class="text-xs">Este código QR o ID de credencial no figura registrado oficialmente en nuestros servidores.</p>
+              <button onclick="window.location.reload();" class="w-full py-2.5 bg-slate-900 text-white font-bold rounded-xl text-xs">Volver al Inicio</button>
             </div>
           `;
           lucide.createIcons();
         }
       } catch(e) {
-        window.mostrarAlerta('Error', 'Fallo al verificar credencial pública.', 'error');
+        window.mostrarAlerta('Error Verificación', 'Fallo de sincronización con el validador.', 'error');
       }
     }
 
     // ==========================================
-    // SISTEMA DE CÓDIGOS DE INVITACIÓN
+    // SISTEMA DE CÓDIGOS DE INVITACIÓN SECUENCIALES
     // ==========================================
     window.abrirGeneradorInvitacion = function() {
       document.getElementById('inv-codigo-res').value = '';
       document.getElementById('modal-invitacion').classList.remove('hidden');
-    }
+    };
+    
     window.cerrarGeneradorInvitacion = function() {
       document.getElementById('modal-invitacion').classList.add('hidden');
-    }
+    };
+    
     window.procesarGeneracionCodigo = async function() {
       const rol = document.getElementById('inv-rol').value;
       const ref = baseRefugios.find(r => r.id === usuarioActual.refugioId);
       if (!ref) {
-        window.mostrarAlerta('Error', 'Debes estar vinculado a un refugio para crear invitaciones.', 'error');
+        window.mostrarAlerta('Denegado', 'Debes estar vinculado a un refugio verificado para poder emitir invitaciones.', 'error');
         return;
       }
 
-      const sigla = ref.nombre.slice(0, 3).toUpperCase();
-      const fecha = new Date().toISOString().split('T')[0].replace(/-/g, '');
-      const rand = Math.floor(1000 + Math.random() * 9000); // 4 dígitos dinámicos
-      const codeGenerated = `${sigla}${fecha}${rand}`;
+      // 3 letras del refugio
+      const sigla = ref.nombre.substring(0, 3).toUpperCase();
+      // Fecha en formato AAAAMMDD
+      const fechaHoy = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      
+      // Obtener secuencial
+      let correlativoNum = 1;
+      try {
+        const queryCodes = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'invitationCodes'));
+        queryCodes.forEach(docSnap => {
+          if (docSnap.id.startsWith(`${sigla}${fechaHoy}`)) {
+            correlativoNum++;
+          }
+        });
+      } catch (e) { console.error(e); }
+
+      const correlativoStr = correlativoNum.toString().padStart(4, '0');
+      const codeGenerated = `${sigla}${fechaHoy}${correlativoStr}`;
 
       try {
         await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invitationCodes', codeGenerated), {
@@ -1031,35 +1185,40 @@
           status: 'unused'
         });
         document.getElementById('inv-codigo-res').value = codeGenerated;
-        window.mostrarAlerta('Código Generado', 'Código listo para enviar.', 'success');
+        window.mostrarAlerta('Código Generado', `La invitación ${codeGenerated} ha sido inscrita.`, 'success');
       } catch(e) {
-        window.mostrarAlerta('Error', 'Fallo en la creación del código.', 'error');
+        window.mostrarAlerta('Error', 'No se pudo registrar la invitación.', 'error');
       }
-    }
+    };
+    
     window.copiarCodigoInvitacion = function() {
       const cInput = document.getElementById('inv-codigo-res');
       if (cInput.value) {
         const temp = document.createElement("input");
-        temp.value = cInput.value; document.body.appendChild(temp); temp.select(); document.execCommand("copy"); document.body.removeChild(temp);
-        window.mostrarAlerta('Copiado', 'Código copiado al portapapeles', 'success');
+        temp.value = cInput.value; 
+        document.body.appendChild(temp); 
+        temp.select(); 
+        document.execCommand("copy"); 
+        document.body.removeChild(temp);
+        window.mostrarAlerta('Copiado', 'El código fue copiado al portapapeles.', 'success');
       }
-    }
+    };
 
     // ==========================================
-    // GESTIÓN DE MIEMBROS POR REFUGIO
+    // RECURSOS HUMANOS POR REFUGIO
     // ==========================================
     function renderizarTablaMiembrosRefugio(miembros) {
       const tb = document.getElementById('tb-miembros-refugio');
       tb.innerHTML = '';
       if(miembros.length === 0) {
-        tb.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Tu refugio no cuenta con otros miembros vinculados actualmente.</td></tr>';
+        tb.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Tu sede no registra miembros vinculados aún.</td></tr>';
         return;
       }
       miembros.forEach(m => {
-        const isMe = m.id === user.uid;
+        const isMe = m.id === user?.uid;
         tb.innerHTML += `
           <tr class="border-b hover:bg-slate-50">
-            <td class="p-3 font-bold">${m.nombre}</td>
+            <td class="p-3 font-bold text-slate-800">${m.nombre}</td>
             <td class="p-3">
               <select onchange="cambiarRolMiembro('${m.id}', this.value)" class="p-1 border rounded text-xs bg-white" ${isMe ? 'disabled' : ''}>
                 <option value="Voluntario" ${m.rol === 'Voluntario' ? 'selected' : ''}>Voluntario</option>
@@ -1075,7 +1234,7 @@
                 <option value="Despedido" ${m.estatus === 'Despedido' ? 'selected' : ''}>Despedido</option>
               </select>
             </td>
-            <td class="p-3 text-right text-slate-400 italic text-xs">Administración Local</td>
+            <td class="p-3 text-right text-slate-400 italic text-xs">Refugio Local</td>
           </tr>
         `;
       });
@@ -1084,23 +1243,99 @@
     window.cambiarRolMiembro = async function(userId, nuevoRol) {
       try {
         await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', userId), { rol: nuevoRol });
-        window.mostrarAlerta('Actualizado', 'Rol interno de miembro modificado.', 'success');
-      } catch(e) {}
-    }
+        window.mostrarAlerta('Actualizado', 'Se reasignó el rol interno correctamente.', 'success');
+      } catch(e) { window.mostrarAlerta('Error', 'Sin permisos.', 'error'); }
+    };
 
     window.cambiarEstatusMiembro = async function(userId, nuevoEstatus) {
       try {
         await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', userId), { estatus: nuevoEstatus });
-        window.mostrarAlerta('Actualizado', 'Estatus de miembro modificado con éxito.', 'success');
-      } catch(e) {}
-    }
+        window.mostrarAlerta('Actualizado', 'Se cambió el estatus del voluntario.', 'success');
+      } catch(e) { window.mostrarAlerta('Error', 'Sin permisos.', 'error'); }
+    };
 
     // ==========================================
-    // REVERSE GEOCODING AUTOMÁTICO (PAÍS DEL MAPA)
+    // ADMINISTRACIÓN GLOBAL MASTER (PATTY)
+    // ==========================================
+    function renderizarTablaUsuarios() {
+      const tb = document.getElementById('admin-tb-usuarios');
+      tb.innerHTML = '';
+      if (baseUsuarios.length === 0) {
+        tb.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-slate-400">No hay voluntarios registrados.</td></tr>';
+        return;
+      }
+      baseUsuarios.forEach(u => {
+        tb.innerHTML += `
+          <tr class="border-b hover:bg-slate-50 text-xs">
+            <td class="p-3 font-bold text-slate-800">${u.nombre || 'Invitado'}</td>
+            <td class="p-3 text-slate-500">${u.email || 'Anónimo'}</td>
+            <td class="p-3">
+              <select onchange="cambiarRolGlobal('${u.id}', this.value)" class="p-1 border rounded bg-white font-bold text-indigo-700">
+                <option value="Voluntario" ${u.rol === 'Voluntario' ? 'selected' : ''}>Voluntario</option>
+                <option value="Rescatista" ${u.rol === 'Rescatista' ? 'selected' : ''}>Rescatista</option>
+                <option value="Administración" ${u.rol === 'Administración' ? 'selected' : ''}>Administración</option>
+                <option value="Responsable" ${u.rol === 'Responsable' ? 'selected' : ''}>Responsable (Encargado)</option>
+                <option value="admin" ${u.rol === 'admin' ? 'selected' : ''}>Admin Global</option>
+              </select>
+            </td>
+            <td class="p-3">
+              <select onchange="cambiarEstatusMiembro('${u.id}', this.value)" class="p-1 border rounded bg-white text-xs">
+                <option value="Activo" ${u.estatus === 'Activo' ? 'selected' : ''}>Activo</option>
+                <option value="Inactivo (Sancionado)" ${u.estatus === 'Inactivo (Sancionado)' ? 'selected' : ''}>Inactivo (Sancionado)</option>
+                <option value="Despedido" ${u.estatus === 'Despedido' ? 'selected' : ''}>Despedido</option>
+              </select>
+            </td>
+            <td class="p-3 text-right">
+              <button onclick="eliminarUsuarioGlobal('${u.id}')" class="text-red-600 font-bold px-2 hover:underline">Eliminar Cuenta</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function renderizarTablaRefugios() {
+      const tb = document.getElementById('admin-tb-refugios');
+      tb.innerHTML = '';
+      if (baseRefugios.length === 0) {
+        tb.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-slate-400">Sin refugios cargados.</td></tr>';
+        return;
+      }
+      baseRefugios.forEach(r => {
+        tb.innerHTML += `
+          <tr class="border-b hover:bg-slate-50 text-xs">
+            <td class="p-3 font-bold text-slate-800">${r.nombre}</td>
+            <td class="p-3 text-indigo-600 font-bold">${r.pais || 'No detectado'}</td>
+            <td class="p-3 text-right space-x-2">
+              <button onclick="editarRefugioAdmin('${r.id}')" class="text-indigo-600 font-bold hover:underline">Editar</button>
+              <button onclick="eliminarRefugioAdmin('${r.id}')" class="text-red-600 font-bold hover:underline">Eliminar</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    window.cambiarRolGlobal = async function(userId, nuevoRol) {
+      try {
+        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', userId), { rol: nuevoRol });
+        window.mostrarAlerta('Actualizado', 'Se ha reasignado el rango de manera global.', 'success');
+      } catch(e) { window.mostrarAlerta('Error', 'Fallo en la operación global.', 'error'); }
+    };
+
+    window.eliminarUsuarioGlobal = function(userId) {
+      window.confirmacionPersonalizada('¿Eliminar Voluntario?', 'Esta acción borrará de forma permanente sus datos, credenciales y accesos.', async () => {
+        try {
+          await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', userId));
+          window.mostrarAlerta('Eliminado', 'Se ha removido el voluntario correctamente.', 'success');
+        } catch(e) { window.mostrarAlerta('Error', 'No posees permisos de administrador.', 'error'); }
+      });
+    };
+
+    // ==========================================
+    // REVERSE GEOCODING GEOLOCALIZADO AUTOMÁTICO
     // ==========================================
     window.obtenerGPSConMapa = function(coordsInputId, mapId, addressInputId) {
       if ("geolocation" in navigator) {
-        window.mostrarAlerta('Ubicando...', 'Acepta los permisos de GPS del navegador.', 'info');
+        window.mostrarAlerta('Ubicando...', 'Permite el acceso a tu ubicación actual.', 'info');
         navigator.geolocation.getCurrentPosition(
           (pos) => {
             const lat = pos.coords.latitude;
@@ -1113,14 +1348,13 @@
               globalMarkers[mapId].setLatLng([lat, lng]);
             }
             
-            // Reverse Geocode
+            // Geocodificación inversa
             fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
               .then(res => res.json())
               .then(data => {
                 if (addressInputId) {
                   document.getElementById(addressInputId).value = data.display_name || '';
                 }
-                // Si estamos en el modal de refugio, rellenar el país automáticamente
                 const paisInput = document.getElementById('ref-pai');
                 if (paisInput && data.address && data.address.country) {
                   paisInput.value = data.address.country;
@@ -1128,20 +1362,21 @@
               })
               .catch(() => {});
               
-            window.mostrarAlerta('Ubicación Lista', 'GPS local cargado.', 'success');
+            window.mostrarAlerta('Ubicado', 'Posición cargada mediante GPS local.', 'success');
           },
           () => {
-            window.mostrarAlerta('Error GPS', 'No pudimos acceder a tu GPS.', 'error');
+            window.mostrarAlerta('Error GPS', 'No pudimos acceder a tu GPS de manera automática.', 'error');
           },
           { enableHighAccuracy: true, timeout: 10000 }
         );
       }
     };
 
-    window.inicializarMapasForm = function(mId, cId, aId) {
+    window.inicializarMapasForm = function(mId, cId, aId, defaultCustom = false, cLat = 10.6, cLng = -66.93) {
       setTimeout(() => {
-        const cInp = document.getElementById(cId);
-        let lt = 10.6, lg = -66.93;
+        const cInp = cId ? document.getElementById(cId) : null;
+        let lt = cLat, lg = cLng;
+        
         if (cInp && cInp.value.includes(',')) {
           const p = cInp.value.split(',');
           lt = parseFloat(p[0]);
@@ -1157,151 +1392,45 @@
         
         const map = L.map(mId).setView([lt, lg], 15);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        const mk = L.marker([lt, lg], { draggable: true }).addTo(map);
         
-        const actualizarDatosGeográficos = (lat, lng) => {
-          fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
-            .then(res => res.json())
-            .then(data => {
-              if (aId) document.getElementById(aId).value = data.display_name || '';
-              const paisInput = document.getElementById('ref-pai');
-              if (paisInput && data.address && data.address.country) {
-                paisInput.value = data.address.country;
-              }
-            });
-        };
+        const draggableOption = (cId !== null);
+        const mk = L.marker([lt, lg], { draggable: draggableOption }).addTo(map);
+        
+        if(draggableOption) {
+          const actualizarDatosGeográficos = (lat, lng) => {
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+              .then(res => res.json())
+              .then(data => {
+                if (aId) document.getElementById(aId).value = data.display_name || '';
+                const paisInput = document.getElementById('ref-pai');
+                if (paisInput && data.address && data.address.country) {
+                  paisInput.value = data.address.country;
+                }
+              });
+          };
 
-        mk.on('dragend', () => {
-          const p = mk.getLatLng();
-          document.getElementById(cId).value = `${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`;
-          actualizarDatosGeográficos(p.lat, p.lng);
-        });
+          mk.on('dragend', () => {
+            const p = mk.getLatLng();
+            if(cInp) cInp.value = `${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`;
+            actualizarDatosGeográficos(p.lat, p.lng);
+          });
 
-        map.on('click', (e) => {
-          mk.setLatLng(e.latlng);
-          document.getElementById(cId).value = `${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`;
-          actualizarDatosGeográficos(e.latlng.lat, e.latlng.lng);
-        });
+          map.on('click', (e) => {
+            mk.setLatLng(e.latlng);
+            if(cInp) cInp.value = `${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`;
+            actualizarDatosGeográficos(e.latlng.lat, e.latlng.lng);
+          });
+        }
 
         globalMaps[mId] = map;
         globalMarkers[mId] = mk;
-      }, 400);
-    }
+      }, 450);
+    };
 
-    // ==========================================
-    // SECCIÓN DE ADMINISTRADOR MAESTRO (PATTY)
-    // ==========================================
-    function renderizarTablaUsuarios() {
-      const tb = document.getElementById('admin-tb-usuarios');
-      tb.innerHTML = '';
-      if (baseUsuarios.length === 0) {
-        tb.innerHTML = '<tr><td colspan="4" class="p-3 text-center text-slate-400">No hay usuarios registrados.</td></tr>';
-        return;
-      }
-      baseUsuarios.forEach(u => {
-        tb.innerHTML += `
-          <tr class="border-b hover:bg-slate-50 text-xs">
-            <td class="p-3 font-bold">${u.nombre}</td>
-            <td class="p-3">${u.email}</td>
-            <td class="p-3">
-              <select onchange="cambiarRolGlobal('${u.id}', this.value)" class="p-1 border rounded bg-white font-bold">
-                <option value="Voluntario" ${u.rol === 'Voluntario' ? 'selected' : ''}>Voluntario</option>
-                <option value="Rescatista" ${u.rol === 'Rescatista' ? 'selected' : ''}>Rescatista</option>
-                <option value="Administración" ${u.rol === 'Administración' ? 'selected' : ''}>Administración</option>
-                <option value="Responsable" ${u.rol === 'Responsable' ? 'selected' : ''}>Responsable (Encargado)</option>
-                <option value="admin" ${u.rol === 'admin' ? 'selected' : ''}>Admin Global</option>
-              </select>
-            </td>
-            <td class="p-3 text-right">
-              <button onclick="eliminarUsuarioGlobal('${u.id}')" class="text-red-600 font-bold px-2">Eliminar Cuenta</button>
-            </td>
-          </tr>
-        `;
-      });
-    }
-
-    window.cambiarRolGlobal = async function(userId, nuevoRol) {
-      try {
-        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', userId), { rol: nuevoRol });
-        window.mostrarAlerta('Listo', 'Rol administrativo global modificado.', 'success');
-      } catch(e) {}
-    }
-
-    window.eliminarUsuarioGlobal = function(userId) {
-      window.confirmacionPersonalizada('¿Eliminar Usuario?', 'Se borrará su cuenta y credenciales públicas de forma irreversible.', async () => {
-        try {
-          await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', userId));
-          window.mostrarAlerta('Eliminado', 'Usuario removido de los servidores.', 'success');
-        } catch(e) {}
-      });
-    }
-
-    // ==========================================
-    // DETALLE PÚBLICO DEL REFUGIO
-    // ==========================================
-    window.verDetalleRefugio = function(refId) {
-      const r = baseRefugios.find(sh => sh.id === refId);
-      if(!r) return;
-      
-      cambiarVista('detalle-refugio');
-      document.getElementById('dr-img').src = r.foto || 'https://placehold.co/400x250/indigo/white?text=Refugio';
-      document.getElementById('dr-pais').innerText = r.pais || 'No especificado';
-      document.getElementById('dr-nombre').innerText = r.nombre;
-      document.getElementById('dr-responsable').innerText = `Responsable: ${r.responsable}`;
-      document.getElementById('dr-direccion').innerText = r.direccion;
-
-      // WhatsApp y Ruta GPS
-      document.getElementById('dr-wa').href = `https://wa.me/${r.telefono.replace(/[^0-9]/g, '')}`;
-      if (r.gps && r.gps.includes(',')) {
-        document.getElementById('dr-ruta').classList.remove('hidden');
-        document.getElementById('dr-ruta').href = `https://www.google.com/maps/dir/?api=1&destination=${r.gps.replace(/\s/g, '')}`;
-        
-        // Renderizar mapa de la sede
-        document.getElementById('map-det-refugio-view').classList.remove('hidden');
-        const pos = r.gps.split(',');
-        window.inicializarMapasForm('map-det-refugio-view', null, null, false, parseFloat(pos[0]), parseFloat(pos[1]));
-      } else {
-        document.getElementById('dr-ruta').classList.add('hidden');
-        document.getElementById('map-det-refugio-view').classList.add('hidden');
-      }
-
-      // Renderizar mascotas huéspedes de este refugio
-      const masContainer = document.getElementById('dr-mascotas');
-      masContainer.innerHTML = '';
-      const huespedes = baseMascotas.filter(m => m.refugioId === refId);
-      
-      if(huespedes.length === 0) {
-        masContainer.innerHTML = '<p class="text-xs text-slate-400 py-6 text-center col-span-full">Este refugio no tiene mascotas registradas bajo su custodia temporal actualmente.</p>';
-      } else {
-        huespedes.forEach(m => {
-          let bc = 'bg-red-600', bt = 'Buscando';
-          if(m.estado === 'encontrado') { bc = 'bg-sky-600'; bt = 'Localizado'; }
-          else if(m.estado === 'rescatado') { bc = 'bg-indigo-600'; bt = 'Rescatado 🏠'; }
-          else if(m.estado === 'adopcion') { bc = 'bg-amber-500'; bt = 'En Adopción'; }
-
-          masContainer.innerHTML += `
-            <div class="border rounded-2xl overflow-hidden cursor-pointer bg-white flex flex-col shadow-sm" onclick="verDetalleMascota('${m.id}')">
-              <div class="h-32 bg-slate-100 relative">
-                <img src="${m.fotos ? m.fotos[0] : ''}" class="w-full h-full object-cover">
-                <span class="absolute top-2 left-2 ${bc} text-white font-extrabold text-[8px] px-2 py-0.5 rounded-full uppercase">${bt}</span>
-              </div>
-              <div class="p-3">
-                <h4 class="font-bold text-slate-900 truncate">${m.nombre}</h4>
-                <p class="text-[10px] text-orange-600 font-semibold mt-1">${m.zona}</p>
-              </div>
-            </div>
-          `;
-        });
-      }
-    }
-
-    // ==========================================
-    // UTILS REQUERIDAS POR PROYECTO PATITAS V3
-    // ==========================================
     window.buscarDir = async function(addressInputId, coordsInputId, mapId) {
-      const q = document.getElementById(addressInputId).value;
+      const q = document.getElementById(addressInputId).value.trim();
       if (!q) return;
-      window.mostrarAlerta('Buscando...', '', 'info');
+      window.mostrarAlerta('Buscando...', 'Intentando ubicar la zona en Venezuela...', 'info');
       try {
         const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q + ", Venezuela")}`);
         const data = await res.json();
@@ -1314,28 +1443,148 @@
             globalMaps[mapId].setView([lat, lon], 16);
             globalMarkers[mapId].setLatLng([lat, lon]);
           }
-          window.mostrarAlerta('Ubicado', 'Mapa reubicado.', 'success');
+          
+          // Llenar país si es el modal de refugio
+          const paisInput = document.getElementById('ref-pai');
+          if (paisInput) {
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+              .then(res => res.json())
+              .then(details => {
+                if(details.address && details.address.country) {
+                  paisInput.value = details.address.country;
+                }
+              });
+          }
+
+          window.mostrarAlerta('Éxito', 'Ubicación localizada en el mapa.', 'success');
+        } else {
+          window.mostrarAlerta('Atención', 'No se encontraron coordenadas precisas. Intente arrastrar el marcador manual.', 'info');
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    // ==========================================
+    // EDITOR DE FOTOS CROPPER.JS
+    // ==========================================
+    window.abrirEditorRecorte = function(input, target) {
+      if (input.files && input.files[0]) {
+        currentCropTarget = target;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('image-to-crop').src = e.target.result;
+          document.getElementById('modal-cropper').classList.remove('hidden');
+          
+          if(cropperInst) cropperInst.destroy();
+          setTimeout(() => {
+            const aspect = (target === 'rescatista') ? 1 : 1.58; // Carnet cuadrado, mascotas panorámico
+            cropperInst = new Cropper(document.getElementById('image-to-crop'), {
+              aspectRatio: aspect,
+              viewMode: 1,
+              background: false
+            });
+          }, 300);
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    };
+
+    window.cerrarCropper = function() {
+      document.getElementById('modal-cropper').classList.add('hidden');
+      if (cropperInst) cropperInst.destroy();
+    };
+
+    window.rotarCropper = function() {
+      if(cropperInst) cropperInst.rotate(90);
+    };
+
+    window.guardarRecorte = function() {
+      if(!cropperInst) return;
+      const canvas = cropperInst.getCroppedCanvas({ width: 600, height: 600 });
+      const croppedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+
+      if (currentCropTarget === 'prevs-p' || currentCropTarget === 'prevs-e') {
+        temporalFotosSeleccionadas.push(croppedBase64);
+        renderizarPrevisualizadoresMascotas(currentCropTarget);
+      } else if (currentCropTarget === 'rescatista') {
+        temporalFotoRescatista = croppedBase64;
+        const prevImg = document.getElementById('prev-rescatista-img');
+        if (prevImg) {
+          prevImg.src = croppedBase64;
+          prevImg.classList.remove('hidden');
+        }
+      } else if (currentCropTarget === 'refugios-prev') {
+        temporalFotoRefugio = croppedBase64;
+        const prevImg = document.getElementById('prev-ref-img');
+        if (prevImg) {
+          prevImg.src = croppedBase64;
+          prevImg.classList.remove('hidden');
+        }
+      }
+
+      cerrarCropper();
+    };
+
+    function renderizarPrevisualizadoresMascotas(targetId) {
+      const container = document.getElementById(targetId);
+      container.innerHTML = '';
+      temporalFotosSeleccionadas.forEach((img, idx) => {
+        container.innerHTML += `
+          <div class="relative w-20 h-20 border rounded-xl overflow-hidden shadow-sm">
+            <img src="${img}" class="w-full h-full object-cover">
+            <button type="button" onclick="window.removerFotoTemporal(${idx}, '${targetId}')" class="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1"><i data-lucide="x" class="w-3 h-3"></i></button>
+          </div>
+        `;
+      });
+      lucide.createIcons();
     }
 
-    // Inyectar evento click público a la lista de refugios
-    window.renderizarRefugios = function() {
-      const grid = document.getElementById('listado-refugios');
+    window.removerFotoTemporal = function(idx, targetId) {
+      temporalFotosSeleccionadas.splice(idx, 1);
+      renderizarPrevisualizadoresMascotas(targetId);
+    };
+
+    // ==========================================
+    // SISTEMA DE MASCOTAS: CARGA, RENDERS, EDICIÓN
+    // ==========================================
+    function renderizarMascotas() {
+      const grid = document.getElementById('listado-mascotas');
       grid.innerHTML = '';
-      if (baseRefugios.length === 0) {
-        grid.innerHTML = '<p class="text-slate-400 text-center py-8 col-span-full">No hay refugios registrados en la red.</p>';
+      
+      const filtradas = baseMascotas.filter(m => {
+        const matchTexto = !filtroActual.texto || m.nombre.toLowerCase().includes(filtroActual.texto.toLowerCase()) || m.raza.toLowerCase().includes(filtroActual.texto.toLowerCase()) || m.rasgos.toLowerCase().includes(filtroActual.texto.toLowerCase());
+        const matchEspecie = filtroActual.especie === 'todos' || m.especie === filtroActual.especie;
+        const matchEstado = filtroActual.estado === 'todos' || m.estado === filtroActual.estado;
+        const matchZona = filtroActual.zona === 'todas' || m.zona === filtroActual.zona;
+        return matchTexto && matchEspecie && matchEstado && matchZona;
+      });
+
+      if (filtradas.length === 0) {
+        document.getElementById('sin-resultados').classList.remove('hidden');
         return;
       }
-      baseRefugios.forEach(r => {
+      document.getElementById('sin-resultados').classList.add('hidden');
+
+      filtradas.forEach(m => {
+        let bColor = 'bg-red-600', bText = 'Buscando';
+        if(m.estado === 'encontrado') { bColor = 'bg-sky-600'; bText = 'Localizado'; }
+        else if (m.estado === 'rescatado') { bColor = 'bg-indigo-600'; bText = 'Rescatado 🏠'; }
+        else if (m.estado === 'reunido') { bColor = 'bg-emerald-600'; bText = 'Reunido 🎉'; }
+        else if (m.estado === 'adopcion') { bColor = 'bg-amber-500'; bText = 'Adopción'; }
+
         grid.innerHTML += `
-          <div class="bg-white border rounded-3xl overflow-hidden flex flex-col cursor-pointer hover:shadow-md transition" onclick="verDetalleRefugio('${r.id}')">
-            <img src="${r.foto || 'https://placehold.co/400x250/indigo/white?text=Refugio'}" class="w-full h-40 object-cover bg-indigo-50">
-            <div class="p-5 flex-grow">
-              <span class="text-[10px] font-bold bg-slate-100 px-2 py-0.5 rounded-full mb-2 inline-block">${r.pais || 'Detectando...'}</span>
-              <h4 class="font-extrabold text-lg text-slate-900">${r.nombre}</h4>
-              <p class="text-xs text-slate-500 mt-1">Responsable: ${r.responsable}</p>
-              <p class="text-xs text-slate-400 mt-1 line-clamp-2">${r.direccion}</p>
+          <div class="bg-white border rounded-3xl overflow-hidden flex flex-col hover:shadow-md transition cursor-pointer fade-in" onclick="verDetalleMascota('${m.id}')">
+            <div class="h-44 bg-slate-100 relative">
+              <img src="${m.fotos ? m.fotos[0] : 'https://placehold.co/400x250/slate/white?text=Patitas'}" class="w-full h-full object-cover">
+              <span class="absolute top-3 left-3 ${bColor} text-white font-extrabold text-[10px] px-3 py-1 rounded-full uppercase shadow-md">${bText}</span>
+            </div>
+            <div class="p-4 flex-grow flex flex-col justify-between">
+              <div>
+                <h4 class="font-extrabold text-lg text-slate-900 truncate">${m.nombre}</h4>
+                <p class="text-xs text-orange-600 font-bold mt-1 flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i> ${m.zona}</p>
+                <p class="text-xs text-slate-400 mt-1 truncate">${m.rasgos}</p>
+              </div>
             </div>
           </div>
         `;
@@ -1343,8 +1592,341 @@
       lucide.createIcons();
     }
 
-    const bloqBtn = (btn, lock, text = "Procesando...") => { if (!btn) return; btn.disabled = lock; btn.innerHTML = lock ? `<i class="lucide-loader animate-spin inline w-4 h-4 mr-1"></i> ${text}` : text; };
+    window.aplicarFiltros = function() {
+      filtroActual.texto = document.getElementById('filtro-texto').value;
+      filtroActual.especie = document.getElementById('filtro-especie').value;
+      filtroActual.estado = document.getElementById('filtro-estado').value;
+      filtroActual.zona = document.getElementById('filtro-zona').value;
+      renderizarMascotas();
+    };
 
+    window.guardarMascota = async function(e, tipoForm) {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type="submit"]');
+      bloqBtn(btn, true);
+
+      let fotosArray = [...temporalFotosSeleccionadas];
+      if (fotosArray.length === 0) {
+        fotosArray.push('https://placehold.co/400x250/slate/white?text=Proyecto+Patitas');
+      }
+
+      const pPayload = {
+        nombre: tipoForm === 'perdido' ? document.getElementById('nombre-p').value : 'Mascota Avistada',
+        especie: document.getElementById(`especie-${tipoForm[0]}`).value,
+        sexo: document.getElementById(`sexo-${tipoForm[0]}`).value,
+        raza: document.getElementById(`raza-${tipoForm[0]}`).value,
+        zona: document.getElementById(`zona-${tipoForm[0]}`).value,
+        gps: document.getElementById(`gps-${tipoForm[0]}`).value,
+        direccion: document.getElementById(`dir-texto-${tipoForm[0]}`).value,
+        rasgos: tipoForm === 'perdido' ? document.getElementById('rasgos-p').value : document.getElementById('detalles-e').value,
+        fotos: fotosArray,
+        fecha: new Date().toISOString(),
+        telefono: document.getElementById(`tel-${tipoForm[0]}`).value,
+        estado: tipoForm === 'perdido' ? 'perdido' : document.getElementById('estado-e').value,
+        creadorUid: user?.uid || 'anonimo',
+        refugioId: tipoForm === 'encontrado' ? document.getElementById('refugio-e').value : ''
+      };
+
+      try {
+        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pets'), pPayload);
+        window.mostrarAlerta('Reportado', 'La mascota ha sido inscrita exitosamente.', 'success');
+        e.target.reset();
+        temporalFotosSeleccionadas = [];
+        document.getElementById(`prevs-${tipoForm[0]}`).innerHTML = '';
+        cambiarVista('inicio');
+      } catch(err) {
+        window.mostrarAlerta('Error', 'No se pudo guardar la publicación.', 'error');
+      } finally {
+        bloqBtn(btn, false, 'Publicar Reporte');
+      }
+    };
+
+    window.verDetalleMascota = function(id) {
+      const m = baseMascotas.find(p => p.id === id);
+      if(!m) return;
+      
+      mascotaSeleccionadaId = id;
+      cambiarVista('detalle-mascota');
+
+      document.getElementById('d-img').src = m.fotos[0];
+      document.getElementById('d-badge').innerText = m.estado === 'perdido' ? 'Buscando' : m.estado.toUpperCase();
+      document.getElementById('d-badge').className = `absolute top-4 left-4 text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase shadow-md ${m.estado==='perdido'?'bg-red-600':m.estado==='encontrado'?'bg-sky-600':'bg-indigo-600'}`;
+
+      document.getElementById('d-nombre').innerText = m.nombre;
+      document.getElementById('d-zona').innerText = m.zona;
+      document.getElementById('d-dir').innerText = m.direccion || '';
+      document.getElementById('d-esp').innerText = m.especie;
+      document.getElementById('d-sex').innerText = m.sexo;
+      document.getElementById('d-raz').innerText = m.raza;
+      document.getElementById('d-fec').innerText = new Date(m.fecha).toLocaleDateString();
+      document.getElementById('d-rasgos').innerText = m.rasgos;
+      document.getElementById('d-wa').href = `https://wa.me/${m.telefono.replace(/[^0-9]/g, '')}`;
+
+      // Minis
+      const minis = document.getElementById('d-minis');
+      minis.innerHTML = '';
+      m.fotos.forEach(f => {
+        minis.innerHTML += `<img src="${f}" onclick="document.getElementById('d-img').src='${f}'" class="w-16 h-16 object-cover border rounded-xl cursor-pointer hover:border-orange-500">`;
+      });
+
+      // Event Map
+      if(m.gps && m.gps.includes(',')) {
+        document.getElementById('d-map-evt-wrap').classList.remove('hidden');
+        const p = m.gps.split(',');
+        window.inicializarMapasForm('map-det-evt', null, null, false, parseFloat(p[0]), parseFloat(p[1]));
+      } else {
+        document.getElementById('d-map-evt-wrap').classList.add('hidden');
+      }
+
+      // Custodia Refugio
+      const refWrap = document.getElementById('d-map-ref-wrap');
+      if (m.refugioId) {
+        const refObj = baseRefugios.find(r => r.id === m.refugioId);
+        if (refObj) {
+          refWrap.classList.remove('hidden');
+          document.getElementById('d-ref-nom').innerText = refObj.nombre;
+          document.getElementById('d-ref-con').innerText = `Dirección: ${refObj.direccion}`;
+          
+          if(refObj.gps && refObj.gps.includes(',')) {
+            const pr = refObj.gps.split(',');
+            window.inicializarMapasForm('map-det-ref', null, null, false, parseFloat(pr[0]), parseFloat(pr[1]));
+            document.getElementById('d-ref-ruta').href = `https://www.google.com/maps/dir/?api=1&destination=${refObj.gps.replace(/\s/g, '')}`;
+          }
+        } else {
+          refWrap.classList.add('hidden');
+        }
+      } else {
+        refWrap.classList.add('hidden');
+      }
+    };
+
+    // ==========================================
+    // SECCIÓN DE PERFIL: TABLAS DE CONTROL
+    // ==========================================
+    function renderizarTablaMascotasPerfil() {
+      const tb = document.getElementById('tb-mis-mascotas');
+      tb.innerHTML = '';
+      
+      const filtroUser = usuarioActual.rol === 'admin' ? baseMascotas : baseMascotas.filter(m => m.creadorUid === user?.uid);
+      
+      if (filtroUser.length === 0) {
+        tb.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-slate-400">Sin reportes registrados.</td></tr>';
+        return;
+      }
+
+      filtroUser.forEach(m => {
+        tb.innerHTML += `
+          <tr class="border-b text-xs hover:bg-slate-50">
+            <td class="p-3 font-bold text-slate-800">${m.nombre}</td>
+            <td class="p-3">
+              <select onchange="cambiarEstadoMascota('${m.id}', this.value)" class="p-1 border rounded bg-white text-xs">
+                <option value="perdido" ${m.estado === 'perdido'?'selected':''}>Buscando</option>
+                <option value="encontrado" ${m.estado === 'encontrado'?'selected':''}>Localizado</option>
+                <option value="rescatado" ${m.estado === 'rescatado'?'selected':''}>Rescatado 🏠</option>
+                <option value="reunido" ${m.estado === 'reunido'?'selected':''}>Reunido 🎉</option>
+                <option value="adopcion" ${m.estado === 'adopcion'?'selected':''}>En Adopción</option>
+              </select>
+            </td>
+            <td class="p-3 text-right space-x-2">
+              <button onclick="editarMascotaForm('${m.id}')" class="text-indigo-600 font-bold hover:underline">Editar</button>
+              <button onclick="eliminarMascotaGlobal('${m.id}')" class="text-red-600 font-bold hover:underline">Borrar</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    window.cambiarEstadoMascota = async function(id, nuevoEst) {
+      try {
+        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pets', id), { estado: nuevoEst });
+        window.mostrarAlerta('Estado Actualizado', 'El estado de la mascota ha sido modificado.', 'success');
+      } catch(e) {}
+    };
+
+    window.eliminarMascotaGlobal = function(id) {
+      window.confirmacionPersonalizada('¿Eliminar Reporte?', 'Esta acción removerá el reporte y sus fotos de forma permanente.', async () => {
+        try {
+          await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pets', id));
+          window.mostrarAlerta('Eliminado', 'Se ha removido el registro.', 'success');
+        } catch(e) {}
+      });
+    };
+
+    window.editarMascotaForm = function(id) {
+      const m = baseMascotas.find(p => p.id === id);
+      if(!m) return;
+
+      document.getElementById('ed-id').value = m.id;
+      document.getElementById('ed-nom').value = m.nombre;
+      document.getElementById('ed-raz').value = m.raza;
+      document.getElementById('ed-tel').value = m.telefono;
+      document.getElementById('ed-dir').value = m.direccion || '';
+      document.getElementById('ed-gps').value = m.gps || '';
+      
+      const dropRef = document.getElementById('ed-ref');
+      dropRef.value = m.refugioId || '';
+
+      document.getElementById('modal-editar-mascota').classList.remove('hidden');
+      window.inicializarMapasForm('map-ed', 'ed-gps', 'ed-dir');
+    };
+
+    window.cerrarEditar = () => { document.getElementById('modal-editar-mascota').classList.add('hidden'); };
+
+    window.guardarEdicion = async function(e) {
+      e.preventDefault();
+      const id = document.getElementById('ed-id').value;
+      const btn = e.target.querySelector('button[type="submit"]');
+      bloqBtn(btn, true);
+
+      try {
+        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pets', id), {
+          nombre: document.getElementById('ed-nom').value,
+          raza: document.getElementById('ed-raz').value,
+          telefono: document.getElementById('ed-tel').value,
+          direccion: document.getElementById('ed-dir').value,
+          gps: document.getElementById('ed-gps').value,
+          refugioId: document.getElementById('ed-ref').value
+        });
+        window.mostrarAlerta('Modificado', 'Registro actualizado con éxito.', 'success');
+        cerrarEditar();
+      } catch(e) {
+        window.mostrarAlerta('Error', 'No se pudo guardar la edición.', 'error');
+      } finally {
+        bloqBtn(btn, false, 'Guardar Cambios');
+      }
+    };
+
+    // ==========================================
+    // REFUGIOS: CREACIÓN Y EDICIÓN (PATTY)
+    // ==========================================
+    window.abrirModalRefugio = function() {
+      document.getElementById('ref-id').value = '';
+      document.getElementById('ref-nom').value = '';
+      document.getElementById('ref-res').value = '';
+      document.getElementById('ref-tel').value = '';
+      document.getElementById('ref-dir').value = '';
+      document.getElementById('ref-pai').value = '';
+      document.getElementById('ref-gps').value = '';
+      temporalFotoRefugio = '';
+      document.getElementById('prev-ref-img').classList.add('hidden');
+
+      document.getElementById('admin-modal-refugio').classList.remove('hidden');
+      window.inicializarMapasForm('map-r', 'ref-gps', 'ref-dir');
+    };
+
+    window.cerrarModalRefugio = function() {
+      document.getElementById('admin-modal-refugio').classList.add('hidden');
+    };
+
+    window.editarRefugioAdmin = function(id) {
+      const r = baseRefugios.find(sh => sh.id === id);
+      if(!r) return;
+
+      document.getElementById('ref-id').value = r.id;
+      document.getElementById('ref-nom').value = r.nombre;
+      document.getElementById('ref-res').value = r.responsable;
+      document.getElementById('ref-tel').value = r.telefono;
+      document.getElementById('ref-dir').value = r.direccion;
+      document.getElementById('ref-pai').value = r.pais || '';
+      document.getElementById('ref-gps').value = r.gps || '';
+      
+      const prevImg = document.getElementById('prev-ref-img');
+      if (r.foto) {
+        temporalFotoRefugio = r.foto;
+        prevImg.src = r.foto;
+        prevImg.classList.remove('hidden');
+      } else {
+        prevImg.classList.add('hidden');
+      }
+
+      document.getElementById('admin-modal-refugio').classList.remove('hidden');
+      window.inicializarMapasForm('map-r', 'ref-gps', 'ref-dir');
+    };
+
+    window.guardarRefugio = async function(e) {
+      e.preventDefault();
+      const id = document.getElementById('ref-id').value;
+      const btn = e.target.querySelector('button[type="submit"]');
+      bloqBtn(btn, true);
+
+      const rPayload = {
+        nombre: document.getElementById('ref-nom').value.trim(),
+        responsable: document.getElementById('ref-res').value.trim(),
+        telefono: document.getElementById('ref-tel').value.trim(),
+        direccion: document.getElementById('ref-dir').value.trim(),
+        pais: document.getElementById('ref-pai').value.trim(),
+        gps: document.getElementById('ref-gps').value.trim(),
+        foto: temporalFotoRefugio || 'https://placehold.co/400x250/indigo/white?text=Sede+Refugio'
+      };
+
+      try {
+        if(id) {
+          await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'shelters', id), rPayload);
+          window.mostrarAlerta('Sede Modificada', 'La sede ha sido actualizada correctamente.', 'success');
+        } else {
+          await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'shelters'), rPayload);
+          window.mostrarAlerta('Sede Registrada', 'Nueva sede oficial registrada.', 'success');
+        }
+        cerrarModalRefugio();
+      } catch(err) {
+        window.mostrarAlerta('Error', 'Fallo al guardar la sede.', 'error');
+      } finally {
+        bloqBtn(btn, false, 'Guardar Sede');
+      }
+    };
+
+    window.eliminarRefugioAdmin = function(id) {
+      window.confirmacionPersonalizada('¿Remover Sede?', 'Esta acción quitará el refugio de la red pública de forma permanente.', async () => {
+        try {
+          await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'shelters', id));
+          window.mostrarAlerta('Sede Eliminada', 'Se removió la sede.', 'success');
+        } catch(e) {}
+      });
+    };
+
+    // ==========================================
+    // COMPARTIR RED SOCIAL
+    // ==========================================
+    window.compartirWeb = function(via) {
+      const url = window.location.origin + window.location.pathname;
+      const text = "Proyecto Patitas - Red Unificada de Rescate y Geolocalización de Mascotas 🐾 ¡Ayúdanos a salvar vidas!";
+      
+      if(via === 'whatsapp') {
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text + " " + url)}`, '_blank');
+      } else if (via === 'facebook') {
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+      } else {
+        const temp = document.createElement("input");
+        temp.value = url; document.body.appendChild(temp); temp.select(); document.execCommand("copy"); document.body.removeChild(temp);
+        window.mostrarAlerta('Enlace Copiado', 'Link copiado para compartir.', 'success');
+      }
+    };
+
+    // ==========================================
+    // RENDERIZADORES DE SOPORTE E INTERFACES
+    // ==========================================
+    function actualizarContadores() {
+      let b = 0, a = 0, r = 0, re = 0, ad = 0;
+      baseMascotas.forEach(m => {
+        if(m.estado === 'perdido') b++;
+        else if (m.estado === 'encontrado') a++;
+        else if (m.estado === 'rescatado') r++;
+        else if (m.estado === 'reunido') re++;
+        else if (m.estado === 'adopcion') ad++;
+      });
+
+      document.getElementById('p-count-buscando').innerText = b;
+      document.getElementById('p-count-avistados').innerText = a;
+      document.getElementById('p-count-rescatados').innerText = r;
+      document.getElementById('p-count-reunidos').innerText = re;
+      document.getElementById('p-count-adopcion').innerText = ad;
+    }
+
+    function actualizarOpcionesEstado() {
+      // Inyectar a los selectores locales
+    }
+
+    lucide.createIcons();
   </script>
 </body>
 </html>
