@@ -118,6 +118,7 @@
       </div>
 
       <div id="listado-mascotas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+      <div id="sin-resultados" class="hidden text-center py-12 bg-white border rounded-2xl">No hay coincidencias en este momento.</div>
     </div>
 
     <!-- REFUGIOS -->
@@ -228,7 +229,7 @@
       </div>
     </div>
 
-    <!-- DETALLE -->
+    <!-- DETALLE MASCOTA -->
     <div id="vista-detalle-mascota" class="hidden space-y-8 fade-in">
       <div class="bg-white border rounded-3xl p-6 sm:p-8 shadow-sm">
         <button onclick="cambiarVista('inicio')" class="text-sm font-bold text-slate-500 mb-6 flex items-center gap-1"><i data-lucide="arrow-left" class="w-4 h-4"></i> Volver</button>
@@ -236,7 +237,6 @@
           <div class="space-y-4">
             <div class="aspect-square sm:aspect-video w-full rounded-2xl bg-slate-100 relative overflow-hidden"><img id="d-img" class="w-full h-full object-cover"><span id="d-badge" class="absolute top-4 left-4 text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase shadow-md"></span></div>
             <div id="d-minis" class="flex gap-2 overflow-x-auto"></div>
-            <!-- Contenedor Video -->
             <div id="d-video-wrapper" class="hidden mt-4 bg-slate-900 rounded-xl p-2 overflow-hidden aspect-video">
                 <video id="d-video" controls class="w-full h-full object-contain bg-black"></video>
             </div>
@@ -248,8 +248,44 @@
             <div id="d-map-ref-wrap" class="mt-4 bg-indigo-50 p-4 rounded-xl hidden z-0"><h4 class="text-xs font-bold text-indigo-800 uppercase">Custodia:</h4><p id="d-ref-nom" class="text-base font-black text-indigo-900"></p><p id="d-ref-con" class="text-xs mb-2"></p><div id="map-det-ref" class="w-full h-32 rounded-xl z-0 mb-3 border border-indigo-200"></div><a id="d-ref-ruta" target="_blank" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-xl text-sm flex justify-center gap-1"><i data-lucide="map" class="w-4 h-4"></i> ¿Cómo llegar?</a></div>
             <div class="grid grid-cols-2 gap-4 mt-6 bg-slate-50 p-4 rounded-2xl text-sm"><div><span class="font-bold">Especie:</span> <span id="d-esp"></span></div><div><span class="font-bold">Sexo:</span> <span id="d-sex"></span></div><div><span class="font-bold">Raza:</span> <span id="d-raz"></span></div><div><span class="font-bold">Fecha:</span> <span id="d-fec"></span></div></div>
             <div class="mt-4 border-t pt-4"><p class="text-xs font-bold text-slate-400 block mb-1">Descripción / Rasgos:</p><p id="d-rasgos" class="text-sm italic pl-2 border-l-2 border-orange-500"></p></div>
-            <div class="mt-4 border-t pt-4 flex gap-2"><a id="d-wa" target="_blank" class="w-1/2 justify-center bg-emerald-500 text-white font-bold py-3 rounded-xl flex items-center gap-1"><i data-lucide="message-circle" class="w-5 h-5"></i> WhatsApp</a><button id="d-chat" class="w-1/2 justify-center bg-sky-600 text-white font-bold py-3 rounded-xl flex items-center gap-1"><i data-lucide="message-square" class="w-5 h-5"></i> Chat Local</button></div>
+            <div class="mt-4 border-t pt-4 flex gap-2"><a id="d-wa" target="_blank" class="w-1/2 justify-center bg-emerald-500 text-white font-bold py-3 rounded-xl flex items-center gap-1"><i data-lucide="message-circle" class="w-5 h-5"></i> WhatsApp</a><span id="d-contacto" class="hidden"></span></div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETALLE REFUGIO -->
+    <div id="vista-detalle-refugio" class="hidden space-y-8 fade-in">
+      <div class="bg-white border rounded-3xl p-6 sm:p-8 shadow-sm">
+        <button onclick="cambiarVista('refugios')" class="text-sm font-bold text-slate-500 mb-6 flex items-center gap-1"><i data-lucide="arrow-left" class="w-4 h-4"></i> Volver a Refugios</button>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="space-y-4">
+            <div class="aspect-square sm:aspect-video w-full rounded-2xl bg-slate-100 relative overflow-hidden">
+              <img id="dr-img" class="w-full h-full object-cover">
+            </div>
+          </div>
+          <div>
+            <span id="dr-pais" class="bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full uppercase"></span>
+            <h2 id="dr-nombre" class="text-3xl font-extrabold mt-2 text-slate-900"></h2>
+            <p id="dr-responsable" class="text-slate-600 mt-1 font-bold"></p>
+            <p id="dr-direccion" class="text-sm text-slate-500 mt-1"></p>
+            
+            <div id="dr-map-wrap" class="mt-4 z-0">
+              <h4 class="text-xs font-bold uppercase mb-2">Ubicación de la Sede</h4>
+              <div id="map-det-refugio-view" class="w-full h-40 bg-slate-200 rounded-xl z-0"></div>
+            </div>
+
+            <div class="mt-6 border-t pt-4 flex gap-2">
+              <a id="dr-wa" target="_blank" class="w-1/2 justify-center bg-emerald-500 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-1"><i data-lucide="message-circle" class="w-5 h-5"></i> WhatsApp</a>
+              <a id="dr-ruta" target="_blank" class="w-1/2 justify-center bg-indigo-600 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-1"><i data-lucide="map" class="w-5 h-5"></i> ¿Cómo llegar?</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Huéspedes de este Refugio -->
+        <div class="mt-8 border-t pt-6">
+          <h3 class="text-lg font-bold mb-4 flex items-center gap-2"><i data-lucide="paw-print" class="text-indigo-600"></i> Mascotas Bajo su Custodia</h3>
+          <div id="dr-mascotas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
         </div>
       </div>
     </div>
@@ -297,7 +333,38 @@
             <h3 class="font-bold text-amber-900 mb-2"><i data-lucide="key" class="inline"></i> API Key Gemini Global</h3>
             <div class="flex gap-2"><input type="password" id="admin-gemini-key" class="input-custom flex-grow"><button onclick="guardarKeyAdmin()" class="bg-amber-600 text-white px-5 py-2 rounded-xl font-bold">Guardar</button></div>
           </div>
-          <div class="bg-white border rounded-3xl p-6 overflow-x-auto"><div class="flex justify-between mb-4"><h3 class="font-extrabold">Gestión de Refugios</h3><button onclick="abrirModalRefugio()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold">+ Nuevo Refugio</button></div><table class="w-full text-left text-sm whitespace-nowrap"><tbody id="admin-tb-refugios"></tbody></table></div>
+          
+          <div class="bg-white border rounded-3xl p-6 overflow-x-auto">
+            <div class="flex justify-between mb-4">
+              <h3 class="font-extrabold">Gestión de Refugios</h3>
+              <button onclick="abrirModalRefugio()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold">+ Nuevo Refugio</button>
+            </div>
+            <table class="w-full text-left text-sm whitespace-nowrap">
+              <thead>
+                <tr class="bg-slate-50 text-slate-400 text-xs border-b">
+                  <th class="p-3">Refugio</th>
+                  <th class="p-3">Responsable</th>
+                  <th class="p-3 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="admin-tb-refugios"></tbody>
+            </table>
+          </div>
+
+          <div class="bg-white border rounded-3xl p-6 overflow-x-auto">
+            <h3 class="font-extrabold mb-4">Gestión de Usuarios y Permisos</h3>
+            <table class="w-full text-left text-sm whitespace-nowrap">
+              <thead>
+                <tr class="bg-slate-50 text-slate-400 text-xs border-b">
+                  <th class="p-3">Nombre</th>
+                  <th class="p-3">Correo</th>
+                  <th class="p-3">Rol</th>
+                  <th class="p-3 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="admin-tb-usuarios"></tbody>
+            </table>
+          </div>
         </div>
 
         <div class="bg-white border rounded-3xl p-6 overflow-x-auto">
@@ -338,8 +405,36 @@
   </div>
 
   <div id="admin-modal-refugio" class="hidden fixed inset-0 bg-black/60 z-[100] flex justify-center items-center p-4">
-    <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col"><div class="bg-indigo-600 text-white p-5 flex justify-between rounded-t-3xl"><h3 class="font-bold">Refugio</h3><button onclick="cerrarModalRefugio()"><i data-lucide="x"></i></button></div><form onsubmit="guardarRefugio(event)" class="p-6 overflow-y-auto space-y-4"><div class="grid grid-cols-2 gap-4"><input type="text" id="ref-nom" placeholder="Nombre" required class="input-custom"><input type="text" id="ref-pai" placeholder="País" required class="input-custom"><input type="text" id="ref-res" placeholder="Responsable" required class="input-custom"><input type="tel" id="ref-tel" placeholder="Teléfono" required class="input-custom"></div><input type="text" id="ref-dir" placeholder="Dirección" required class="input-custom"><div class="flex flex-col"><div id="map-r" class="w-full h-32 bg-slate-200 rounded-xl mb-2 relative z-0"></div><div class="flex gap-2"><input type="text" id="ref-gps" readonly class="input-custom text-xs"><button type="button" onclick="obtenerGPSConMapa('ref-gps', 'map-r')" class="bg-slate-800 text-white px-3 rounded-xl text-xs font-bold">📍 GPS</button></div></div><div class="flex gap-4"><button type="button" onclick="cerrarModalRefugio()" class="w-1/2 py-2 bg-slate-100 font-bold rounded-xl">Cancelar</button><button type="submit" class="w-1/2 py-2 bg-indigo-600 text-white font-bold rounded-xl submit-btn">Guardar</button></div></form></div>
+    <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+      <div class="bg-indigo-600 text-white p-5 flex justify-between rounded-t-3xl"><h3 class="font-bold">Refugio</h3><button onclick="cerrarModalRefugio()"><i data-lucide="x"></i></button></div>
+      <form onsubmit="guardarRefugio(event)" class="p-6 overflow-y-auto space-y-4">
+        <input type="hidden" id="ref-id">
+        <div class="grid grid-cols-2 gap-4"><input type="text" id="ref-nom" placeholder="Nombre" required class="input-custom"><input type="text" id="ref-pai" placeholder="País" required class="input-custom"><input type="text" id="ref-res" placeholder="Responsable" required class="input-custom"><input type="tel" id="ref-tel" placeholder="Teléfono" required class="input-custom"></div><input type="text" id="ref-dir" placeholder="Dirección" required class="input-custom"><div class="flex flex-col"><div id="map-r" class="w-full h-32 bg-slate-200 rounded-xl mb-2 relative z-0"></div><div class="flex gap-2"><input type="text" id="ref-gps" readonly class="input-custom text-xs"><button type="button" onclick="obtenerGPSConMapa('ref-gps', 'map-r')" class="bg-slate-800 text-white px-3 rounded-xl text-xs font-bold">📍 GPS</button></div></div><div class="flex gap-4"><button type="button" onclick="cerrarModalRefugio()" class="w-1/2 py-2 bg-slate-100 font-bold rounded-xl">Cancelar</button><button type="submit" class="w-1/2 py-2 bg-indigo-600 text-white font-bold rounded-xl submit-btn">Guardar</button></div></form></div>
   </div>
+
+  <!-- MODAL DE CONFIRMACIÓN CUSTOM -->
+  <div id="modal-confirmacion" class="hidden fixed inset-0 bg-black/60 z-[250] flex justify-center items-center p-4">
+    <div class="bg-white rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl fade-in text-center">
+      <div class="mx-auto w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
+        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+      </div>
+      <h3 class="text-lg font-black text-slate-900" id="confirm-titulo">¿Confirmar Acción?</h3>
+      <p class="text-sm text-slate-500" id="confirm-mensaje">Esta acción es permanente y afectará los registros públicos.</p>
+      <div class="flex gap-3 pt-2">
+        <button id="btn-confirm-cancelar" class="w-1/2 py-2.5 bg-slate-100 font-bold rounded-xl">Cancelar</button>
+        <button id="btn-confirm-aceptar" class="w-1/2 py-2.5 bg-red-600 text-white font-bold rounded-xl">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER SOCIAL -->
+  <footer class="bg-slate-900 text-white py-8 mt-12 text-center pb-28 md:pb-8">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col items-center gap-6">
+      <h4 class="font-bold flex items-center gap-1"><i data-lucide="heart" class="text-orange-500 fill-orange-500"></i> Proyecto Patitas Venezuela</h4>
+      <div class="flex gap-4"><button onclick="compartirWeb('whatsapp')" class="p-3 bg-green-500 rounded-full"><i data-lucide="message-circle"></i></button><button onclick="compartirWeb('facebook')" class="p-3 bg-blue-600 rounded-full"><i data-lucide="facebook"></i></button><button onclick="compartirWeb('copiar')" class="p-3 bg-slate-800 rounded-full"><i data-lucide="link"></i></button></div>
+      <div class="text-xs text-slate-500 border-t border-slate-800 pt-4 w-full">Desarrollado por voluntarios independientes: <span class="font-bold text-slate-300">Zeus Mantilla</span> y <span class="font-bold text-slate-300">Patricia Pineda</span> 🇻🇪</div>
+    </div>
+  </footer>
 
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
@@ -356,16 +451,13 @@
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'buscapatitas';
 
     let user = null; let usuarioActual = { rol: 'anonimo' };
-    let baseMascotas = []; let baseRefugios = []; let geminiApiKeyGlobal = '';
-    let vistaActual = 'inicio'; let filtroActual = { texto: '', especie: 'todos', estado: 'todos', zona: 'todas' };
+    let baseMascotas = []; let baseRefugios = []; let baseUsuarios = []; let geminiApiKeyGlobal = '';
+    let vistaActual = 'inicio'; let mascotaSeleccionadaId = null; let filtroActual = { texto: '', especie: 'todos', estado: 'todos', zona: 'todas' };
     
     // Media globals
     let temporalFotosSeleccionadas = []; let temporalFotoRescatista = ''; let temporalVideoUrl = '';
     let cropperInst = null; let currentCropTarget = '';
     let globalMaps = {}; let globalMarkers = {};
-
-    // 0. CARGA INICIAL INMEDIATA DE LA BASE DE DATOS (No bloqueante, ¡carga tus datos reales ya!)
-    sincronizarDB();
 
     // Comprobar si hay un inicio de sesión por Clave Clásica guardado en el celular
     const savedBypass = localStorage.getItem('patitas_bypass_user');
@@ -376,7 +468,6 @@
     onAuthStateChanged(auth, async (authUser) => {
       user = authUser;
       if (user) {
-        // Solo si no estamos usando la Clave Clásica (bypass) leemos el usuario real de Firebase Auth
         if (!localStorage.getItem('patitas_bypass_user')) {
           if (!user.isAnonymous) {
             try {
@@ -392,19 +483,30 @@
         if (!localStorage.getItem('patitas_bypass_user')) {
           usuarioActual = { rol: 'anonimo' };
         }
-        // Hacemos el login anónimo de forma silenciosa para que no interrumpa el flujo
         signInAnonymously(auth).catch(() => {
           console.log("Firebase Auth Anónimo no habilitado o sin conexión.");
         });
       }
       renderizarPerfil();
       actualizarOpcionesEstado();
+      sincronizarDB();
     });
 
     function sincronizarDB() {
       onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'global'), (s) => { if(s.exists()) { geminiApiKeyGlobal = s.data().geminiApiKey||''; const ak = document.getElementById('admin-gemini-key'); if(ak) ak.value = geminiApiKeyGlobal;} });
       onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'pets'), (s) => { baseMascotas = []; s.forEach(d => baseMascotas.push({ id: d.id, ...d.data() })); baseMascotas.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)); renderizarMascotas(); renderizarTablaMascotasPerfil(); actualizarContadores(); });
       onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'shelters'), (s) => { baseRefugios = []; s.forEach(d => baseRefugios.push({ id: d.id, ...d.data() })); renderizarRefugios(); renderizarTablaRefugios(); actualizarDropsRefugios(); });
+      
+      // Sincronizar usuarios solo si se tiene el rol administrador o bypass admin activo
+      if (usuarioActual.rol === 'admin') {
+        onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'users'), (s) => {
+          baseUsuarios = [];
+          s.forEach(d => baseUsuarios.push({ id: d.id, ...d.data() }));
+          renderizarTablaUsuarios();
+        }, (err) => {
+          console.log("Acceso restringido a colección de usuarios.");
+        });
+      }
     }
 
     function actualizarDropsRefugios() {
@@ -454,7 +556,7 @@
         window.mostrarAlerta('Bypass Exitoso', '¡Bienvenida de vuelta Patty! Controles de Administradora activados.', 'success');
         renderizarPerfil();
         actualizarOpcionesEstado();
-        renderizarTablaMascotasPerfil();
+        sincronizarDB();
       } else {
         window.mostrarAlerta('Clave incorrecta', 'Verifica e intenta de nuevo.', 'error');
       }
@@ -551,15 +653,18 @@
     // ==========================================
     // MAPAS NOMINATIM Y GUARDADO
     // ==========================================
-    window.inicializarMapasForm = function(mId, cId, aId) {
+    window.inicializarMapasForm = function(mId, cId, aId, isMarkerDraggable=true, sLat=10.6, sLng=-66.93) {
       setTimeout(()=>{ 
-        const cInp=document.getElementById(cId); let lt=10.6, lg=-66.93; 
+        const cInp = cId ? document.getElementById(cId) : null;
+        let lt = sLat; let lg = sLng; 
         if(cInp && cInp.value.includes(',')) { const p=cInp.value.split(','); lt=parseFloat(p[0]); lg=parseFloat(p[1]); }
         if(globalMaps[mId]) { globalMaps[mId].invalidateSize(); globalMaps[mId].setView([lt,lg],15); globalMarkers[mId].setLatLng([lt,lg]); return; }
         const map = L.map(mId).setView([lt,lg],15); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        const mk = L.marker([lt,lg], {draggable:true}).addTo(map);
-        mk.on('dragend', (e)=>{ const p=mk.getLatLng(); document.getElementById(cId).value=`${p.lat.toFixed(6)},${p.lng.toFixed(6)}`; fetchDir(p.lat, p.lng, aId); });
-        map.on('click', (e)=>{ mk.setLatLng(e.latlng); document.getElementById(cId).value=`${e.latlng.lat.toFixed(6)},${e.latlng.lng.toFixed(6)}`; fetchDir(e.latlng.lat, e.latlng.lng, aId); });
+        const mk = L.marker([lt,lg], {draggable:isMarkerDraggable}).addTo(map);
+        if (isMarkerDraggable && cInp) {
+          mk.on('dragend', (e)=>{ const p=mk.getLatLng(); cInp.value=`${p.lat.toFixed(6)},${p.lng.toFixed(6)}`; fetchDir(p.lat, p.lng, aId); });
+          map.on('click', (e)=>{ mk.setLatLng(e.latlng); cInp.value=`${e.latlng.lat.toFixed(6)},${e.latlng.lng.toFixed(6)}`; fetchDir(e.latlng.lat, e.latlng.lng, aId); });
+        }
         globalMaps[mId]=map; globalMarkers[mId]=mk;
       }, 400);
     }
@@ -575,14 +680,14 @@
     const bloqBtn = (btn, lock, text="Procesando...") => { if(!btn)return; btn.disabled = lock; btn.innerHTML = lock ? `<i class="lucide-loader animate-spin inline w-4 h-4 mr-1"></i> ${text}` : text; };
 
     window.guardarMascota = async function(e, tipo) {
-      e.preventDefault(); if (usuarioActual.rol === 'anonimo') return window.mostrarAlerta('Atención', 'Debes iniciar sesión para reportar o usar el Bypass.', 'error');
+      e.preventDefault(); if (usuarioActual.rol === 'anonimo') return window.mostrarAlerta('Atención', 'Debes iniciar sesión para reportar.', 'error');
       const btn = e.target.querySelector('.submit-btn'); bloqBtn(btn, true);
       const fArr = temporalFotosSeleccionadas.length > 0 ? temporalFotosSeleccionadas : ["data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150'><rect width='100%' height='100%' fill='%23ccc'/></svg>"];
       const sId = tipo === 'perdido' ? '-p' : '-e';
       const payload = {
         estado: tipo, nombre: tipo==='perdido'?document.getElementById('nombre-p').value.trim():'Avistado', especie: document.getElementById('especie'+sId).value, sexo: document.getElementById('sexo'+sId).value, raza: document.getElementById('raza'+sId).value.trim(),
         zona: document.getElementById('zona'+sId).value, gps: document.getElementById('gps'+sId).value, direccionExtra: document.getElementById('dir-texto'+sId).value.trim(),
-        contacto: document.getElementById(tipo==='perdido'?'tel-p':'tel-e').value.trim(), fecha: new Date().toISOString().split('T')[0], fotos: fArr, videoUrl: temporalVideoUrl, creadorId: usuarioActual.uid || 'bypass-admin'
+        contacto: document.getElementById(tipo==='perdido'?'tel-p':'tel-e').value.trim(), fecha: new Date().toISOString().split('T')[0], fotos: fArr, videoUrl: temporalVideoUrl, creadorId: user.uid
       };
       if(tipo==='perdido') { payload.rasgos = document.getElementById('rasgos-p').value.trim(); payload.email = document.getElementById('email-p').value.trim(); } 
       else { payload.color = document.getElementById('color-e').value.trim(); payload.rasgos = `${payload.color} - ${document.getElementById('detalles-e').value.trim()}`; payload.refugioId = document.getElementById('refugio-e').value; payload.lugarActual = document.getElementById('lugar-e').value.trim(); payload.fotoRescatista = temporalFotoRescatista; }
@@ -593,7 +698,7 @@
     // RENDERIZADOS Y GESTIÓN
     // ==========================================
     window.cambiarVista = function(v) {
-      vistaActual = v; ['inicio','refugios','reportar-perdido','reportar-encontrado','detalle-mascota','perfil'].forEach(id => { const el=document.getElementById('vista-'+id); if(el) el.classList.add('hidden'); });
+      vistaActual = v; ['inicio','refugios','reportar-perdido','reportar-encontrado','detalle-mascota','detalle-refugio','perfil'].forEach(id => { const el=document.getElementById('vista-'+id); if(el) el.classList.add('hidden'); });
       document.getElementById('vista-'+v).classList.remove('hidden'); window.scrollTo(0,0);
       if(v==='inicio') renderizarMascotas();
       if(v==='reportar-perdido') window.inicializarMapasForm('map-p','gps-p','dir-texto-p');
@@ -605,9 +710,9 @@
     function actualizarContadores() { document.getElementById('p-count-buscando').innerText = baseMascotas.filter(m=>m.estado==='perdido').length; document.getElementById('p-count-avistados').innerText = baseMascotas.filter(m=>m.estado==='encontrado').length; document.getElementById('p-count-rescatados').innerText = baseMascotas.filter(m=>m.estado==='rescatado').length; document.getElementById('p-count-reunidos').innerText = baseMascotas.filter(m=>m.estado==='reunido').length; document.getElementById('p-count-adopcion').innerText = baseMascotas.filter(m=>m.estado==='adopcion').length; }
 
     function renderizarMascotas() {
-      const grid = document.getElementById('listado-mascotas'); grid.innerHTML = '';
+      const grid = document.getElementById('listado-mascotas'); const vacio = document.getElementById('sin-resultados'); grid.innerHTML = '';
       const f = baseMascotas.filter(m => { const t = filtroActual.texto===''||m.nombre.toLowerCase().includes(filtroActual.texto)||m.raza.toLowerCase().includes(filtroActual.texto); const e = filtroActual.especie==='todos'||m.especie===filtroActual.especie; const st = filtroActual.estado==='todos'||m.estado===filtroActual.estado; const z = filtroActual.zona==='todas'||m.zona===filtroActual.zona; return t&&e&&st&&z; });
-      if(f.length===0){grid.innerHTML='<div class="col-span-full text-center py-12 text-slate-400">Sin resultados con este filtro</div>'; return;}
+      if(f.length===0){vacio.classList.remove('hidden');return;} vacio.classList.add('hidden');
       f.forEach(m => {
         let bc='bg-red-600', bt='Buscando'; if(m.estado==='encontrado'){bc='bg-sky-600';bt='Localizado';}else if(m.estado==='rescatado'){bc='bg-indigo-600';bt='Rescatado 🏠';}else if(m.estado==='reunido'){bc='bg-emerald-600';bt='Reunido 🎉';}else if(m.estado==='fallecido'){bc='bg-slate-600';bt='Fallecido 🕯️';}else if(m.estado==='adopcion'){bc='bg-amber-500';bt='En Adopción';}
         grid.innerHTML += `<div class="tarjeta-mascota border overflow-hidden flex flex-col cursor-pointer snap-start" onclick="verDetalleMascota('${m.id}')"><div class="relative h-48 w-full bg-slate-100"><img src="${m.fotos?m.fotos[0]:''}" class="w-full h-full object-cover" loading="lazy"><span class="absolute top-3 left-3 ${bc} text-white font-extrabold text-[10px] px-2.5 py-1 rounded-full uppercase shadow-sm">${bt}</span>${m.videoUrl?`<i data-lucide="video" class="absolute top-3 right-3 text-white drop-shadow-md"></i>`:''}</div><div class="p-5 flex-grow flex flex-col justify-between"><div><div class="flex justify-between items-start"><h4 class="font-extrabold text-lg truncate">${m.nombre}</h4><span class="text-[10px] text-slate-400">${m.fecha}</span></div><p class="text-xs font-semibold text-orange-600 mt-1 flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i> ${m.zona}</p><p class="text-sm text-slate-600 mt-3 line-clamp-2 italic">"${m.rasgos}"</p></div></div></div>`;
@@ -615,7 +720,7 @@
     }
 
     window.verDetalleMascota = function(id) {
-      const m=baseMascotas.find(p=>p.id===id); if(!m)return; cambiarVista('detalle-mascota');
+      mascotaSeleccionadaId=id; const m=baseMascotas.find(p=>p.id===id); if(!m)return; cambiarVista('detalle-mascota');
       const fp=document.getElementById('d-img'); fp.src=m.fotos?m.fotos[0]:'';
       let bc='bg-red-600', bt='Buscando', titM="Pérdida"; if(m.estado==='encontrado'){bc='bg-sky-600';bt='Localizado';titM="Avistamiento";}else if(m.estado==='rescatado'){bc='bg-indigo-600';bt='Rescatado 🏠';titM="Rescate";}else if(m.estado==='reunido'){bc='bg-emerald-600';bt='Reunido 🎉';titM="Reencuentro";}else if(m.estado==='fallecido'){bc='bg-slate-600';bt='Fallecido 🕯️';titM="Hallazgo";}else if(m.estado==='adopcion'){bc='bg-amber-500';bt='En Adopción';}
       document.getElementById('d-badge').className=`absolute top-4 left-4 text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase shadow-md ${bc}`; document.getElementById('d-badge').innerText=bt;
@@ -629,7 +734,7 @@
       const resc=document.getElementById('d-resc-wrap'); if(m.fotoRescatista){ resc.classList.remove('hidden'); resc.classList.add('flex'); document.getElementById('d-resc-img').src=m.fotoRescatista; } else { resc.classList.add('hidden'); resc.classList.remove('flex'); }
 
       document.getElementById('d-nombre').innerText=m.nombre; document.getElementById('d-zona').innerHTML=`<i data-lucide="map-pin" class="w-4 h-4 inline"></i> ${m.zona}`; document.getElementById('d-dir').innerText=m.direccionExtra||'';
-      document.getElementById('d-esp').innerText=m.especie; document.getElementById('d-sex').innerText=m.sexo; document.getElementById('d-raz').innerText=m.raza; document.getElementById('d-fec').innerText=m.fecha; document.getElementById('d-rasgos').innerText=m.rasgos||'Sin rasgos específicos.';
+      document.getElementById('d-esp').innerText=m.especie; document.getElementById('d-sex').innerText=m.sexo; document.getElementById('d-raz').innerText=m.raza; document.getElementById('d-fec').innerText=m.fecha; document.getElementById('d-rasgos').innerText=m.rasgos;
 
       const mEvt=document.getElementById('d-map-evt-wrap');
       if(m.gps&&m.gps.includes(',')){ mEvt.classList.remove('hidden'); document.getElementById('d-map-tit').innerText=titM; const p=m.gps.split(','); window.inicializarMapasForm('map-det-evt',null,null,false,parseFloat(p[0]),parseFloat(p[1])); } else { mEvt.classList.add('hidden'); }
@@ -637,20 +742,92 @@
       const mRef=document.getElementById('d-map-ref-wrap'); let rVinc=m.refugioId?baseRefugios.find(r=>r.id===m.refugioId):null;
       if(rVinc){ mRef.classList.remove('hidden'); document.getElementById('d-ref-nom').innerText=rVinc.nombre; document.getElementById('d-ref-con').innerText=`Resp: ${rVinc.responsable} | Tel: ${rVinc.telefono}`; if(rVinc.gps&&rVinc.gps.includes(',')){ document.getElementById('map-det-ref').classList.remove('hidden'); const p=rVinc.gps.split(','); window.inicializarMapasForm('map-det-ref',null,null,false,parseFloat(p[0]),parseFloat(p[1])); document.getElementById('d-ref-ruta').href=`https://www.google.com/maps/dir/?api=1&destination=${p[0]},${p[1]}`; }else{ document.getElementById('map-det-ref').classList.add('hidden'); document.getElementById('d-ref-ruta').href="#"; } } else { mRef.classList.add('hidden'); }
       
-      document.getElementById('d-wa').href=`https://wa.me/${m.contacto.replace(/[^0-9]/g, '')}`; 
+      document.getElementById('d-wa').href=`https://wa.me/${m.contacto.replace(/[^0-9]/g, '')}`; document.getElementById('d-contacto').innerText=m.contacto;
       lucide.createIcons();
     };
 
-    function renderizarRefugios() { const g=document.getElementById('listado-refugios'); g.innerHTML=''; baseRefugios.forEach(r=>{ const l=r.gps?`<a href="https://www.google.com/maps/dir/?api=1&destination=${r.gps}" target="_blank" class="w-full bg-indigo-50 text-indigo-700 font-bold py-2 rounded-xl text-xs flex justify-center mt-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Ruta</a>`:''; g.innerHTML+=`<div class="bg-white border rounded-2xl overflow-hidden flex flex-col"><img src="${r.foto}" class="w-full h-40 object-cover bg-indigo-50"><div class="p-5 flex-grow"><span class="text-[10px] font-bold bg-slate-100 px-2 py-0.5 rounded-full mb-2 inline-block">${r.pais}</span><h4 class="font-extrabold text-lg">${r.nombre}</h4><p class="text-xs text-slate-500 mt-1">Resp: ${r.responsable}</p><p class="text-xs mt-1 line-clamp-2">${r.direccion}</p><div class="mt-4 pt-4 border-t"><a href="https://wa.me/${r.telefono.replace(/[^0-9]/g, '')}" class="w-full bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs flex justify-center"><i data-lucide="phone"></i> Contactar</a>${l}</div></div></div>`; }); lucide.createIcons(); }
+    window.verDetalleRefugio = function(id) {
+      const r = baseRefugios.find(sh => sh.id === id);
+      if(!r) return;
+      cambiarVista('detalle-refugio');
+      
+      document.getElementById('dr-img').src = r.foto || 'https://placehold.co/600x400/indigo/white?text=Refugio';
+      document.getElementById('dr-pais').innerText = r.pais || 'Venezuela';
+      document.getElementById('dr-nombre').innerText = r.nombre;
+      document.getElementById('dr-responsable').innerText = `Responsable: ${r.responsable}`;
+      document.getElementById('dr-direccion').innerText = r.direccion;
+      
+      document.getElementById('dr-wa').href = `https://wa.me/${r.telefono.replace(/[^0-9]/g, '')}`;
+      
+      const mapWrap = document.getElementById('dr-map-wrap');
+      if(r.gps && r.gps.includes(',')) {
+        mapWrap.classList.remove('hidden');
+        const p = r.gps.split(',');
+        window.inicializarMapasForm('map-det-refugio-view', null, null, false, parseFloat(p[0]), parseFloat(p[1]));
+        document.getElementById('dr-ruta').href = `https://www.google.com/maps/dir/?api=1&destination=${p[0]},${p[1]}`;
+        document.getElementById('dr-ruta').classList.remove('hidden');
+      } else {
+        mapWrap.classList.add('hidden');
+        document.getElementById('dr-ruta').classList.add('hidden');
+      }
+
+      // Fetch pets hosted in this shelter
+      const petsContainer = document.getElementById('dr-mascotas');
+      petsContainer.innerHTML = '';
+      const shelterPets = baseMascotas.filter(pet => pet.refugioId === id);
+      if(shelterPets.length === 0) {
+        petsContainer.innerHTML = '<div class="col-span-full text-center py-6 text-slate-400">No hay mascotas resguardadas en este refugio actualmente.</div>';
+      } else {
+        shelterPets.forEach(m => {
+          let bc='bg-red-600', bt='Buscando'; if(m.estado==='encontrado'){bc='bg-sky-600';bt='Localizado';}else if(m.estado==='rescatado'){bc='bg-indigo-600';bt='Rescatado 🏠';}else if(m.estado==='reunido'){bc='bg-emerald-600';bt='Reunido 🎉';}else if(m.estado==='fallecido'){bc='bg-slate-600';bt='Fallecido 🕯️';}else if(m.estado==='adopcion'){bc='bg-amber-500';bt='En Adopción';}
+          petsContainer.innerHTML += `
+            <div class="tarjeta-mascota border overflow-hidden flex flex-col cursor-pointer bg-white" onclick="verDetalleMascota('${m.id}')">
+              <div class="relative h-32 w-full bg-slate-100">
+                <img src="${m.fotos?m.fotos[0]:''}" class="w-full h-full object-cover" loading="lazy">
+                <span class="absolute top-2 left-2 ${bc} text-white font-extrabold text-[9px] px-2 py-0.5 rounded-full uppercase shadow-sm">${bt}</span>
+              </div>
+              <div class="p-3">
+                <h4 class="font-extrabold text-sm truncate text-slate-900">${m.nombre}</h4>
+                <p class="text-[10px] text-slate-500">${m.zona}</p>
+              </div>
+            </div>
+          `;
+        });
+      }
+      lucide.createIcons();
+    }
+
+    function renderizarRefugios() {
+      const g=document.getElementById('listado-refugios'); g.innerHTML='';
+      baseRefugios.forEach(r=>{
+        const l=r.gps?`<a href="https://www.google.com/maps/dir/?api=1&destination=${r.gps}" target="_blank" class="w-full bg-indigo-50 text-indigo-700 font-bold py-2 rounded-xl text-xs flex justify-center mt-2 items-center gap-1"><i data-lucide="map-pin" class="w-4 h-4"></i> Ruta</a>`:'';
+        g.innerHTML+=`
+          <div class="bg-white border rounded-2xl overflow-hidden flex flex-col hover:shadow-md transition-all cursor-pointer" onclick="verDetalleRefugio('${r.id}')">
+            <img src="${r.foto || 'https://placehold.co/600x400/f1f5f9/475569?text=Refugio'}" class="w-full h-40 object-cover bg-indigo-50">
+            <div class="p-5 flex-grow flex flex-col justify-between" onclick="event.stopPropagation();">
+              <div>
+                <span class="text-[10px] font-bold bg-slate-100 px-2 py-0.5 rounded-full mb-2 inline-block">${r.pais || 'Venezuela'}</span>
+                <h4 class="font-extrabold text-lg text-slate-800 hover:text-indigo-600 cursor-pointer" onclick="verDetalleRefugio('${r.id}')">${r.nombre}</h4>
+                <p class="text-xs text-slate-500 mt-1">Resp: ${r.responsable}</p>
+                <p class="text-xs mt-1 line-clamp-2">${r.direccion}</p>
+              </div>
+              <div class="mt-4 pt-4 border-t">
+                <a href="https://wa.me/${r.telefono.replace(/[^0-9]/g, '')}" target="_blank" class="w-full bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs flex justify-center items-center gap-1 hover:bg-emerald-600"><i data-lucide="phone" class="w-4 h-4"></i> Contactar</a>
+                ${l}
+              </div>
+            </div>
+          </div>`;
+      });
+      lucide.createIcons();
+    }
     
-    // GESTIÓN PERFIL (EDITAR MASCOTAS / REFUGIOS)
+    // GESTIÓN PERFIL (EDITAR MASCOTAS / REFUGIOS / USUARIOS)
     function renderizarTablaMascotasPerfil() {
       const tb=document.getElementById('tb-mis-mascotas'); tb.innerHTML='';
       let filtradas = [];
-      const uidActual = usuarioActual.uid || 'emergency-admin';
       if(usuarioActual.rol === 'admin') filtradas = baseMascotas;
-      else if(usuarioActual.rol === 'fundacion') filtradas = baseMascotas.filter(m => m.creadorId === uidActual || (usuarioActual.refugioId && m.refugioId === usuarioActual.refugioId));
-      else filtradas = baseMascotas.filter(m => m.creadorId === uidActual);
+      else if(usuarioActual.rol === 'fundacion') filtradas = baseMascotas.filter(m => m.creadorId === user.uid || (usuarioActual.refugioId && m.refugioId === usuarioActual.refugioId));
+      else filtradas = baseMascotas.filter(m => m.creadorId === user.uid);
       
       if(filtradas.length===0){tb.innerHTML=`<tr><td colspan="3" class="p-4 text-center text-slate-400">No tienes reportes gestionables.</td></tr>`;return;}
       filtradas.forEach(m=>{
@@ -662,28 +839,195 @@
 
     function renderizarTablaRefugios() {
       const tb=document.getElementById('admin-tb-refugios'); tb.innerHTML='';
-      baseRefugios.forEach(r=>{ tb.innerHTML+=`<tr class="border-b hover:bg-slate-50"><td class="p-3 font-bold">${r.nombre}</td><td class="p-3">${r.responsable}</td><td class="p-3 text-right"><button onclick="eliminarRef('${r.id}')" class="text-red-600 font-bold px-2">Borrar</button></td></tr>`; });
+      baseRefugios.forEach(r=>{
+        tb.innerHTML+=`
+          <tr class="border-b hover:bg-slate-50">
+            <td class="p-3 font-bold">${r.nombre}</td>
+            <td class="p-3">${r.responsable}</td>
+            <td class="p-3 text-right">
+              <button onclick="abrirEditarRefugio('${r.id}')" class="text-indigo-600 font-bold px-2">Editar</button>
+              <button onclick="eliminarRef('${r.id}')" class="text-red-600 font-bold px-2">Borrar</button>
+            </td>
+          </tr>`;
+      });
     }
 
+    function renderizarTablaUsuarios() {
+      const tb=document.getElementById('admin-tb-usuarios');
+      if(!tb) return;
+      tb.innerHTML='';
+      if(baseUsuarios.length === 0) {
+        tb.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Cargando o sin usuarios registrados.</td></tr>';
+        return;
+      }
+      baseUsuarios.forEach(u => {
+        const isMe = user && u.id === user.uid;
+        tb.innerHTML += `
+          <tr class="border-b hover:bg-slate-50">
+            <td class="p-3 font-bold">${u.nombre || 'Sin Nombre'}</td>
+            <td class="p-3 text-slate-500">${u.email || 'Anónimo'}</td>
+            <td class="p-3">
+              <select onchange="cambiarRolUsuario('${u.id}', this.value)" class="p-1 border rounded text-xs font-bold bg-white" ${isMe ? 'disabled' : ''}>
+                <option value="voluntario" ${u.rol === 'voluntario' ? 'selected' : ''}>Voluntario</option>
+                <option value="fundacion" ${u.rol === 'fundacion' ? 'selected' : ''}>Fundación</option>
+                <option value="admin" ${u.rol === 'admin' ? 'selected' : ''}>Admin</option>
+              </select>
+            </td>
+            <td class="p-3 text-right">
+              <button onclick="eliminarUsuario('${u.id}')" class="text-red-600 font-bold px-2" ${isMe ? 'disabled' : ''}>Eliminar</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    window.cambiarRolUsuario = async function(userId, nuevoRol) {
+      try {
+        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', userId), { rol: nuevoRol });
+        window.mostrarAlerta('Éxito', 'Rol de usuario actualizado.', 'success');
+      } catch(e) {
+        window.mostrarAlerta('Error', 'No tienes permisos para modificar este usuario.', 'error');
+      }
+    };
+
+    window.eliminarUsuario = function(userId) {
+      window.mostrarConfirmacion('¿Eliminar Usuario?', 'Se removerá de la base de datos de voluntarios de forma permanente.', async () => {
+        try {
+          await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', userId));
+          window.mostrarAlerta('Éxito', 'Usuario eliminado de la base de datos.', 'success');
+        } catch(e) {
+          window.mostrarAlerta('Error', 'No se pudo eliminar el usuario.', 'error');
+        }
+      });
+    };
+
     window.updateEstatus = async (id, st) => { try{await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pets', id), {estado:st}); window.mostrarAlerta('Listo','Estatus modificado.','success');}catch(e){} };
-    window.eliminarReporte = (id) => { if(confirm('¿Borrar permanentemente?')) deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pets', id)); };
-    window.eliminarRef = (id) => { if(confirm('¿Borrar refugio?')) deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'shelters', id)); };
+    
+    window.eliminarReporte = (id) => { 
+      window.mostrarConfirmacion('¿Borrar Reporte?', 'Esta mascota será eliminada del catálogo público permanentemente.', async () => {
+        try {
+          await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pets', id));
+          window.mostrarAlerta('Listo','Mascota eliminada.','success');
+        } catch(e) {}
+      });
+    };
+
+    window.eliminarRef = (id) => { 
+      window.mostrarConfirmacion('¿Borrar Refugio?', 'Este refugio ya no se listará como punto oficial de rescate.', async () => {
+        try {
+          await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'shelters', id));
+          window.mostrarAlerta('Listo','Refugio eliminado.','success');
+        } catch(e) {}
+      });
+    };
 
     window.abrirEditar = function(id) {
       const m = baseMascotas.find(p=>p.id===id); if(!m) return;
       document.getElementById('ed-id').value=id; document.getElementById('ed-nom').value=m.nombre; document.getElementById('ed-raz').value=m.raza; document.getElementById('ed-tel').value=m.contacto; document.getElementById('ed-dir').value=m.direccionExtra||''; document.getElementById('ed-gps').value=m.gps||'';
-      const sel = document.getElementById('ed-ref'); sel.innerHTML='<option value="">-- No --</option>'; baseRefugios.forEach(r=>{ sel.innerHTML+=`<option value="${r.id}" ${r.id===m.refugioId?'selected':''}>${r.nombre}</option>`; });
+      const sel = document.getElementById('ed-ref'); sel.innerHTML='<option value="">-- No --</option>'; baseRefugios.forEach(r => { sel.innerHTML += `<option value="${r.id}" ${r.id===m.refugioId?'selected':''}>${r.nombre}</option>`; });
       document.getElementById('modal-editar-mascota').classList.remove('hidden'); window.inicializarMapasForm('map-ed','ed-gps','ed-dir');
     };
     window.cerrarEditar = () => document.getElementById('modal-editar-mascota').classList.add('hidden');
     window.guardarEdicion = async (e) => { e.preventDefault(); const btn=e.target.querySelector('.submit-btn'); bloqBtn(btn,true); const id=document.getElementById('ed-id').value; try { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pets', id), { nombre:document.getElementById('ed-nom').value, raza:document.getElementById('ed-raz').value, contacto:document.getElementById('ed-tel').value, refugioId:document.getElementById('ed-ref').value, direccionExtra:document.getElementById('ed-dir').value, gps:document.getElementById('ed-gps').value }); cerrarEditar(); window.mostrarAlerta('Listo','Guardado','success'); } catch(e){} finally{bloqBtn(btn,false,'Guardar');} };
 
-    // ADMIN REFUGIO (Solo para rol Admin)
-    window.abrirModalRefugio = () => { document.getElementById('admin-modal-refugio').classList.remove('hidden'); window.inicializarMapasForm('map-r','ref-gps','ref-dir'); };
+    window.abrirEditarRefugio = function(id) {
+      const r = baseRefugios.find(sh => sh.id === id);
+      if(!r) return;
+      document.getElementById('ref-id').value = id;
+      document.getElementById('ref-nom').value = r.nombre;
+      document.getElementById('ref-pai').value = r.pais || 'Venezuela';
+      document.getElementById('ref-res').value = r.responsable;
+      document.getElementById('ref-tel').value = r.telefono;
+      document.getElementById('ref-dir').value = r.direccion;
+      document.getElementById('ref-gps').value = r.gps || '';
+      
+      document.getElementById('admin-modal-refugio').classList.remove('hidden');
+      window.inicializarMapasForm('map-r', 'ref-gps', 'ref-dir');
+    };
+
+    window.abrirModalRefugio = () => { 
+      document.getElementById('ref-id').value = '';
+      document.getElementById('ref-nom').value = '';
+      document.getElementById('ref-pai').value = '';
+      document.getElementById('ref-res').value = '';
+      document.getElementById('ref-tel').value = '';
+      document.getElementById('ref-dir').value = '';
+      document.getElementById('ref-gps').value = '';
+      document.getElementById('admin-modal-refugio').classList.remove('hidden'); 
+      window.inicializarMapasForm('map-r','ref-gps','ref-dir'); 
+    };
     window.cerrarModalRefugio = () => document.getElementById('admin-modal-refugio').classList.add('hidden');
-    window.guardarRefugio = async (e) => { e.preventDefault(); const btn=e.target.querySelector('.submit-btn'); bloqBtn(btn,true); try { await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'shelters'), { nombre:document.getElementById('ref-nom').value, pais:document.getElementById('ref-pai').value, responsable:document.getElementById('ref-res').value, telefono:document.getElementById('ref-tel').value, direccion:document.getElementById('ref-dir').value, gps:document.getElementById('ref-gps').value }); cerrarModalRefugio(); window.mostrarAlerta('Guardado','','success'); } catch(e){} finally{bloqBtn(btn,false,'Guardar');} };
+    
+    window.guardarRefugio = async (e) => { 
+      e.preventDefault(); 
+      const btn=e.target.querySelector('.submit-btn'); 
+      bloqBtn(btn,true); 
+      const rid = document.getElementById('ref-id').value; 
+      const payload = { 
+        nombre:document.getElementById('ref-nom').value, 
+        pais:document.getElementById('ref-pai').value, 
+        responsable:document.getElementById('ref-res').value, 
+        telefono:document.getElementById('ref-tel').value, 
+        direccion:document.getElementById('ref-dir').value, 
+        gps:document.getElementById('ref-gps').value 
+      }; 
+      try { 
+        if (rid) {
+          await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'shelters', rid), payload);
+          window.mostrarAlerta('Listo','Refugio modificado con éxito.','success');
+        } else {
+          await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'shelters'), payload); 
+          window.mostrarAlerta('Guardado','Refugio creado con éxito.','success'); 
+        }
+        cerrarModalRefugio(); 
+      } catch(e){
+        window.mostrarAlerta('Error','No se pudo completar el guardado.','error');
+      } finally{bloqBtn(btn,false,'Guardar');} 
+    };
+
     window.guardarKeyAdmin = async () => { try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'global'), {geminiApiKey:document.getElementById('admin-gemini-key').value}); window.mostrarAlerta('Ok','Llave lista','success'); }catch(e){} };
 
+    // ==========================================
+    // DIÁLOGOS DE CONFIRMACIÓN DE EMERGENCIA
+    // ==========================================
+    window.mostrarConfirmacion = function(titulo, mensaje, onAceptar) {
+      document.getElementById('confirm-titulo').innerText = titulo;
+      document.getElementById('confirm-mensaje').innerText = mensaje;
+      const modal = document.getElementById('modal-confirmacion');
+      modal.classList.remove('hidden');
+      
+      document.getElementById('btn-confirm-cancelar').onclick = () => {
+        modal.classList.add('hidden');
+      };
+      
+      document.getElementById('btn-confirm-aceptar').onclick = () => {
+        modal.classList.add('hidden');
+        onAceptar();
+      };
+    };
+
+    window.mostrarAlerta = function(t, m, tipo = 'info') { const c = document.getElementById('contenedor-alerta'); if (c) { c.className = "mb-6 p-4 rounded-xl border flex items-start gap-3 fade-in text-sm md:text-base"; if (tipo === 'success') { c.classList.add('bg-emerald-50', 'border-emerald-200', 'text-emerald-800'); document.getElementById('alerta-icono').innerHTML = `<i data-lucide="check-circle" class="w-5 h-5 text-emerald-600"></i>`; } else if (tipo === 'error') { c.classList.add('bg-red-50', 'border-red-200', 'text-red-800'); document.getElementById('alerta-icono').innerHTML = `<i data-lucide="alert-triangle" class="w-5 h-5 text-red-600"></i>`; } else { c.classList.add('bg-amber-50', 'border-amber-200', 'text-amber-800'); document.getElementById('alerta-icono').innerHTML = `<i data-lucide="info" class="w-5 h-5 text-amber-600"></i>`; } document.getElementById('alerta-titulo').innerText = t; document.getElementById('alerta-mensaje').innerText = m; c.classList.remove('hidden'); c.style.zIndex = '9999'; lucide.createIcons(); } };
+    window.cerrarAlerta = function() { const c = document.getElementById('contenedor-alerta'); if (c) c.classList.add('hidden'); };
+
+    window.compartirWeb = function(red) {
+      const url = encodeURIComponent("https://derjaguer.github.io/buscapatitas/"); 
+      const text = encodeURIComponent("¡Ayúdanos a reencontrar mascotas perdidas!");
+      if (red === 'whatsapp') window.open(`https://wa.me/?text=${text}%20${url}`, '_blank');
+      if (red === 'facebook') window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+      if (red === 'copiar') {
+        const temp = document.createElement("input");
+        temp.value = "https://derjaguer.github.io/buscapatitas/"; document.body.appendChild(temp); temp.select(); document.execCommand("copy"); document.body.removeChild(temp);
+        mostrarAlerta('Copiado', 'Enlace copiado al portapapeles', 'success');
+      }
+    }
+
+    // Notificaciones de Estado de Conexión
+    window.addEventListener('offline', () => {
+      window.mostrarAlerta('Modo Sin Conexión 📡', 'Te quedaste sin internet. Puedes seguir reportando y todo se guardará al recuperar la señal.', 'info');
+    });
+    window.addEventListener('online', () => {
+      window.mostrarAlerta('Conexión Recuperada 🌐', 'Sincronizando reportes pendientes con la red.', 'success');
+    });
   </script>
 </body>
 </html>
