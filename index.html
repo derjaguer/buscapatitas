@@ -15,6 +15,8 @@
   <!-- Cropper.js (Editor de Fotos) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+  <!-- QRCode.js (Generador de QR) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js" type="module"></script>
@@ -57,7 +59,7 @@
 </head>
 <body class="min-h-screen flex flex-col text-sm md:text-base">
 
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm w-full">
+  <header id="app-header" class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm w-full">
     <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col xl:flex-row justify-between items-center gap-4">
       <div class="flex items-center space-x-3 cursor-pointer w-full xl:w-auto justify-center xl:justify-start" onclick="cambiarVista('inicio')">
         <div class="p-2 bg-orange-100 rounded-full text-orange-600"><i data-lucide="paw-print" class="w-7 h-7"></i></div>
@@ -81,10 +83,19 @@
 
   <main class="flex-grow w-full max-w-7xl mx-auto px-4 py-6 md:py-8 space-y-6 overflow-x-hidden relative pb-28 md:pb-8">
     
-    <div id="contenedor-alerta" class="hidden mb-6 p-4 rounded-xl border flex items-start gap-3 fade-in z-[100] fixed top-4 right-4 bg-white shadow-2xl max-w-sm w-[90%]">
-      <div id="alerta-icono" class="mt-0.5"></div>
-      <div class="flex-grow"><h4 id="alerta-titulo" class="font-bold text-sm"></h4><p id="alerta-mensaje" class="text-xs mt-1"></p></div>
-      <button onclick="cerrarAlerta()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+    <!-- MODAL DE CONFIRMACIÓN CUSTOM -->
+    <div id="modal-confirmacion" class="hidden fixed inset-0 bg-black/60 z-[250] flex justify-center items-center p-4">
+      <div class="bg-white rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl fade-in text-center">
+        <div class="mx-auto w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
+          <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+        </div>
+        <h3 class="text-lg font-black text-slate-900" id="confirm-titulo">¿Confirmar Acción?</h3>
+        <p class="text-sm text-slate-500" id="confirm-mensaje">Esta acción es permanente y afectará los registros públicos.</p>
+        <div class="flex gap-3 pt-2">
+          <button id="btn-confirm-cancelar" class="w-1/2 py-2.5 bg-slate-100 font-bold rounded-xl">Cancelar</button>
+          <button id="btn-confirm-aceptar" class="w-1/2 py-2.5 bg-red-600 text-white font-bold rounded-xl">Confirmar</button>
+        </div>
+      </div>
     </div>
 
     <!-- CONTADORES -->
@@ -282,11 +293,31 @@
           </div>
         </div>
 
-        <!-- Huéspedes de este Refugio -->
         <div class="mt-8 border-t pt-6">
           <h3 class="text-lg font-bold mb-4 flex items-center gap-2"><i data-lucide="paw-print" class="text-indigo-600"></i> Mascotas Bajo su Custodia</h3>
           <div id="dr-mascotas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
         </div>
+      </div>
+    </div>
+
+    <!-- VERIFICAR CREDENCIAL PÚBLICA -->
+    <div id="vista-verificar-credencial" class="hidden max-w-md mx-auto fade-in py-10">
+      <div class="bg-white border rounded-3xl p-6 text-center shadow-xl space-y-6">
+        <div id="v-status-badge" class="mx-auto px-4 py-2 rounded-full text-xs font-extrabold uppercase w-fit">Verificando...</div>
+        <div class="relative w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-indigo-100">
+          <img id="v-foto" src="" class="w-full h-full object-cover">
+        </div>
+        <div>
+          <h3 id="v-nombre" class="text-2xl font-black text-slate-800"></h3>
+          <p id="v-role" class="text-xs font-bold text-indigo-600 uppercase mt-1"></p>
+          <p id="v-refugio" class="text-sm font-semibold text-slate-500"></p>
+          <p id="v-id" class="text-xs font-mono text-slate-400 mt-2"></p>
+        </div>
+        <div class="border-t pt-4 text-left space-y-3">
+          <div><span class="text-[10px] font-bold text-slate-400 block">DIRECCIÓN:</span><p id="v-dir" class="text-xs font-semibold text-slate-700"></p></div>
+          <div><span class="text-[10px] font-bold text-slate-400 block">REDES SOCIALES:</span><div id="v-socials" class="flex gap-2 mt-1"></div></div>
+        </div>
+        <button onclick="cambiarVista('inicio')" class="w-full py-3 bg-slate-900 text-white font-bold rounded-xl text-sm">Entrar a la Aplicación</button>
       </div>
     </div>
 
@@ -301,19 +332,37 @@
           <button id="tab-login" onclick="setAuthTab('login')" class="w-1/2 py-2 text-sm font-bold bg-white rounded-lg shadow-sm">Iniciar Sesión</button>
           <button id="tab-reg" onclick="setAuthTab('reg')" class="w-1/2 py-2 text-sm font-bold text-slate-500 rounded-lg">Regístrate</button>
         </div>
-        <form id="form-auth" onsubmit="procesarAuth(event)" class="space-y-3">
-          <input type="text" id="auth-nombre" placeholder="Tu Nombre Completo" class="input-custom text-sm hidden">
+        <form id="form-auth" onsubmit="procesarAuth(event)" class="space-y-4">
+          <div id="reg-fields" class="hidden space-y-4">
+            <input type="text" id="auth-nombre" placeholder="Tu Nombre Completo" class="input-custom text-sm">
+            
+            <div class="space-y-2 text-left">
+              <label class="block text-xs font-bold uppercase">Foto de Perfil (Opcional)</label>
+              <input type="file" id="foto-perfil-input" accept="image/*" onchange="abrirEditorRecorte(this, 'rescatista')" class="hidden">
+              <div class="flex items-center gap-4">
+                <div onclick="document.getElementById('foto-perfil-input').click()" class="w-20 h-20 border-2 border-dashed rounded-2xl flex items-center justify-center cursor-pointer bg-slate-50 overflow-hidden relative">
+                  <i data-lucide="user" class="absolute text-slate-300"></i>
+                  <img id="prev-rescatista-img" class="w-full h-full object-cover relative z-10 hidden">
+                </div>
+                <span class="text-xs text-slate-500">Haz clic para subir y recortar tu foto de perfil.</span>
+              </div>
+            </div>
+
+            <input type="text" id="auth-direccion" placeholder="Dirección Física Completa" class="input-custom text-sm">
+            <input type="tel" id="auth-telefono" placeholder="Número de Teléfono" class="input-custom text-sm">
+            <input type="text" id="auth-code" placeholder="Código de Invitación de tu Refugio" class="input-custom text-sm">
+            <p class="text-[10px] text-slate-500 text-left">Si no tienes un código de invitación de un refugio, te registrarás como un Rescatista Independiente por defecto.</p>
+          </div>
+          
           <input type="email" id="auth-email" required placeholder="Correo Electrónico" class="input-custom text-sm">
           <input type="password" id="auth-pass" required placeholder="Contraseña" class="input-custom text-sm">
-          <!-- Campo secreto para crear Admins (Opcional, en vez de DB manual) -->
-          <input type="password" id="auth-code" placeholder="Código de Invitación (Solo Fundaciones/Admin)" class="input-custom text-sm hidden">
           <button type="submit" id="btn-auth-submit" class="w-full py-3 bg-slate-900 text-white font-bold rounded-xl text-sm submit-btn">Entrar</button>
         </form>
 
         <!-- ACCESO DE EMERGENCIA CLÁSICO PARA PATTY -->
         <div class="border-t pt-6 mt-4">
           <p class="text-xs font-bold text-slate-700 mb-2">🔐 Acceso de Emergencia (Clave Clásica)</p>
-          <p class="text-[10px] text-slate-400 mb-3">Si eras Administrador con la clave clásica, escribe tu clave aquí para desbloquear tus controles.</p>
+          <p class="text-[10px] text-slate-400 mb-3">Si eres Administrador de emergencia, escribe tu clave aquí para desbloquear tus controles.</p>
           <div class="flex gap-2">
             <input type="password" id="auth-bypass-pass" placeholder="Tu clave clásica..." class="input-custom text-sm text-center">
             <button type="button" onclick="procesarBypassClasico()" class="bg-orange-500 text-white px-5 rounded-xl text-xs font-bold min-w-[90px]">Entrar</button>
@@ -323,11 +372,88 @@
 
       <!-- Dashboard del Usuario Logueado -->
       <div id="user-dashboard" class="hidden space-y-6 w-full">
-        <div class="flex justify-between items-center bg-white p-6 rounded-3xl border shadow-sm">
-          <div><h2 class="text-2xl font-bold" id="dash-name">Hola, Usuario</h2><p class="text-sm font-semibold text-indigo-600 uppercase" id="dash-role">Rol</p></div>
-          <button onclick="cerrarSesion()" class="bg-red-50 text-red-600 px-4 py-2 rounded-xl text-sm font-bold">Cerrar Sesión</button>
+        
+        <!-- Credencial / Carnet Digital Real -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-white border rounded-3xl p-6 shadow-sm space-y-4">
+            <h3 class="font-extrabold text-lg flex items-center gap-1.5"><i data-lucide="id-card" class="text-indigo-600"></i> Tu Carnet Digital</h3>
+            <div id="carnet-box" class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between aspect-[1.58/1] min-h-[240px] shadow-lg">
+              <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/5 rounded-full blur-2xl"></div>
+              <div class="flex justify-between items-start z-10">
+                <div class="flex items-center gap-2">
+                  <div class="p-1.5 bg-white/10 rounded-full text-orange-400"><i data-lucide="paw-print" class="w-5 h-5"></i></div>
+                  <div>
+                    <h4 class="text-xs font-black tracking-wider uppercase">Proyecto Patitas</h4>
+                    <p class="text-[8px] opacity-60">Red de Protección Animal</p>
+                  </div>
+                </div>
+                <div id="carnet-status" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-full">Activo</div>
+              </div>
+              
+              <div class="flex gap-4 items-center mt-4 z-10">
+                <div class="w-20 h-20 rounded-full overflow-hidden border-2 border-white/20 flex-shrink-0 bg-slate-800">
+                  <img id="carnet-foto" src="" class="w-full h-full object-cover">
+                </div>
+                <div class="flex-grow min-w-0">
+                  <h3 id="carnet-nombre" class="text-base font-black truncate"></h3>
+                  <p id="carnet-role" class="text-[9px] font-black text-orange-400 uppercase tracking-widest"></p>
+                  <p id="carnet-refugio" class="text-[10px] opacity-80 truncate"></p>
+                  <p id="carnet-id" class="text-[9px] font-mono opacity-50 mt-1"></p>
+                </div>
+              </div>
+
+              <div class="flex justify-between items-end mt-4 border-t border-white/10 pt-3 z-10">
+                <p class="text-[8px] opacity-40">Identificación Oficial Certificada</p>
+                <div id="carnet-qr" class="w-12 h-12 bg-white p-1 rounded"></div>
+              </div>
+            </div>
+            <button onclick="imprimirCarnet()" class="w-full py-2 bg-slate-100 text-slate-800 font-bold rounded-xl text-xs flex justify-center items-center gap-1"><i data-lucide="printer" class="w-4 h-4"></i> Imprimir Credencial</button>
+          </div>
+
+          <!-- Editar Perfil con Redes Sociales -->
+          <div class="bg-white border rounded-3xl p-6 shadow-sm space-y-4">
+            <h3 class="font-extrabold text-lg flex items-center gap-1.5"><i data-lucide="user-cog" class="text-indigo-600"></i> Datos de tu Perfil</h3>
+            <form onsubmit="actualizarPerfilPersonal(event)" class="space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                <input type="text" id="prof-nombre" placeholder="Nombre Completo" required class="input-custom text-xs">
+                <input type="tel" id="prof-telefono" placeholder="WhatsApp" required class="input-custom text-xs">
+              </div>
+              <input type="text" id="prof-direccion" placeholder="Dirección Completa" required class="input-custom text-xs">
+              
+              <div class="space-y-2 border-t pt-3">
+                <label class="block text-xs font-bold uppercase text-slate-500">Redes Sociales (Hasta 4)</label>
+                <div id="socials-inputs-container" class="space-y-2"></div>
+                <button type="button" onclick="agregarInputSocial()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-1.5 px-3 rounded-lg text-xs flex items-center gap-1"><i data-lucide="plus" class="w-3.5 h-3.5"></i> Añadir Red Social</button>
+              </div>
+
+              <button type="submit" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl text-sm submit-btn">Actualizar Perfil</button>
+            </form>
+          </div>
         </div>
 
+        <!-- Gestion de Miembros del Refugio (Para Directores/Administración del Refugio) -->
+        <div id="shelter-manager-panel" class="hidden bg-white border rounded-3xl p-6 shadow-sm overflow-x-auto space-y-4">
+          <div class="flex justify-between items-center border-b pb-3 flex-wrap gap-2">
+            <div>
+              <h3 class="font-extrabold text-lg flex items-center gap-1.5"><i data-lucide="users" class="text-indigo-600"></i> Gestión de Miembros del Refugio</h3>
+              <p class="text-xs text-slate-500">Controla el personal asignado a tu sede</p>
+            </div>
+            <button onclick="abrirGeneradorInvitacion()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1"><i data-lucide="key-round" class="w-3.5 h-3.5"></i> Crear Código de Invitación</button>
+          </div>
+          <table class="w-full text-left text-sm whitespace-nowrap">
+            <thead>
+              <tr class="bg-slate-50 text-slate-400 text-xs border-b">
+                <th class="p-3">Miembro</th>
+                <th class="p-3">Rol Interno</th>
+                <th class="p-3">Estatus</th>
+                <th class="p-3 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tb-miembros-refugio"></tbody>
+          </table>
+        </div>
+
+        <!-- Panel de Administración Patty Global -->
         <div id="panel-admin" class="hidden space-y-6">
           <div class="bg-amber-50 p-6 rounded-3xl border border-amber-200">
             <h3 class="font-bold text-amber-900 mb-2"><i data-lucide="key" class="inline"></i> API Key Gemini Global</h3>
@@ -343,7 +469,7 @@
               <thead>
                 <tr class="bg-slate-50 text-slate-400 text-xs border-b">
                   <th class="p-3">Refugio</th>
-                  <th class="p-3">Responsable</th>
+                  <th class="p-3">País / Sede</th>
                   <th class="p-3 text-right">Acciones</th>
                 </tr>
               </thead>
@@ -352,7 +478,7 @@
           </div>
 
           <div class="bg-white border rounded-3xl p-6 overflow-x-auto">
-            <h3 class="font-extrabold mb-4">Gestión de Usuarios y Permisos</h3>
+            <h3 class="font-extrabold mb-4">Gestión de Usuarios y Permisos Globales</h3>
             <table class="w-full text-left text-sm whitespace-nowrap">
               <thead>
                 <tr class="bg-slate-50 text-slate-400 text-xs border-b">
@@ -409,20 +535,54 @@
       <div class="bg-indigo-600 text-white p-5 flex justify-between rounded-t-3xl"><h3 class="font-bold">Refugio</h3><button onclick="cerrarModalRefugio()"><i data-lucide="x"></i></button></div>
       <form onsubmit="guardarRefugio(event)" class="p-6 overflow-y-auto space-y-4">
         <input type="hidden" id="ref-id">
-        <div class="grid grid-cols-2 gap-4"><input type="text" id="ref-nom" placeholder="Nombre" required class="input-custom"><input type="text" id="ref-pai" placeholder="País" required class="input-custom"><input type="text" id="ref-res" placeholder="Responsable" required class="input-custom"><input type="tel" id="ref-tel" placeholder="Teléfono" required class="input-custom"></div><input type="text" id="ref-dir" placeholder="Dirección" required class="input-custom"><div class="flex flex-col"><div id="map-r" class="w-full h-32 bg-slate-200 rounded-xl mb-2 relative z-0"></div><div class="flex gap-2"><input type="text" id="ref-gps" readonly class="input-custom text-xs"><button type="button" onclick="obtenerGPSConMapa('ref-gps', 'map-r')" class="bg-slate-800 text-white px-3 rounded-xl text-xs font-bold">📍 GPS</button></div></div><div class="flex gap-4"><button type="button" onclick="cerrarModalRefugio()" class="w-1/2 py-2 bg-slate-100 font-bold rounded-xl">Cancelar</button><button type="submit" class="w-1/2 py-2 bg-indigo-600 text-white font-bold rounded-xl submit-btn">Guardar</button></div></form></div>
+        <div class="grid grid-cols-2 gap-4">
+          <input type="text" id="ref-nom" placeholder="Nombre" required class="input-custom">
+          <!-- País: deshabilitado y llenado automáticamente por reverse geocode -->
+          <input type="text" id="ref-pai" placeholder="País (Detectado por Mapa)" readonly required class="input-custom bg-slate-100">
+          <input type="text" id="ref-res" placeholder="Responsable" required class="input-custom">
+          <input type="tel" id="ref-tel" placeholder="Teléfono" required class="input-custom">
+        </div>
+        <input type="text" id="ref-dir" placeholder="Dirección" required class="input-custom">
+        <div class="flex flex-col">
+          <div id="map-r" class="w-full h-32 bg-slate-200 rounded-xl mb-2 relative z-0"></div>
+          <div class="flex gap-2">
+            <input type="text" id="ref-gps" readonly class="input-custom text-xs">
+            <button type="button" onclick="obtenerGPSConMapa('ref-gps', 'map-r', 'ref-dir')" class="bg-slate-800 text-white px-3 rounded-xl text-xs font-bold">📍 GPS</button>
+          </div>
+        </div>
+        <div class="flex gap-4">
+          <button type="button" onclick="cerrarModalRefugio()" class="w-1/2 py-2 bg-slate-100 font-bold rounded-xl">Cancelar</button>
+          <button type="submit" class="w-1/2 py-2 bg-indigo-600 text-white font-bold rounded-xl submit-btn">Guardar</button>
+        </div>
+      </form>
+    </div>
   </div>
 
-  <!-- MODAL DE CONFIRMACIÓN CUSTOM -->
-  <div id="modal-confirmacion" class="hidden fixed inset-0 bg-black/60 z-[250] flex justify-center items-center p-4">
-    <div class="bg-white rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl fade-in text-center">
-      <div class="mx-auto w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
-        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+  <!-- MODAL PARA CREAR CÓDIGO DE INVITACIÓN -->
+  <div id="modal-invitacion" class="hidden fixed inset-0 bg-black/60 z-[100] flex justify-center items-center p-4">
+    <div class="bg-white rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl fade-in">
+      <h3 class="text-lg font-black text-slate-900">Crear Código de Invitación</h3>
+      <div class="space-y-3">
+        <div>
+          <label class="text-[10px] font-bold uppercase block mb-1">Rol Asignado</label>
+          <select id="inv-rol" class="input-custom bg-white">
+            <option value="Voluntario">Voluntario</option>
+            <option value="Rescatista">Rescatista</option>
+            <option value="Administración">Administración</option>
+            <option value="Responsable">Responsable (Director/Encargado)</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[10px] font-bold uppercase block mb-1">Código Generado</label>
+          <div class="flex gap-2">
+            <input type="text" id="inv-codigo-res" readonly class="input-custom font-mono text-center text-sm bg-slate-50 flex-grow">
+            <button onclick="copiarCodigoInvitacion()" class="bg-slate-800 text-white px-3 rounded-lg"><i data-lucide="copy" class="w-4 h-4"></i></button>
+          </div>
+        </div>
       </div>
-      <h3 class="text-lg font-black text-slate-900" id="confirm-titulo">¿Confirmar Acción?</h3>
-      <p class="text-sm text-slate-500" id="confirm-mensaje">Esta acción es permanente y afectará los registros públicos.</p>
       <div class="flex gap-3 pt-2">
-        <button id="btn-confirm-cancelar" class="w-1/2 py-2.5 bg-slate-100 font-bold rounded-xl">Cancelar</button>
-        <button id="btn-confirm-aceptar" class="w-1/2 py-2.5 bg-red-600 text-white font-bold rounded-xl">Confirmar</button>
+        <button onclick="cerrarGeneradorInvitacion()" class="w-1/2 py-2.5 bg-slate-100 font-bold rounded-xl">Cerrar</button>
+        <button onclick="procesarGeneracionCodigo()" class="w-1/2 py-2.5 bg-indigo-600 text-white font-bold rounded-xl">Generar Código</button>
       </div>
     </div>
   </div>
@@ -439,7 +599,7 @@
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, signInAnonymously } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-    import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, getDoc, collection, onSnapshot, addDoc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+    import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, getDoc, collection, onSnapshot, addDoc, updateDoc, deleteDoc, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
     import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js';
 
     const configUser = { apiKey: "AIzaSyDkeh5WVeWi1yFTHGiCSLvz9aB8auhZtT8", authDomain: "buscapatutas.firebaseapp.com", projectId: "buscapatutas", storageBucket: "buscapatutas.firebasestorage.app", messagingSenderId: "61106039176", appId: "1:61106039176:web:266707c6c9fa2c5a1b723d" };
@@ -458,12 +618,17 @@
     let temporalFotosSeleccionadas = []; let temporalFotoRescatista = ''; let temporalVideoUrl = '';
     let cropperInst = null; let currentCropTarget = '';
     let globalMaps = {}; let globalMarkers = {};
+    let carnetQrGenerator = null;
 
-    // Comprobar si hay un inicio de sesión por Clave Clásica guardado en el celular
+    // Check if bypass logged in
     const savedBypass = localStorage.getItem('patitas_bypass_user');
     if (savedBypass) {
       usuarioActual = JSON.parse(savedBypass);
     }
+
+    // Checking for QR verification triggers in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const verId = urlParams.get('verify');
 
     onAuthStateChanged(auth, async (authUser) => {
       user = authUser;
@@ -483,13 +648,16 @@
         if (!localStorage.getItem('patitas_bypass_user')) {
           usuarioActual = { rol: 'anonimo' };
         }
-        signInAnonymously(auth).catch(() => {
-          console.log("Firebase Auth Anónimo no habilitado o sin conexión.");
-        });
+        signInAnonymously(auth).catch(() => {});
       }
-      renderizarPerfil();
-      actualizarOpcionesEstado();
-      sincronizarDB();
+      
+      if (verId) {
+        procesarVerificacionIDPublica(verId);
+      } else {
+        renderizarPerfil();
+        actualizarOpcionesEstado();
+        sincronizarDB();
+      }
     });
 
     function sincronizarDB() {
@@ -497,14 +665,22 @@
       onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'pets'), (s) => { baseMascotas = []; s.forEach(d => baseMascotas.push({ id: d.id, ...d.data() })); baseMascotas.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)); renderizarMascotas(); renderizarTablaMascotasPerfil(); actualizarContadores(); });
       onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'shelters'), (s) => { baseRefugios = []; s.forEach(d => baseRefugios.push({ id: d.id, ...d.data() })); renderizarRefugios(); renderizarTablaRefugios(); actualizarDropsRefugios(); });
       
-      // Sincronizar usuarios solo si se tiene el rol administrador o bypass admin activo
+      // Sincronizar todos los usuarios para Patty Admin, o miembros específicos del refugio para el Manager
       if (usuarioActual.rol === 'admin') {
         onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'users'), (s) => {
-          baseUsuarios = [];
-          s.forEach(d => baseUsuarios.push({ id: d.id, ...d.data() }));
+          baseUsuarios = []; s.forEach(d => baseUsuarios.push({ id: d.id, ...d.data() }));
           renderizarTablaUsuarios();
-        }, (err) => {
-          console.log("Acceso restringido a colección de usuarios.");
+        });
+      } else if (usuarioActual.refugioId && (usuarioActual.rol === 'Responsable' || usuarioActual.rol === 'Administración')) {
+        onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'users'), (s) => {
+          const miembros = [];
+          s.forEach(d => {
+            const data = d.data();
+            if (data.refugioId === usuarioActual.refugioId) {
+              miembros.push({ id: d.id, ...data });
+            }
+          });
+          renderizarTablaMiembrosRefugio(miembros);
         });
       }
     }
@@ -527,8 +703,11 @@
       isLoginMode = mode === 'login';
       document.getElementById('tab-login').className = `w-1/2 py-2 text-sm font-bold ${isLoginMode ? 'bg-white rounded-lg shadow-sm text-slate-900' : 'text-slate-500'}`;
       document.getElementById('tab-reg').className = `w-1/2 py-2 text-sm font-bold ${!isLoginMode ? 'bg-white rounded-lg shadow-sm text-slate-900' : 'text-slate-500'}`;
-      document.getElementById('auth-nombre').style.display = isLoginMode ? 'none' : 'block';
-      document.getElementById('auth-code').style.display = isLoginMode ? 'none' : 'block';
+      
+      const rFields = document.getElementById('reg-fields');
+      if (isLoginMode) rFields.classList.add('hidden');
+      else rFields.classList.remove('hidden');
+      
       document.getElementById('btn-auth-submit').innerText = isLoginMode ? 'Entrar' : 'Registrarse';
     };
 
@@ -538,27 +717,67 @@
       try {
         if (isLoginMode) { await signInWithEmailAndPassword(auth, email, pass); } 
         else {
-          const nom = document.getElementById('auth-nombre').value.trim(); const cod = document.getElementById('auth-code').value.trim();
-          let rol = 'voluntario'; if(cod === 'PATITAS_FUND') rol = 'fundacion'; else if (cod === 'PATITAS_MASTER') rol = 'admin';
+          const nom = document.getElementById('auth-nombre').value.trim(); 
+          const dir = document.getElementById('auth-direccion').value.trim();
+          const tel = document.getElementById('auth-telefono').value.trim();
+          const cod = document.getElementById('auth-code').value.trim().toUpperCase();
+          
+          let rol = 'Voluntario'; 
+          let refId = '';
+          let refNom = 'Rescatista Independiente';
+          let rCarnetId = `IND-${Date.now().toString().slice(-4)}`;
+
+          // Validar el Código de Invitación estructurado
+          if (cod) {
+            const snapCode = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invitationCodes', cod));
+            if (snapCode.exists() && snapCode.data().status === 'unused') {
+              const codeData = snapCode.data();
+              rol = codeData.assignedRole;
+              refId = codeData.shelterId;
+              refNom = codeData.shelterName;
+              rCarnetId = cod;
+              // Marcar código como utilizado
+              await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invitationCodes', cod), { status: 'used' });
+            } else {
+              window.mostrarAlerta('Atención', 'El código de invitación no es válido o ya fue utilizado. Te registrarás de forma independiente.', 'info');
+            }
+          }
+
           const cred = await createUserWithEmailAndPassword(auth, email, pass);
-          await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', cred.user.uid), { nombre: nom, email, rol });
+          const pPayload = { 
+            nombre: nom, 
+            email, 
+            rol, 
+            refugioId: refId, 
+            refugioNombre: refNom, 
+            direccion: dir, 
+            telefono: tel, 
+            estatus: 'Activo',
+            foto: temporalFotoRescatista || '',
+            idCarnet: rCarnetId,
+            socials: []
+          };
+          await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', cred.user.uid), pPayload);
+          usuarioActual = { uid: cred.user.uid, ...pPayload };
         }
         window.mostrarAlerta('Éxito', 'Sesión iniciada.', 'success'); e.target.reset();
+        temporalFotoRescatista = '';
+        document.getElementById('prev-rescatista-img').classList.add('hidden');
       } catch(err) { window.mostrarAlerta('Error', 'Verifica tus credenciales.', 'error'); } finally { bloqBtn(btn, false, isLoginMode?'Entrar':'Registrarse'); }
     };
 
-    // ACCESO DE EMERGENCIA CLÁSICO (Bypass local)
+    // ACCESO DE FINAL DE EMERGENCIA DE PATTY
     window.procesarBypassClasico = function() {
       const pass = document.getElementById('auth-bypass-pass').value.trim();
       if (pass === ".2411Patty..") {
-        usuarioActual = { uid: "emergency-admin", rol: 'admin', nombre: "Patty (Administradora)" };
+        usuarioActual = { uid: "emergency-admin", rol: 'admin', nombre: "Patty (Administradora)", estatus: 'Activo' };
         localStorage.setItem('patitas_bypass_user', JSON.stringify(usuarioActual));
-        window.mostrarAlerta('Bypass Exitoso', '¡Bienvenida de vuelta Patty! Controles de Administradora activados.', 'success');
+        window.mostrarAlerta('Bypass Exitoso', '¡Bienvenida Patty! Dashboard Admin activado.', 'success');
         renderizarPerfil();
         actualizarOpcionesEstado();
         sincronizarDB();
       } else {
-        window.mostrarAlerta('Clave incorrecta', 'Verifica e intenta de nuevo.', 'error');
+        window.mostrarAlerta('Clave incorrecta', 'Intenta de nuevo.', 'error');
       }
     };
 
@@ -571,463 +790,561 @@
       });
     };
 
+    // ==========================================
+    // PERSONALIZACIÓN DEL PERFIL Y CARNET
+    // ==========================================
     function renderizarPerfil() {
       if(usuarioActual.rol !== 'anonimo') {
         document.getElementById('auth-panel').classList.add('hidden'); document.getElementById('user-dashboard').classList.remove('hidden');
         document.getElementById('dash-name').innerText = `Hola, ${usuarioActual.nombre || 'Voluntario'}`;
         document.getElementById('dash-role').innerText = `Rol: ${usuarioActual.rol}`;
-        if(usuarioActual.rol === 'admin') document.getElementById('panel-admin').classList.remove('hidden');
-        else document.getElementById('panel-admin').classList.add('hidden');
+        
+        // Cargar datos en el formulario de edición de perfil
+        document.getElementById('prof-nombre').value = usuarioActual.nombre || '';
+        document.getElementById('prof-telefono').value = usuarioActual.telefono || '';
+        document.getElementById('prof-direccion').value = usuarioActual.direccion || '';
+        
+        // Cargar Redes Sociales en pantalla
+        const scContainer = document.getElementById('socials-inputs-container');
+        scContainer.innerHTML = '';
+        const socials = usuarioActual.socials || [];
+        socials.forEach((sc, idx) => {
+          agregarInputSocial(sc.red, sc.enlace);
+        });
+        if (socials.length === 0) agregarInputSocial(); // Al menos un campo
+
+        // Mostrar u Ocultar el panel de gestión del refugio
+        const mgrPanel = document.getElementById('shelter-manager-panel');
+        if (usuarioActual.refugioId && (usuarioActual.rol === 'Responsable' || usuarioActual.rol === 'Administración')) {
+          mgrPanel.classList.remove('hidden');
+        } else {
+          mgrPanel.classList.add('hidden');
+        }
+
+        if(usuarioActual.rol === 'admin') {
+          document.getElementById('panel-admin').classList.remove('hidden');
+        } else {
+          document.getElementById('panel-admin').classList.add('hidden');
+        }
+        
         document.getElementById('titulo-mis-mascotas').innerText = usuarioActual.rol === 'admin' ? "Todas las Mascotas (Control Admin)" : "Mis Reportes";
+        
+        generarCarnetVisual();
       } else {
         document.getElementById('auth-panel').classList.remove('hidden'); document.getElementById('user-dashboard').classList.add('hidden');
       }
     }
 
-    function actualizarOpcionesEstado() {
-      const isPriv = (usuarioActual.rol === 'admin' || usuarioActual.rol === 'fundacion');
-      document.querySelectorAll('.dropdown-estado').forEach(el => {
-        const opc = el.querySelector('.opcion-adopcion');
-        if(!isPriv) { if(opc) opc.remove(); } 
-        else { if(!opc) el.innerHTML += `<option value="adopcion" class="opcion-adopcion">En Adopción</option>`; }
+    function generarCarnetVisual() {
+      document.getElementById('carnet-nombre').innerText = usuarioActual.nombre || 'Sin Nombre';
+      document.getElementById('carnet-role').innerText = usuarioActual.rol || 'Voluntario';
+      document.getElementById('carnet-refugio').innerText = usuarioActual.refugioNombre || 'Independiente';
+      document.getElementById('carnet-id').innerText = `ID: ${usuarioActual.idCarnet || 'N/A'}`;
+      
+      const st = usuarioActual.estatus || 'Activo';
+      const badge = document.getElementById('carnet-status');
+      badge.innerText = st;
+      if (st === 'Activo') badge.className = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-full";
+      else if (st === 'Inactivo (Sancionado)') badge.className = "bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-full";
+      else badge.className = "bg-red-500/20 text-red-400 border border-red-500/30 text-[8px] font-black uppercase px-2 py-0.5 rounded-full";
+
+      document.getElementById('carnet-foto').src = usuarioActual.foto || 'https://placehold.co/100x100/slate/white?text=Foto';
+
+      // Generar código QR apuntando a la url de verificación de credencial
+      const qrContainer = document.getElementById('carnet-qr');
+      qrContainer.innerHTML = '';
+      const verURL = `${window.location.origin}${window.location.pathname}?verify=${usuarioActual.uid || 'bypass'}`;
+      
+      carnetQrGenerator = new QRCode(qrContainer, {
+        text: verURL,
+        width: 42,
+        height: 42,
+        colorDark : "#000000",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.H
       });
     }
 
-    // ==========================================
-    // MULTIMEDIA: CROPPER Y VIDEOS
-    // ==========================================
-    window.abrirEditorRecorte = function(input, target) {
-      if(input.files && input.files[0]) {
-        currentCropTarget = target; const r = new FileReader();
-        r.onload = (e) => {
-          document.getElementById('image-to-crop').src = e.target.result;
-          document.getElementById('modal-cropper').classList.remove('hidden');
-          if(cropperInst) cropperInst.destroy();
-          cropperInst = new Cropper(document.getElementById('image-to-crop'), { viewMode: 1, autoCropArea: 1 });
-        }; r.readAsDataURL(input.files[0]); input.value='';
+    window.agregarInputSocial = function(redDef = 'Instagram', enlaceDef = '') {
+      const container = document.getElementById('socials-inputs-container');
+      if (container.children.length >= 4) {
+        window.mostrarAlerta('Límite', 'Máximo 4 redes sociales registrables.', 'info');
+        return;
       }
-    }
-    window.rotarCropper = () => { if(cropperInst) cropperInst.rotate(90); }
-    window.cerrarCropper = () => { document.getElementById('modal-cropper').classList.add('hidden'); }
-    window.guardarRecorte = () => {
-      if(!cropperInst) return; const cv = cropperInst.getCroppedCanvas({ maxWidth: 800, maxHeight: 800 }); const b64 = cv.toDataURL('image/jpeg', 0.8);
-      if(currentCropTarget === 'rescatista') { temporalFotoRescatista = b64; document.getElementById('prev-rescatista-img').src = b64; document.getElementById('prev-rescatista-img').classList.remove('hidden'); } 
-      else {
-        if(temporalFotosSeleccionadas.length < 3) { 
-          temporalFotosSeleccionadas.push(b64); 
-          const cont = document.getElementById(currentCropTarget);
-          cont.innerHTML += `<div class="relative w-16 h-16 rounded-xl border flex-shrink-0 shadow-sm"><img src="${b64}" class="w-full h-full object-cover rounded-xl"></div>`;
-          if (currentCropTarget === 'prevs-e' && temporalFotosSeleccionadas.length===1) window.analizarFotoConIA(b64);
-        } else { window.mostrarAlerta('Límite', 'Máximo 3 fotos.', 'info'); }
-      }
-      cerrarCropper();
-    }
-
-    window.validarVideo = async function(input) {
-      const file = input.files[0]; if(!file) return;
-      const v = document.createElement('video'); v.preload = 'metadata';
-      v.onloadedmetadata = async function() {
-        window.URL.revokeObjectURL(v.src);
-        if (v.duration > 30) { window.mostrarAlerta('Video muy largo', 'Por favor recorta tu video a máximo 30 segundos en la galería de tu teléfono antes de subirlo.', 'error'); input.value=''; return; }
-        // Intenta subir a Storage
-        window.mostrarAlerta('Cargando video...', 'Subiendo a la nube...', 'info');
-        try {
-          const vRef = sRef(storage, `videos/${appId}/${Date.now()}_${file.name}`);
-          await uploadBytes(vRef, file); temporalVideoUrl = await getDownloadURL(vRef);
-          window.mostrarAlerta('Video Listo', 'El video fue adjuntado correctamente.', 'success');
-        } catch(e) { window.mostrarAlerta('Servicio de Video Inactivo', 'Para habilitar videos, debes activar Storage en tu panel de Firebase. Se publicará sin video por ahora.', 'error'); input.value=''; }
-      }; v.src = URL.createObjectURL(file);
-    };
-
-    window.analizarFotoConIA = async function(b64) {
-      if (!geminiApiKeyGlobal) return; document.getElementById('ia-loader').classList.remove('hidden');
-      try {
-        const body = { contents: [{ parts: [{ text: `Analiza mascota, json plano: {"especie": ("perro"|"gato"|"otro"), "color": "...", "raza": "...", "sexo": "Macho"|"Hembra"|"No sé"}` }, { inlineData: { mimeType: "image/jpeg", data: b64.split(',')[1] } }] }], generationConfig: { responseMimeType: "application/json" } };
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${geminiApiKeyGlobal}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-        const data = JSON.parse((await res.json()).candidates[0].content.parts[0].text);
-        document.getElementById('especie-e').value = data.especie || 'perro'; document.getElementById('sexo-e').value = data.sexo || 'No sé'; document.getElementById('raza-e').value = data.raza || 'Mestizo'; document.getElementById('color-e').value = data.color || ''; 
-        document.getElementById('bloque-ia-exito').classList.remove('hidden'); document.getElementById('ia-detalles-texto').innerText = `IA identificó: ${data.especie} ${data.color}`; window.mostrarAlerta('IA Lista', 'Análisis exitoso.', 'success');
-      } catch (e) {} finally { document.getElementById('ia-loader').classList.add('hidden'); }
-    }
-
-    // ==========================================
-    // MAPAS NOMINATIM Y GUARDADO
-    // ==========================================
-    window.inicializarMapasForm = function(mId, cId, aId, isMarkerDraggable=true, sLat=10.6, sLng=-66.93) {
-      setTimeout(()=>{ 
-        const cInp = cId ? document.getElementById(cId) : null;
-        let lt = sLat; let lg = sLng; 
-        if(cInp && cInp.value.includes(',')) { const p=cInp.value.split(','); lt=parseFloat(p[0]); lg=parseFloat(p[1]); }
-        if(globalMaps[mId]) { globalMaps[mId].invalidateSize(); globalMaps[mId].setView([lt,lg],15); globalMarkers[mId].setLatLng([lt,lg]); return; }
-        const map = L.map(mId).setView([lt,lg],15); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        const mk = L.marker([lt,lg], {draggable:isMarkerDraggable}).addTo(map);
-        if (isMarkerDraggable && cInp) {
-          mk.on('dragend', (e)=>{ const p=mk.getLatLng(); cInp.value=`${p.lat.toFixed(6)},${p.lng.toFixed(6)}`; fetchDir(p.lat, p.lng, aId); });
-          map.on('click', (e)=>{ mk.setLatLng(e.latlng); cInp.value=`${e.latlng.lat.toFixed(6)},${e.latlng.lng.toFixed(6)}`; fetchDir(e.latlng.lat, e.latlng.lng, aId); });
-        }
-        globalMaps[mId]=map; globalMarkers[mId]=mk;
-      }, 400);
-    }
-    const fetchDir = (lt,lg, aId) => { if(!aId)return; fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lt}&lon=${lg}`).then(r=>r.json()).then(d=>{if(d.display_name)document.getElementById(aId).value=d.display_name;}).catch(()=>{}); };
-    window.buscarDir = async (aId, cId, mId) => {
-      const q = document.getElementById(aId).value; if(!q) return; window.mostrarAlerta('Buscando...','','info');
-      try { const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q+", Venezuela")}`); const d = await r.json(); if(d.length>0){ const lt=parseFloat(d[0].lat), lg=parseFloat(d[0].lon); document.getElementById(cId).value=`${lt},${lg}`; document.getElementById(aId).value=d[0].display_name; if(globalMaps[mId]){globalMaps[mId].setView([lt,lg],16); globalMarkers[mId].setLatLng([lt,lg]);} window.mostrarAlerta('Ok','Mapa movido.','success'); } } catch(e){}
-    }
-    window.obtenerGPSConMapa = (cId, mId, aId) => {
-      if("geolocation" in navigator) { window.mostrarAlerta('GPS...','Permite el acceso.','info'); navigator.geolocation.getCurrentPosition(p=>{ const lt=p.coords.latitude, lg=p.coords.longitude; document.getElementById(cId).value=`${lt.toFixed(6)},${lg.toFixed(6)}`; if(globalMaps[mId]){globalMaps[mId].setView([lt,lg],16); globalMarkers[mId].setLatLng([lt,lg]);} fetchDir(lt,lg,aId); window.mostrarAlerta('OK','GPS capturado.','success'); }, e=>window.mostrarAlerta('Error','Activa el GPS.','error'), {enableHighAccuracy:true, timeout:10000}); }
-    }
-
-    const bloqBtn = (btn, lock, text="Procesando...") => { if(!btn)return; btn.disabled = lock; btn.innerHTML = lock ? `<i class="lucide-loader animate-spin inline w-4 h-4 mr-1"></i> ${text}` : text; };
-
-    window.guardarMascota = async function(e, tipo) {
-      e.preventDefault(); if (usuarioActual.rol === 'anonimo') return window.mostrarAlerta('Atención', 'Debes iniciar sesión para reportar.', 'error');
-      const btn = e.target.querySelector('.submit-btn'); bloqBtn(btn, true);
-      const fArr = temporalFotosSeleccionadas.length > 0 ? temporalFotosSeleccionadas : ["data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150'><rect width='100%' height='100%' fill='%23ccc'/></svg>"];
-      const sId = tipo === 'perdido' ? '-p' : '-e';
-      const payload = {
-        estado: tipo, nombre: tipo==='perdido'?document.getElementById('nombre-p').value.trim():'Avistado', especie: document.getElementById('especie'+sId).value, sexo: document.getElementById('sexo'+sId).value, raza: document.getElementById('raza'+sId).value.trim(),
-        zona: document.getElementById('zona'+sId).value, gps: document.getElementById('gps'+sId).value, direccionExtra: document.getElementById('dir-texto'+sId).value.trim(),
-        contacto: document.getElementById(tipo==='perdido'?'tel-p':'tel-e').value.trim(), fecha: new Date().toISOString().split('T')[0], fotos: fArr, videoUrl: temporalVideoUrl, creadorId: user.uid
-      };
-      if(tipo==='perdido') { payload.rasgos = document.getElementById('rasgos-p').value.trim(); payload.email = document.getElementById('email-p').value.trim(); } 
-      else { payload.color = document.getElementById('color-e').value.trim(); payload.rasgos = `${payload.color} - ${document.getElementById('detalles-e').value.trim()}`; payload.refugioId = document.getElementById('refugio-e').value; payload.lugarActual = document.getElementById('lugar-e').value.trim(); payload.fotoRescatista = temporalFotoRescatista; }
-      try { await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pets'), payload); e.target.reset(); temporalFotosSeleccionadas=[]; temporalFotoRescatista=''; temporalVideoUrl=''; window.mostrarAlerta('Éxito', 'Reporte guardado.','success'); cambiarVista('inicio'); } catch(err){} finally{ bloqBtn(btn, false, 'Publicar'); }
-    };
-
-    // ==========================================
-    // RENDERIZADOS Y GESTIÓN
-    // ==========================================
-    window.cambiarVista = function(v) {
-      vistaActual = v; ['inicio','refugios','reportar-perdido','reportar-encontrado','detalle-mascota','detalle-refugio','perfil'].forEach(id => { const el=document.getElementById('vista-'+id); if(el) el.classList.add('hidden'); });
-      document.getElementById('vista-'+v).classList.remove('hidden'); window.scrollTo(0,0);
-      if(v==='inicio') renderizarMascotas();
-      if(v==='reportar-perdido') window.inicializarMapasForm('map-p','gps-p','dir-texto-p');
-      if(v==='reportar-encontrado') window.inicializarMapasForm('map-e','gps-e','dir-texto-e');
-      if(v==='perfil') renderizarPerfil();
-    };
-
-    window.aplicarFiltros = function() { filtroActual.texto = document.getElementById('filtro-texto').value.toLowerCase().trim(); filtroActual.especie = document.getElementById('filtro-especie').value; filtroActual.estado = document.getElementById('filtro-estado').value; filtroActual.zona = document.getElementById('filtro-zona').value; renderizarMascotas(); };
-    function actualizarContadores() { document.getElementById('p-count-buscando').innerText = baseMascotas.filter(m=>m.estado==='perdido').length; document.getElementById('p-count-avistados').innerText = baseMascotas.filter(m=>m.estado==='encontrado').length; document.getElementById('p-count-rescatados').innerText = baseMascotas.filter(m=>m.estado==='rescatado').length; document.getElementById('p-count-reunidos').innerText = baseMascotas.filter(m=>m.estado==='reunido').length; document.getElementById('p-count-adopcion').innerText = baseMascotas.filter(m=>m.estado==='adopcion').length; }
-
-    function renderizarMascotas() {
-      const grid = document.getElementById('listado-mascotas'); const vacio = document.getElementById('sin-resultados'); grid.innerHTML = '';
-      const f = baseMascotas.filter(m => { const t = filtroActual.texto===''||m.nombre.toLowerCase().includes(filtroActual.texto)||m.raza.toLowerCase().includes(filtroActual.texto); const e = filtroActual.especie==='todos'||m.especie===filtroActual.especie; const st = filtroActual.estado==='todos'||m.estado===filtroActual.estado; const z = filtroActual.zona==='todas'||m.zona===filtroActual.zona; return t&&e&&st&&z; });
-      if(f.length===0){vacio.classList.remove('hidden');return;} vacio.classList.add('hidden');
-      f.forEach(m => {
-        let bc='bg-red-600', bt='Buscando'; if(m.estado==='encontrado'){bc='bg-sky-600';bt='Localizado';}else if(m.estado==='rescatado'){bc='bg-indigo-600';bt='Rescatado 🏠';}else if(m.estado==='reunido'){bc='bg-emerald-600';bt='Reunido 🎉';}else if(m.estado==='fallecido'){bc='bg-slate-600';bt='Fallecido 🕯️';}else if(m.estado==='adopcion'){bc='bg-amber-500';bt='En Adopción';}
-        grid.innerHTML += `<div class="tarjeta-mascota border overflow-hidden flex flex-col cursor-pointer snap-start" onclick="verDetalleMascota('${m.id}')"><div class="relative h-48 w-full bg-slate-100"><img src="${m.fotos?m.fotos[0]:''}" class="w-full h-full object-cover" loading="lazy"><span class="absolute top-3 left-3 ${bc} text-white font-extrabold text-[10px] px-2.5 py-1 rounded-full uppercase shadow-sm">${bt}</span>${m.videoUrl?`<i data-lucide="video" class="absolute top-3 right-3 text-white drop-shadow-md"></i>`:''}</div><div class="p-5 flex-grow flex flex-col justify-between"><div><div class="flex justify-between items-start"><h4 class="font-extrabold text-lg truncate">${m.nombre}</h4><span class="text-[10px] text-slate-400">${m.fecha}</span></div><p class="text-xs font-semibold text-orange-600 mt-1 flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i> ${m.zona}</p><p class="text-sm text-slate-600 mt-3 line-clamp-2 italic">"${m.rasgos}"</p></div></div></div>`;
-      }); lucide.createIcons();
-    }
-
-    window.verDetalleMascota = function(id) {
-      mascotaSeleccionadaId=id; const m=baseMascotas.find(p=>p.id===id); if(!m)return; cambiarVista('detalle-mascota');
-      const fp=document.getElementById('d-img'); fp.src=m.fotos?m.fotos[0]:'';
-      let bc='bg-red-600', bt='Buscando', titM="Pérdida"; if(m.estado==='encontrado'){bc='bg-sky-600';bt='Localizado';titM="Avistamiento";}else if(m.estado==='rescatado'){bc='bg-indigo-600';bt='Rescatado 🏠';titM="Rescate";}else if(m.estado==='reunido'){bc='bg-emerald-600';bt='Reunido 🎉';titM="Reencuentro";}else if(m.estado==='fallecido'){bc='bg-slate-600';bt='Fallecido 🕯️';titM="Hallazgo";}else if(m.estado==='adopcion'){bc='bg-amber-500';bt='En Adopción';}
-      document.getElementById('d-badge').className=`absolute top-4 left-4 text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase shadow-md ${bc}`; document.getElementById('d-badge').innerText=bt;
-      
-      const car=document.getElementById('d-minis'); car.innerHTML='';
-      if(m.fotos&&m.fotos.length>1){ m.fotos.forEach(f=>{ car.innerHTML+=`<img src="${f}" class="w-14 h-14 rounded-xl object-cover border cursor-pointer" onclick="document.getElementById('d-img').src='${f}'">`; }); }
-      
-      const vw=document.getElementById('d-video-wrapper'); const vid=document.getElementById('d-video');
-      if(m.videoUrl) { vw.classList.remove('hidden'); vid.src=m.videoUrl; } else { vw.classList.add('hidden'); vid.src=''; }
-      
-      const resc=document.getElementById('d-resc-wrap'); if(m.fotoRescatista){ resc.classList.remove('hidden'); resc.classList.add('flex'); document.getElementById('d-resc-img').src=m.fotoRescatista; } else { resc.classList.add('hidden'); resc.classList.remove('flex'); }
-
-      document.getElementById('d-nombre').innerText=m.nombre; document.getElementById('d-zona').innerHTML=`<i data-lucide="map-pin" class="w-4 h-4 inline"></i> ${m.zona}`; document.getElementById('d-dir').innerText=m.direccionExtra||'';
-      document.getElementById('d-esp').innerText=m.especie; document.getElementById('d-sex').innerText=m.sexo; document.getElementById('d-raz').innerText=m.raza; document.getElementById('d-fec').innerText=m.fecha; document.getElementById('d-rasgos').innerText=m.rasgos;
-
-      const mEvt=document.getElementById('d-map-evt-wrap');
-      if(m.gps&&m.gps.includes(',')){ mEvt.classList.remove('hidden'); document.getElementById('d-map-tit').innerText=titM; const p=m.gps.split(','); window.inicializarMapasForm('map-det-evt',null,null,false,parseFloat(p[0]),parseFloat(p[1])); } else { mEvt.classList.add('hidden'); }
-      
-      const mRef=document.getElementById('d-map-ref-wrap'); let rVinc=m.refugioId?baseRefugios.find(r=>r.id===m.refugioId):null;
-      if(rVinc){ mRef.classList.remove('hidden'); document.getElementById('d-ref-nom').innerText=rVinc.nombre; document.getElementById('d-ref-con').innerText=`Resp: ${rVinc.responsable} | Tel: ${rVinc.telefono}`; if(rVinc.gps&&rVinc.gps.includes(',')){ document.getElementById('map-det-ref').classList.remove('hidden'); const p=rVinc.gps.split(','); window.inicializarMapasForm('map-det-ref',null,null,false,parseFloat(p[0]),parseFloat(p[1])); document.getElementById('d-ref-ruta').href=`https://www.google.com/maps/dir/?api=1&destination=${p[0]},${p[1]}`; }else{ document.getElementById('map-det-ref').classList.add('hidden'); document.getElementById('d-ref-ruta').href="#"; } } else { mRef.classList.add('hidden'); }
-      
-      document.getElementById('d-wa').href=`https://wa.me/${m.contacto.replace(/[^0-9]/g, '')}`; document.getElementById('d-contacto').innerText=m.contacto;
+      const div = document.createElement('div');
+      div.className = "flex gap-2 fade-in";
+      div.innerHTML = `
+        <select class="p-2 border rounded-xl text-xs bg-white w-1/3 social-red-sel">
+          <option value="Instagram" ${redDef==='Instagram'?'selected':''}>Instagram</option>
+          <option value="Facebook" ${redDef==='Facebook'?'selected':''}>Facebook</option>
+          <option value="TikTok" ${redDef==='TikTok'?'selected':''}>TikTok</option>
+          <option value="WhatsApp" ${redDef==='WhatsApp'?'selected':''}>WhatsApp</option>
+          <option value="Twitter/X" ${redDef==='Twitter/X'?'selected':''}>Twitter/X</option>
+        </select>
+        <input type="text" placeholder="@usuario o link" value="${enlaceDef}" class="p-2 border rounded-xl text-xs flex-grow social-link-input">
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-500 px-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+      `;
+      container.appendChild(div);
       lucide.createIcons();
+    }
+
+    window.actualizarPerfilPersonal = async function(e) {
+      e.preventDefault();
+      if (!user) return;
+      const btn = e.target.querySelector('button'); bloqBtn(btn, true);
+
+      // Obtener redes sociales
+      const socList = [];
+      const blocks = document.querySelectorAll('#socials-inputs-container > div');
+      blocks.forEach(bl => {
+        const red = bl.querySelector('.social-red-sel').value;
+        const enlace = bl.querySelector('.social-link-input').value.trim();
+        if (enlace) socList.push({ red, enlace });
+      });
+
+      const nom = document.getElementById('prof-nombre').value.trim();
+      const tel = document.getElementById('prof-telefono').value.trim();
+      const dir = document.getElementById('prof-direccion').value.trim();
+
+      try {
+        const uRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid);
+        await updateDoc(uRef, {
+          nombre: nom,
+          telefono: tel,
+          direccion: dir,
+          socials: socList
+        });
+        usuarioActual.nombre = nom;
+        usuarioActual.telefono = tel;
+        usuarioActual.direccion = dir;
+        usuarioActual.socials = socList;
+
+        window.mostrarAlerta('Actualizado', 'Tus datos fueron guardados exitosamente.', 'success');
+        generarCarnetVisual();
+      } catch(err) {
+        window.mostrarAlerta('Error', 'No se pudo actualizar.', 'error');
+      } finally {
+        bloqBtn(btn, false, 'Actualizar Perfil');
+      }
     };
 
-    window.verDetalleRefugio = function(id) {
-      const r = baseRefugios.find(sh => sh.id === id);
-      if(!r) return;
-      cambiarVista('detalle-refugio');
-      
-      document.getElementById('dr-img').src = r.foto || 'https://placehold.co/600x400/indigo/white?text=Refugio';
-      document.getElementById('dr-pais').innerText = r.pais || 'Venezuela';
-      document.getElementById('dr-nombre').innerText = r.nombre;
-      document.getElementById('dr-responsable').innerText = `Responsable: ${r.responsable}`;
-      document.getElementById('dr-direccion').innerText = r.direccion;
-      
-      document.getElementById('dr-wa').href = `https://wa.me/${r.telefono.replace(/[^0-9]/g, '')}`;
-      
-      const mapWrap = document.getElementById('dr-map-wrap');
-      if(r.gps && r.gps.includes(',')) {
-        mapWrap.classList.remove('hidden');
-        const p = r.gps.split(',');
-        window.inicializarMapasForm('map-det-refugio-view', null, null, false, parseFloat(p[0]), parseFloat(p[1]));
-        document.getElementById('dr-ruta').href = `https://www.google.com/maps/dir/?api=1&destination=${p[0]},${p[1]}`;
-        document.getElementById('dr-ruta').classList.remove('hidden');
-      } else {
-        mapWrap.classList.add('hidden');
-        document.getElementById('dr-ruta').classList.add('hidden');
-      }
+    window.imprimirCarnet = function() {
+      const w = window.open('', '_blank');
+      const box = document.getElementById('carnet-box').outerHTML;
+      w.document.write(`
+        <html>
+        <head>
+          <title>Credencial Proyecto Patitas</title>
+          <script src="https://cdn.tailwindcss.com"><\/script>
+          <style>body { font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #fff; }</style>
+        </head>
+        <body>
+          <div class="scale-125">${box}</div>
+          <script>window.onload = function() { window.print(); }<\/script>
+        </body>
+        </html>
+      `);
+      w.document.close();
+    };
 
-      // Fetch pets hosted in this shelter
-      const petsContainer = document.getElementById('dr-mascotas');
-      petsContainer.innerHTML = '';
-      const shelterPets = baseMascotas.filter(pet => pet.refugioId === id);
-      if(shelterPets.length === 0) {
-        petsContainer.innerHTML = '<div class="col-span-full text-center py-6 text-slate-400">No hay mascotas resguardadas en este refugio actualmente.</div>';
-      } else {
-        shelterPets.forEach(m => {
-          let bc='bg-red-600', bt='Buscando'; if(m.estado==='encontrado'){bc='bg-sky-600';bt='Localizado';}else if(m.estado==='rescatado'){bc='bg-indigo-600';bt='Rescatado 🏠';}else if(m.estado==='reunido'){bc='bg-emerald-600';bt='Reunido 🎉';}else if(m.estado==='fallecido'){bc='bg-slate-600';bt='Fallecido 🕯️';}else if(m.estado==='adopcion'){bc='bg-amber-500';bt='En Adopción';}
-          petsContainer.innerHTML += `
-            <div class="tarjeta-mascota border overflow-hidden flex flex-col cursor-pointer bg-white" onclick="verDetalleMascota('${m.id}')">
-              <div class="relative h-32 w-full bg-slate-100">
-                <img src="${m.fotos?m.fotos[0]:''}" class="w-full h-full object-cover" loading="lazy">
-                <span class="absolute top-2 left-2 ${bc} text-white font-extrabold text-[9px] px-2 py-0.5 rounded-full uppercase shadow-sm">${bt}</span>
-              </div>
-              <div class="p-3">
-                <h4 class="font-extrabold text-sm truncate text-slate-900">${m.nombre}</h4>
-                <p class="text-[10px] text-slate-500">${m.zona}</p>
-              </div>
+    // ==========================================
+    // SISTEMA DE VERIFICACIÓN PÚBLICA DE CÓDIGO QR
+    // ==========================================
+    async function procesarVerificacionIDPublica(uid) {
+      document.getElementById('app-header').classList.add('hidden');
+      document.getElementById('public-counters-dashboard').classList.add('hidden');
+      document.getElementById('vista-inicio').classList.add('hidden');
+      
+      const vView = document.getElementById('vista-verificar-credencial');
+      vView.classList.remove('hidden');
+
+      try {
+        const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', uid));
+        if (snap.exists()) {
+          const d = snap.data();
+          const badge = document.getElementById('v-status-badge');
+          badge.innerText = d.estatus || 'Activo';
+          
+          if (d.estatus === 'Activo') badge.className = "mx-auto px-4 py-2 rounded-full text-xs font-extrabold uppercase w-fit bg-emerald-100 text-emerald-800 border border-emerald-200";
+          else if (d.estatus === 'Inactivo (Sancionado)') badge.className = "mx-auto px-4 py-2 rounded-full text-xs font-extrabold uppercase w-fit bg-amber-100 text-amber-800 border border-amber-200";
+          else badge.className = "mx-auto px-4 py-2 rounded-full text-xs font-extrabold uppercase w-fit bg-red-100 text-red-800 border border-red-200";
+
+          document.getElementById('v-foto').src = d.foto || 'https://placehold.co/100x100/slate/white?text=Foto';
+          document.getElementById('v-nombre').innerText = d.nombre || 'Sin Nombre';
+          document.getElementById('v-role').innerText = d.rol || 'Voluntario';
+          document.getElementById('v-refugio').innerText = d.refugioNombre || 'Rescatista Independiente';
+          document.getElementById('v-id').innerText = `ID DE CARNET: ${d.idCarnet || 'N/A'}`;
+          document.getElementById('v-dir').innerText = d.direccion || 'No especificada';
+
+          const scs = document.getElementById('v-socials');
+          scs.innerHTML = '';
+          const socials = d.socials || [];
+          socials.forEach(sc => {
+            scs.innerHTML += `<span class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded-lg text-xs font-bold">${sc.red}: ${sc.enlace}</span>`;
+          });
+          if (socials.length === 0) scs.innerHTML = '<span class="text-xs text-slate-400">Sin redes admmitidas</span>';
+        } else {
+          vView.innerHTML = `
+            <div class="bg-red-50 text-red-800 border border-red-200 rounded-3xl p-6 text-center space-y-4">
+              <i data-lucide="shield-alert" class="w-12 h-12 mx-auto text-red-600"></i>
+              <h2 class="text-xl font-bold">Credencial No Registrada</h2>
+              <p class="text-xs">Este código QR apunta a un perfil inexistente o deshabilitado en el servidor oficial.</p>
+              <button onclick="window.location.href=window.location.origin+window.location.pathname" class="w-full py-2.5 bg-slate-900 text-white font-bold rounded-xl text-xs">Volver al Inicio</button>
             </div>
           `;
-        });
+          lucide.createIcons();
+        }
+      } catch(e) {
+        window.mostrarAlerta('Error', 'Fallo al verificar credencial pública.', 'error');
       }
-      lucide.createIcons();
     }
 
-    function renderizarRefugios() {
-      const g=document.getElementById('listado-refugios'); g.innerHTML='';
-      baseRefugios.forEach(r=>{
-        const l=r.gps?`<a href="https://www.google.com/maps/dir/?api=1&destination=${r.gps}" target="_blank" class="w-full bg-indigo-50 text-indigo-700 font-bold py-2 rounded-xl text-xs flex justify-center mt-2 items-center gap-1"><i data-lucide="map-pin" class="w-4 h-4"></i> Ruta</a>`:'';
-        g.innerHTML+=`
-          <div class="bg-white border rounded-2xl overflow-hidden flex flex-col hover:shadow-md transition-all cursor-pointer" onclick="verDetalleRefugio('${r.id}')">
-            <img src="${r.foto || 'https://placehold.co/600x400/f1f5f9/475569?text=Refugio'}" class="w-full h-40 object-cover bg-indigo-50">
-            <div class="p-5 flex-grow flex flex-col justify-between" onclick="event.stopPropagation();">
-              <div>
-                <span class="text-[10px] font-bold bg-slate-100 px-2 py-0.5 rounded-full mb-2 inline-block">${r.pais || 'Venezuela'}</span>
-                <h4 class="font-extrabold text-lg text-slate-800 hover:text-indigo-600 cursor-pointer" onclick="verDetalleRefugio('${r.id}')">${r.nombre}</h4>
-                <p class="text-xs text-slate-500 mt-1">Resp: ${r.responsable}</p>
-                <p class="text-xs mt-1 line-clamp-2">${r.direccion}</p>
-              </div>
-              <div class="mt-4 pt-4 border-t">
-                <a href="https://wa.me/${r.telefono.replace(/[^0-9]/g, '')}" target="_blank" class="w-full bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs flex justify-center items-center gap-1 hover:bg-emerald-600"><i data-lucide="phone" class="w-4 h-4"></i> Contactar</a>
-                ${l}
-              </div>
-            </div>
-          </div>`;
-      });
-      lucide.createIcons();
+    // ==========================================
+    // SISTEMA DE CÓDIGOS DE INVITACIÓN
+    // ==========================================
+    window.abrirGeneradorInvitacion = function() {
+      document.getElementById('inv-codigo-res').value = '';
+      document.getElementById('modal-invitacion').classList.remove('hidden');
     }
-    
-    // GESTIÓN PERFIL (EDITAR MASCOTAS / REFUGIOS / USUARIOS)
-    function renderizarTablaMascotasPerfil() {
-      const tb=document.getElementById('tb-mis-mascotas'); tb.innerHTML='';
-      let filtradas = [];
-      if(usuarioActual.rol === 'admin') filtradas = baseMascotas;
-      else if(usuarioActual.rol === 'fundacion') filtradas = baseMascotas.filter(m => m.creadorId === user.uid || (usuarioActual.refugioId && m.refugioId === usuarioActual.refugioId));
-      else filtradas = baseMascotas.filter(m => m.creadorId === user.uid);
-      
-      if(filtradas.length===0){tb.innerHTML=`<tr><td colspan="3" class="p-4 text-center text-slate-400">No tienes reportes gestionables.</td></tr>`;return;}
-      filtradas.forEach(m=>{
-        let opts = `<option value="perdido" ${m.estado==='perdido'?'selected':''}>Buscado</option><option value="encontrado" ${m.estado==='encontrado'?'selected':''}>Localizado</option><option value="rescatado" ${m.estado==='rescatado'?'selected':''}>Rescatado</option><option value="reunido" ${m.estado==='reunido'?'selected':''}>Reunido</option><option value="fallecido" ${m.estado==='fallecido'?'selected':''}>Fallecido</option>`;
-        if(usuarioActual.rol === 'admin' || usuarioActual.rol === 'fundacion') opts += `<option value="adopcion" ${m.estado==='adopcion'?'selected':''}>Adopción</option>`;
-        tb.innerHTML+=`<tr class="border-b hover:bg-slate-50"><td class="p-3 font-bold">${m.nombre}</td><td class="p-3"><select onchange="updateEstatus('${m.id}', this.value)" class="p-1 border rounded text-xs font-bold bg-white">${opts}</select></td><td class="p-3 text-right"><button onclick="abrirEditar('${m.id}')" class="text-indigo-600 font-bold px-2">Editar</button><button onclick="eliminarReporte('${m.id}')" class="text-red-600 font-bold px-2">Borrar</button></td></tr>`;
-      });
+    window.cerrarGeneradorInvitacion = function() {
+      document.getElementById('modal-invitacion').classList.add('hidden');
+    }
+    window.procesarGeneracionCodigo = async function() {
+      const rol = document.getElementById('inv-rol').value;
+      const ref = baseRefugios.find(r => r.id === usuarioActual.refugioId);
+      if (!ref) {
+        window.mostrarAlerta('Error', 'Debes estar vinculado a un refugio para crear invitaciones.', 'error');
+        return;
+      }
+
+      const sigla = ref.nombre.slice(0, 3).toUpperCase();
+      const fecha = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const rand = Math.floor(1000 + Math.random() * 9000); // 4 dígitos dinámicos
+      const codeGenerated = `${sigla}${fecha}${rand}`;
+
+      try {
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invitationCodes', codeGenerated), {
+          code: codeGenerated,
+          shelterId: ref.id,
+          shelterName: ref.nombre,
+          assignedRole: rol,
+          status: 'unused'
+        });
+        document.getElementById('inv-codigo-res').value = codeGenerated;
+        window.mostrarAlerta('Código Generado', 'Código listo para enviar.', 'success');
+      } catch(e) {
+        window.mostrarAlerta('Error', 'Fallo en la creación del código.', 'error');
+      }
+    }
+    window.copiarCodigoInvitacion = function() {
+      const cInput = document.getElementById('inv-codigo-res');
+      if (cInput.value) {
+        const temp = document.createElement("input");
+        temp.value = cInput.value; document.body.appendChild(temp); temp.select(); document.execCommand("copy"); document.body.removeChild(temp);
+        window.mostrarAlerta('Copiado', 'Código copiado al portapapeles', 'success');
+      }
     }
 
-    function renderizarTablaRefugios() {
-      const tb=document.getElementById('admin-tb-refugios'); tb.innerHTML='';
-      baseRefugios.forEach(r=>{
-        tb.innerHTML+=`
+    // ==========================================
+    // GESTIÓN DE MIEMBROS POR REFUGIO
+    // ==========================================
+    function renderizarTablaMiembrosRefugio(miembros) {
+      const tb = document.getElementById('tb-miembros-refugio');
+      tb.innerHTML = '';
+      if(miembros.length === 0) {
+        tb.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Tu refugio no cuenta con otros miembros vinculados actualmente.</td></tr>';
+        return;
+      }
+      miembros.forEach(m => {
+        const isMe = m.id === user.uid;
+        tb.innerHTML += `
           <tr class="border-b hover:bg-slate-50">
-            <td class="p-3 font-bold">${r.nombre}</td>
-            <td class="p-3">${r.responsable}</td>
-            <td class="p-3 text-right">
-              <button onclick="abrirEditarRefugio('${r.id}')" class="text-indigo-600 font-bold px-2">Editar</button>
-              <button onclick="eliminarRef('${r.id}')" class="text-red-600 font-bold px-2">Borrar</button>
+            <td class="p-3 font-bold">${m.nombre}</td>
+            <td class="p-3">
+              <select onchange="cambiarRolMiembro('${m.id}', this.value)" class="p-1 border rounded text-xs bg-white" ${isMe ? 'disabled' : ''}>
+                <option value="Voluntario" ${m.rol === 'Voluntario' ? 'selected' : ''}>Voluntario</option>
+                <option value="Rescatista" ${m.rol === 'Rescatista' ? 'selected' : ''}>Rescatista</option>
+                <option value="Administración" ${m.rol === 'Administración' ? 'selected' : ''}>Administración</option>
+                <option value="Responsable" ${m.rol === 'Responsable' ? 'selected' : ''}>Responsable (Encargado)</option>
+              </select>
             </td>
-          </tr>`;
+            <td class="p-3">
+              <select onchange="cambiarEstatusMiembro('${m.id}', this.value)" class="p-1 border rounded text-xs bg-white" ${isMe ? 'disabled' : ''}>
+                <option value="Activo" ${m.estatus === 'Activo' ? 'selected' : ''}>Activo</option>
+                <option value="Inactivo (Sancionado)" ${m.estatus === 'Inactivo (Sancionado)' ? 'selected' : ''}>Inactivo (Sancionado)</option>
+                <option value="Despedido" ${m.estatus === 'Despedido' ? 'selected' : ''}>Despedido</option>
+              </select>
+            </td>
+            <td class="p-3 text-right text-slate-400 italic text-xs">Administración Local</td>
+          </tr>
+        `;
       });
     }
 
+    window.cambiarRolMiembro = async function(userId, nuevoRol) {
+      try {
+        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', userId), { rol: nuevoRol });
+        window.mostrarAlerta('Actualizado', 'Rol interno de miembro modificado.', 'success');
+      } catch(e) {}
+    }
+
+    window.cambiarEstatusMiembro = async function(userId, nuevoEstatus) {
+      try {
+        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', userId), { estatus: nuevoEstatus });
+        window.mostrarAlerta('Actualizado', 'Estatus de miembro modificado con éxito.', 'success');
+      } catch(e) {}
+    }
+
+    // ==========================================
+    // REVERSE GEOCODING AUTOMÁTICO (PAÍS DEL MAPA)
+    // ==========================================
+    window.obtenerGPSConMapa = function(coordsInputId, mapId, addressInputId) {
+      if ("geolocation" in navigator) {
+        window.mostrarAlerta('Ubicando...', 'Acepta los permisos de GPS del navegador.', 'info');
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            
+            document.getElementById(coordsInputId).value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            
+            if (globalMaps[mapId]) {
+              globalMaps[mapId].setView([lat, lng], 16);
+              globalMarkers[mapId].setLatLng([lat, lng]);
+            }
+            
+            // Reverse Geocode
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+              .then(res => res.json())
+              .then(data => {
+                if (addressInputId) {
+                  document.getElementById(addressInputId).value = data.display_name || '';
+                }
+                // Si estamos en el modal de refugio, rellenar el país automáticamente
+                const paisInput = document.getElementById('ref-pai');
+                if (paisInput && data.address && data.address.country) {
+                  paisInput.value = data.address.country;
+                }
+              })
+              .catch(() => {});
+              
+            window.mostrarAlerta('Ubicación Lista', 'GPS local cargado.', 'success');
+          },
+          () => {
+            window.mostrarAlerta('Error GPS', 'No pudimos acceder a tu GPS.', 'error');
+          },
+          { enableHighAccuracy: true, timeout: 10000 }
+        );
+      }
+    };
+
+    window.inicializarMapasForm = function(mId, cId, aId) {
+      setTimeout(() => {
+        const cInp = document.getElementById(cId);
+        let lt = 10.6, lg = -66.93;
+        if (cInp && cInp.value.includes(',')) {
+          const p = cInp.value.split(',');
+          lt = parseFloat(p[0]);
+          lg = parseFloat(p[1]);
+        }
+        
+        if (globalMaps[mId]) {
+          globalMaps[mId].invalidateSize();
+          globalMaps[mId].setView([lt, lg], 15);
+          globalMarkers[mId].setLatLng([lt, lg]);
+          return;
+        }
+        
+        const map = L.map(mId).setView([lt, lg], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        const mk = L.marker([lt, lg], { draggable: true }).addTo(map);
+        
+        const actualizarDatosGeográficos = (lat, lng) => {
+          fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+            .then(res => res.json())
+            .then(data => {
+              if (aId) document.getElementById(aId).value = data.display_name || '';
+              const paisInput = document.getElementById('ref-pai');
+              if (paisInput && data.address && data.address.country) {
+                paisInput.value = data.address.country;
+              }
+            });
+        };
+
+        mk.on('dragend', () => {
+          const p = mk.getLatLng();
+          document.getElementById(cId).value = `${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`;
+          actualizarDatosGeográficos(p.lat, p.lng);
+        });
+
+        map.on('click', (e) => {
+          mk.setLatLng(e.latlng);
+          document.getElementById(cId).value = `${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`;
+          actualizarDatosGeográficos(e.latlng.lat, e.latlng.lng);
+        });
+
+        globalMaps[mId] = map;
+        globalMarkers[mId] = mk;
+      }, 400);
+    }
+
+    // ==========================================
+    // SECCIÓN DE ADMINISTRADOR MAESTRO (PATTY)
+    // ==========================================
     function renderizarTablaUsuarios() {
-      const tb=document.getElementById('admin-tb-usuarios');
-      if(!tb) return;
-      tb.innerHTML='';
-      if(baseUsuarios.length === 0) {
-        tb.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Cargando o sin usuarios registrados.</td></tr>';
+      const tb = document.getElementById('admin-tb-usuarios');
+      tb.innerHTML = '';
+      if (baseUsuarios.length === 0) {
+        tb.innerHTML = '<tr><td colspan="4" class="p-3 text-center text-slate-400">No hay usuarios registrados.</td></tr>';
         return;
       }
       baseUsuarios.forEach(u => {
-        const isMe = user && u.id === user.uid;
         tb.innerHTML += `
-          <tr class="border-b hover:bg-slate-50">
-            <td class="p-3 font-bold">${u.nombre || 'Sin Nombre'}</td>
-            <td class="p-3 text-slate-500">${u.email || 'Anónimo'}</td>
+          <tr class="border-b hover:bg-slate-50 text-xs">
+            <td class="p-3 font-bold">${u.nombre}</td>
+            <td class="p-3">${u.email}</td>
             <td class="p-3">
-              <select onchange="cambiarRolUsuario('${u.id}', this.value)" class="p-1 border rounded text-xs font-bold bg-white" ${isMe ? 'disabled' : ''}>
-                <option value="voluntario" ${u.rol === 'voluntario' ? 'selected' : ''}>Voluntario</option>
-                <option value="fundacion" ${u.rol === 'fundacion' ? 'selected' : ''}>Fundación</option>
-                <option value="admin" ${u.rol === 'admin' ? 'selected' : ''}>Admin</option>
+              <select onchange="cambiarRolGlobal('${u.id}', this.value)" class="p-1 border rounded bg-white font-bold">
+                <option value="Voluntario" ${u.rol === 'Voluntario' ? 'selected' : ''}>Voluntario</option>
+                <option value="Rescatista" ${u.rol === 'Rescatista' ? 'selected' : ''}>Rescatista</option>
+                <option value="Administración" ${u.rol === 'Administración' ? 'selected' : ''}>Administración</option>
+                <option value="Responsable" ${u.rol === 'Responsable' ? 'selected' : ''}>Responsable (Encargado)</option>
+                <option value="admin" ${u.rol === 'admin' ? 'selected' : ''}>Admin Global</option>
               </select>
             </td>
             <td class="p-3 text-right">
-              <button onclick="eliminarUsuario('${u.id}')" class="text-red-600 font-bold px-2" ${isMe ? 'disabled' : ''}>Eliminar</button>
+              <button onclick="eliminarUsuarioGlobal('${u.id}')" class="text-red-600 font-bold px-2">Eliminar Cuenta</button>
             </td>
           </tr>
         `;
       });
     }
 
-    window.cambiarRolUsuario = async function(userId, nuevoRol) {
+    window.cambiarRolGlobal = async function(userId, nuevoRol) {
       try {
         await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', userId), { rol: nuevoRol });
-        window.mostrarAlerta('Éxito', 'Rol de usuario actualizado.', 'success');
-      } catch(e) {
-        window.mostrarAlerta('Error', 'No tienes permisos para modificar este usuario.', 'error');
-      }
-    };
+        window.mostrarAlerta('Listo', 'Rol administrativo global modificado.', 'success');
+      } catch(e) {}
+    }
 
-    window.eliminarUsuario = function(userId) {
-      window.mostrarConfirmacion('¿Eliminar Usuario?', 'Se removerá de la base de datos de voluntarios de forma permanente.', async () => {
+    window.eliminarUsuarioGlobal = function(userId) {
+      window.confirmacionPersonalizada('¿Eliminar Usuario?', 'Se borrará su cuenta y credenciales públicas de forma irreversible.', async () => {
         try {
           await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', userId));
-          window.mostrarAlerta('Éxito', 'Usuario eliminado de la base de datos.', 'success');
-        } catch(e) {
-          window.mostrarAlerta('Error', 'No se pudo eliminar el usuario.', 'error');
-        }
-      });
-    };
-
-    window.updateEstatus = async (id, st) => { try{await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pets', id), {estado:st}); window.mostrarAlerta('Listo','Estatus modificado.','success');}catch(e){} };
-    
-    window.eliminarReporte = (id) => { 
-      window.mostrarConfirmacion('¿Borrar Reporte?', 'Esta mascota será eliminada del catálogo público permanentemente.', async () => {
-        try {
-          await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pets', id));
-          window.mostrarAlerta('Listo','Mascota eliminada.','success');
+          window.mostrarAlerta('Eliminado', 'Usuario removido de los servidores.', 'success');
         } catch(e) {}
       });
-    };
+    }
 
-    window.eliminarRef = (id) => { 
-      window.mostrarConfirmacion('¿Borrar Refugio?', 'Este refugio ya no se listará como punto oficial de rescate.', async () => {
-        try {
-          await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'shelters', id));
-          window.mostrarAlerta('Listo','Refugio eliminado.','success');
-        } catch(e) {}
-      });
-    };
-
-    window.abrirEditar = function(id) {
-      const m = baseMascotas.find(p=>p.id===id); if(!m) return;
-      document.getElementById('ed-id').value=id; document.getElementById('ed-nom').value=m.nombre; document.getElementById('ed-raz').value=m.raza; document.getElementById('ed-tel').value=m.contacto; document.getElementById('ed-dir').value=m.direccionExtra||''; document.getElementById('ed-gps').value=m.gps||'';
-      const sel = document.getElementById('ed-ref'); sel.innerHTML='<option value="">-- No --</option>'; baseRefugios.forEach(r => { sel.innerHTML += `<option value="${r.id}" ${r.id===m.refugioId?'selected':''}>${r.nombre}</option>`; });
-      document.getElementById('modal-editar-mascota').classList.remove('hidden'); window.inicializarMapasForm('map-ed','ed-gps','ed-dir');
-    };
-    window.cerrarEditar = () => document.getElementById('modal-editar-mascota').classList.add('hidden');
-    window.guardarEdicion = async (e) => { e.preventDefault(); const btn=e.target.querySelector('.submit-btn'); bloqBtn(btn,true); const id=document.getElementById('ed-id').value; try { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pets', id), { nombre:document.getElementById('ed-nom').value, raza:document.getElementById('ed-raz').value, contacto:document.getElementById('ed-tel').value, refugioId:document.getElementById('ed-ref').value, direccionExtra:document.getElementById('ed-dir').value, gps:document.getElementById('ed-gps').value }); cerrarEditar(); window.mostrarAlerta('Listo','Guardado','success'); } catch(e){} finally{bloqBtn(btn,false,'Guardar');} };
-
-    window.abrirEditarRefugio = function(id) {
-      const r = baseRefugios.find(sh => sh.id === id);
+    // ==========================================
+    // DETALLE PÚBLICO DEL REFUGIO
+    // ==========================================
+    window.verDetalleRefugio = function(refId) {
+      const r = baseRefugios.find(sh => sh.id === refId);
       if(!r) return;
-      document.getElementById('ref-id').value = id;
-      document.getElementById('ref-nom').value = r.nombre;
-      document.getElementById('ref-pai').value = r.pais || 'Venezuela';
-      document.getElementById('ref-res').value = r.responsable;
-      document.getElementById('ref-tel').value = r.telefono;
-      document.getElementById('ref-dir').value = r.direccion;
-      document.getElementById('ref-gps').value = r.gps || '';
       
-      document.getElementById('admin-modal-refugio').classList.remove('hidden');
-      window.inicializarMapasForm('map-r', 'ref-gps', 'ref-dir');
-    };
+      cambiarVista('detalle-refugio');
+      document.getElementById('dr-img').src = r.foto || 'https://placehold.co/400x250/indigo/white?text=Refugio';
+      document.getElementById('dr-pais').innerText = r.pais || 'No especificado';
+      document.getElementById('dr-nombre').innerText = r.nombre;
+      document.getElementById('dr-responsable').innerText = `Responsable: ${r.responsable}`;
+      document.getElementById('dr-direccion').innerText = r.direccion;
 
-    window.abrirModalRefugio = () => { 
-      document.getElementById('ref-id').value = '';
-      document.getElementById('ref-nom').value = '';
-      document.getElementById('ref-pai').value = '';
-      document.getElementById('ref-res').value = '';
-      document.getElementById('ref-tel').value = '';
-      document.getElementById('ref-dir').value = '';
-      document.getElementById('ref-gps').value = '';
-      document.getElementById('admin-modal-refugio').classList.remove('hidden'); 
-      window.inicializarMapasForm('map-r','ref-gps','ref-dir'); 
-    };
-    window.cerrarModalRefugio = () => document.getElementById('admin-modal-refugio').classList.add('hidden');
-    
-    window.guardarRefugio = async (e) => { 
-      e.preventDefault(); 
-      const btn=e.target.querySelector('.submit-btn'); 
-      bloqBtn(btn,true); 
-      const rid = document.getElementById('ref-id').value; 
-      const payload = { 
-        nombre:document.getElementById('ref-nom').value, 
-        pais:document.getElementById('ref-pai').value, 
-        responsable:document.getElementById('ref-res').value, 
-        telefono:document.getElementById('ref-tel').value, 
-        direccion:document.getElementById('ref-dir').value, 
-        gps:document.getElementById('ref-gps').value 
-      }; 
-      try { 
-        if (rid) {
-          await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'shelters', rid), payload);
-          window.mostrarAlerta('Listo','Refugio modificado con éxito.','success');
-        } else {
-          await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'shelters'), payload); 
-          window.mostrarAlerta('Guardado','Refugio creado con éxito.','success'); 
-        }
-        cerrarModalRefugio(); 
-      } catch(e){
-        window.mostrarAlerta('Error','No se pudo completar el guardado.','error');
-      } finally{bloqBtn(btn,false,'Guardar');} 
-    };
+      // WhatsApp y Ruta GPS
+      document.getElementById('dr-wa').href = `https://wa.me/${r.telefono.replace(/[^0-9]/g, '')}`;
+      if (r.gps && r.gps.includes(',')) {
+        document.getElementById('dr-ruta').classList.remove('hidden');
+        document.getElementById('dr-ruta').href = `https://www.google.com/maps/dir/?api=1&destination=${r.gps.replace(/\s/g, '')}`;
+        
+        // Renderizar mapa de la sede
+        document.getElementById('map-det-refugio-view').classList.remove('hidden');
+        const pos = r.gps.split(',');
+        window.inicializarMapasForm('map-det-refugio-view', null, null, false, parseFloat(pos[0]), parseFloat(pos[1]));
+      } else {
+        document.getElementById('dr-ruta').classList.add('hidden');
+        document.getElementById('map-det-refugio-view').classList.add('hidden');
+      }
 
-    window.guardarKeyAdmin = async () => { try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'global'), {geminiApiKey:document.getElementById('admin-gemini-key').value}); window.mostrarAlerta('Ok','Llave lista','success'); }catch(e){} };
-
-    // ==========================================
-    // DIÁLOGOS DE CONFIRMACIÓN DE EMERGENCIA
-    // ==========================================
-    window.mostrarConfirmacion = function(titulo, mensaje, onAceptar) {
-      document.getElementById('confirm-titulo').innerText = titulo;
-      document.getElementById('confirm-mensaje').innerText = mensaje;
-      const modal = document.getElementById('modal-confirmacion');
-      modal.classList.remove('hidden');
+      // Renderizar mascotas huéspedes de este refugio
+      const masContainer = document.getElementById('dr-mascotas');
+      masContainer.innerHTML = '';
+      const huespedes = baseMascotas.filter(m => m.refugioId === refId);
       
-      document.getElementById('btn-confirm-cancelar').onclick = () => {
-        modal.classList.add('hidden');
-      };
-      
-      document.getElementById('btn-confirm-aceptar').onclick = () => {
-        modal.classList.add('hidden');
-        onAceptar();
-      };
-    };
+      if(huespedes.length === 0) {
+        masContainer.innerHTML = '<p class="text-xs text-slate-400 py-6 text-center col-span-full">Este refugio no tiene mascotas registradas bajo su custodia temporal actualmente.</p>';
+      } else {
+        huespedes.forEach(m => {
+          let bc = 'bg-red-600', bt = 'Buscando';
+          if(m.estado === 'encontrado') { bc = 'bg-sky-600'; bt = 'Localizado'; }
+          else if(m.estado === 'rescatado') { bc = 'bg-indigo-600'; bt = 'Rescatado 🏠'; }
+          else if(m.estado === 'adopcion') { bc = 'bg-amber-500'; bt = 'En Adopción'; }
 
-    window.mostrarAlerta = function(t, m, tipo = 'info') { const c = document.getElementById('contenedor-alerta'); if (c) { c.className = "mb-6 p-4 rounded-xl border flex items-start gap-3 fade-in text-sm md:text-base"; if (tipo === 'success') { c.classList.add('bg-emerald-50', 'border-emerald-200', 'text-emerald-800'); document.getElementById('alerta-icono').innerHTML = `<i data-lucide="check-circle" class="w-5 h-5 text-emerald-600"></i>`; } else if (tipo === 'error') { c.classList.add('bg-red-50', 'border-red-200', 'text-red-800'); document.getElementById('alerta-icono').innerHTML = `<i data-lucide="alert-triangle" class="w-5 h-5 text-red-600"></i>`; } else { c.classList.add('bg-amber-50', 'border-amber-200', 'text-amber-800'); document.getElementById('alerta-icono').innerHTML = `<i data-lucide="info" class="w-5 h-5 text-amber-600"></i>`; } document.getElementById('alerta-titulo').innerText = t; document.getElementById('alerta-mensaje').innerText = m; c.classList.remove('hidden'); c.style.zIndex = '9999'; lucide.createIcons(); } };
-    window.cerrarAlerta = function() { const c = document.getElementById('contenedor-alerta'); if (c) c.classList.add('hidden'); };
-
-    window.compartirWeb = function(red) {
-      const url = encodeURIComponent("https://derjaguer.github.io/buscapatitas/"); 
-      const text = encodeURIComponent("¡Ayúdanos a reencontrar mascotas perdidas!");
-      if (red === 'whatsapp') window.open(`https://wa.me/?text=${text}%20${url}`, '_blank');
-      if (red === 'facebook') window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
-      if (red === 'copiar') {
-        const temp = document.createElement("input");
-        temp.value = "https://derjaguer.github.io/buscapatitas/"; document.body.appendChild(temp); temp.select(); document.execCommand("copy"); document.body.removeChild(temp);
-        mostrarAlerta('Copiado', 'Enlace copiado al portapapeles', 'success');
+          masContainer.innerHTML += `
+            <div class="border rounded-2xl overflow-hidden cursor-pointer bg-white flex flex-col shadow-sm" onclick="verDetalleMascota('${m.id}')">
+              <div class="h-32 bg-slate-100 relative">
+                <img src="${m.fotos ? m.fotos[0] : ''}" class="w-full h-full object-cover">
+                <span class="absolute top-2 left-2 ${bc} text-white font-extrabold text-[8px] px-2 py-0.5 rounded-full uppercase">${bt}</span>
+              </div>
+              <div class="p-3">
+                <h4 class="font-bold text-slate-900 truncate">${m.nombre}</h4>
+                <p class="text-[10px] text-orange-600 font-semibold mt-1">${m.zona}</p>
+              </div>
+            </div>
+          `;
+        });
       }
     }
 
-    // Notificaciones de Estado de Conexión
-    window.addEventListener('offline', () => {
-      window.mostrarAlerta('Modo Sin Conexión 📡', 'Te quedaste sin internet. Puedes seguir reportando y todo se guardará al recuperar la señal.', 'info');
-    });
-    window.addEventListener('online', () => {
-      window.mostrarAlerta('Conexión Recuperada 🌐', 'Sincronizando reportes pendientes con la red.', 'success');
-    });
+    // ==========================================
+    // UTILS REQUERIDAS POR PROYECTO PATITAS V3
+    // ==========================================
+    window.buscarDir = async function(addressInputId, coordsInputId, mapId) {
+      const q = document.getElementById(addressInputId).value;
+      if (!q) return;
+      window.mostrarAlerta('Buscando...', '', 'info');
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q + ", Venezuela")}`);
+        const data = await res.json();
+        if (data.length > 0) {
+          const lat = parseFloat(data[0].lat);
+          const lon = parseFloat(data[0].lon);
+          document.getElementById(coordsInputId).value = `${lat}, ${lon}`;
+          document.getElementById(addressInputId).value = data[0].display_name;
+          if (globalMaps[mapId]) {
+            globalMaps[mapId].setView([lat, lon], 16);
+            globalMarkers[mapId].setLatLng([lat, lon]);
+          }
+          window.mostrarAlerta('Ubicado', 'Mapa reubicado.', 'success');
+        }
+      } catch (e) {}
+    }
+
+    // Inyectar evento click público a la lista de refugios
+    window.renderizarRefugios = function() {
+      const grid = document.getElementById('listado-refugios');
+      grid.innerHTML = '';
+      if (baseRefugios.length === 0) {
+        grid.innerHTML = '<p class="text-slate-400 text-center py-8 col-span-full">No hay refugios registrados en la red.</p>';
+        return;
+      }
+      baseRefugios.forEach(r => {
+        grid.innerHTML += `
+          <div class="bg-white border rounded-3xl overflow-hidden flex flex-col cursor-pointer hover:shadow-md transition" onclick="verDetalleRefugio('${r.id}')">
+            <img src="${r.foto || 'https://placehold.co/400x250/indigo/white?text=Refugio'}" class="w-full h-40 object-cover bg-indigo-50">
+            <div class="p-5 flex-grow">
+              <span class="text-[10px] font-bold bg-slate-100 px-2 py-0.5 rounded-full mb-2 inline-block">${r.pais || 'Detectando...'}</span>
+              <h4 class="font-extrabold text-lg text-slate-900">${r.nombre}</h4>
+              <p class="text-xs text-slate-500 mt-1">Responsable: ${r.responsable}</p>
+              <p class="text-xs text-slate-400 mt-1 line-clamp-2">${r.direccion}</p>
+            </div>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    const bloqBtn = (btn, lock, text = "Procesando...") => { if (!btn) return; btn.disabled = lock; btn.innerHTML = lock ? `<i class="lucide-loader animate-spin inline w-4 h-4 mr-1"></i> ${text}` : text; };
+
   </script>
 </body>
 </html>
