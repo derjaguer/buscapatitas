@@ -1363,10 +1363,10 @@
           reader.onload = (e) => {
             const img = new Image();
             img.onload = () => {
-              // COMPRESIÓN MÁS FUERTE PARA GARANTIZAR QUE 3 FOTOS NO EXCEDAN 1MB EN FIREBASE
+              // COMPRESIÓN ULTRA FUERTE PARA GARANTIZAR QUE 3 FOTOS NO EXCEDAN 1MB EN FIREBASE
               const canvas = document.createElement('canvas');
-              const MAX_WIDTH = 700;
-              const MAX_HEIGHT = 700;
+              const MAX_WIDTH = 550;
+              const MAX_HEIGHT = 550;
               let width = img.width;
               let height = img.height;
 
@@ -1381,8 +1381,8 @@
               const ctx = canvas.getContext('2d');
               ctx.drawImage(img, 0, 0, width, height);
               
-              // Calidad 0.6 asegura un peso ultra ligero sin perder detalle clave
-              const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+              // Calidad 0.5 asegura un peso ultra ligero sin perder detalle clave
+              const compressedBase64 = canvas.toDataURL('image/jpeg', 0.5);
 
               if(target === 'rescatista' || target === 'rescatista-edit') {
                 temporalFotoRescatista = compressedBase64;
@@ -1460,8 +1460,8 @@
     window.guardarRecorte = function() {
       if(!cropperInst) return;
       // Compresión adaptada para mantener concordancia con el límite de Firestore
-      const canvas = cropperInst.getCroppedCanvas({ maxWidth: 700, maxHeight: 700 });
-      const croppedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+      const canvas = cropperInst.getCroppedCanvas({ maxWidth: 550, maxHeight: 550 });
+      const croppedBase64 = canvas.toDataURL('image/jpeg', 0.5);
 
       if (currentCropTarget.startsWith('prevs-') && currentCropIndex !== null) {
         temporalFotosSeleccionadas[currentCropIndex] = croppedBase64;
@@ -1585,6 +1585,14 @@
           rescatistaAsignado: '',
           voluntarioAsignado: ''
         };
+
+        // Verificación estricta de peso antes de enviar a Firebase (Límite 1MB)
+        const payloadSize = new Blob([JSON.stringify(pPayload)]).size;
+        if (payloadSize > 950000) { 
+             window.mostrarAlerta('Límite Excedido', 'Las fotos seleccionadas son demasiado pesadas juntas. Por favor, intenta subir solo 1 o 2.', 'error');
+             bloqBtn(btn, false, 'Publicar Reporte');
+             return;
+        }
 
         await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pets'), pPayload);
         window.mostrarAlerta('Reportado', 'La mascota ha sido inscrita exitosamente.', 'success');
