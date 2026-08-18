@@ -147,11 +147,11 @@
         <h3 class="text-xl font-bold mb-6 flex items-center gap-2"><i data-lucide="megaphone" class="text-orange-500"></i> Registrar Mascota Perdida</h3>
         <form id="form-perdido" onsubmit="guardarMascota(event, 'perdido')" class="space-y-6">
           <div class="space-y-2">
-            <label class="block text-sm font-semibold">Subir Varias Fotos (Hasta 3)</label>
-            <!-- AÑADIDO 'multiple' PARA SELECCIONAR VARIAS A LA VEZ -->
-            <input type="file" id="foto-input-p" accept="image/*" multiple onchange="procesarImagenesMultiples(this, 'prevs-p')" class="hidden">
-            <div onclick="document.getElementById('foto-input-p').click()" class="border-2 border-dashed p-6 text-center cursor-pointer bg-slate-50 rounded-2xl hover:bg-slate-100 transition"><i data-lucide="image" class="mx-auto mb-2 text-slate-400"></i><p class="text-sm">Seleccionar foto(s)</p></div>
-            <div id="prevs-p" class="grid grid-cols-3 gap-2 overflow-x-auto pt-2"></div>
+            <label class="block text-sm font-semibold">Subir Foto Original (1 Máximo)</label>
+            <!-- ELIMINADO 'multiple' PARA SELECCIONAR SOLO 1 A LA VEZ Y NUEVA FUNCIÓN -->
+            <input type="file" id="foto-input-p" accept="image/*" onchange="procesarImagenUnica(this, 'prevs-p')" class="hidden">
+            <div onclick="document.getElementById('foto-input-p').click()" class="border-2 border-dashed p-6 text-center cursor-pointer bg-slate-50 rounded-2xl hover:bg-slate-100 transition"><i data-lucide="image" class="mx-auto mb-2 text-slate-400"></i><p class="text-sm">Seleccionar foto</p></div>
+            <div id="prevs-p" class="flex justify-center gap-2 pt-2 w-1/3 mx-auto"></div>
           </div>
           
           <div class="grid grid-cols-2 gap-4">
@@ -189,13 +189,13 @@
         <h3 class="text-xl font-bold mb-6 flex items-center gap-2"><i data-lucide="heart" class="text-sky-500"></i> Reportar Localizado / Rescatado</h3>
         <form id="form-encontrado" onsubmit="guardarMascota(event, 'encontrado')" class="space-y-6">
           <div class="space-y-2">
-            <div class="flex justify-between"><label class="block text-sm font-semibold">Subir Varias Fotos (Hasta 3)</label></div>
-            <!-- AÑADIDO 'multiple' PARA SELECCIONAR VARIAS A LA VEZ -->
-            <input type="file" id="foto-input-e" accept="image/*" multiple onchange="procesarImagenesMultiples(this, 'prevs-e')" class="hidden">
+            <div class="flex justify-between"><label class="block text-sm font-semibold">Subir Foto Original (1 Máximo)</label></div>
+            <!-- ELIMINADO 'multiple' PARA SELECCIONAR SOLO 1 A LA VEZ Y NUEVA FUNCIÓN -->
+            <input type="file" id="foto-input-e" accept="image/*" onchange="procesarImagenUnica(this, 'prevs-e')" class="hidden">
             <div onclick="document.getElementById('foto-input-e').click()" class="border-2 border-dashed p-6 text-center cursor-pointer bg-slate-50 rounded-2xl hover:bg-slate-100 transition relative">
-              <i data-lucide="camera" class="mx-auto mb-2 text-slate-400"></i><p class="text-sm">Seleccionar foto(s)</p>
+              <i data-lucide="camera" class="mx-auto mb-2 text-slate-400"></i><p class="text-sm">Seleccionar foto</p>
             </div>
-            <div id="prevs-e" class="grid grid-cols-3 gap-2 overflow-x-auto pt-2"></div>
+            <div id="prevs-e" class="flex justify-center gap-2 pt-2 w-1/3 mx-auto"></div>
           </div>
 
           <div class="flex flex-col border-t pt-4">
@@ -341,7 +341,7 @@
             
             <div class="space-y-2 text-left">
               <label class="block text-xs font-bold uppercase text-slate-500">Foto Original de Perfil</label>
-              <input type="file" id="foto-perfil-input" accept="image/*" onchange="procesarImagenesMultiples(this, 'rescatista')" class="hidden">
+              <input type="file" id="foto-perfil-input" accept="image/*" onchange="procesarImagenUnica(this, 'rescatista')" class="hidden">
               <div class="flex items-center gap-4">
                 <div class="relative w-20 h-20 border-2 border-dashed rounded-2xl flex items-center justify-center bg-slate-50 overflow-hidden group">
                   <i data-lucide="user" class="absolute text-slate-300 z-0"></i>
@@ -472,7 +472,7 @@
 
                 <div class="space-y-2 border-t pt-3">
                   <label class="block text-xs font-bold uppercase text-slate-500">Actualizar Foto Original</label>
-                  <input type="file" id="foto-perfil-edit-input" accept="image/*" onchange="procesarImagenesMultiples(this, 'rescatista-edit')" class="hidden">
+                  <input type="file" id="foto-perfil-edit-input" accept="image/*" onchange="procesarImagenUnica(this, 'rescatista-edit')" class="hidden">
                   <div class="flex items-center gap-4">
                     <div class="relative w-16 h-16 border-2 border-dashed rounded-xl flex items-center justify-center bg-slate-50 overflow-hidden group">
                       <i data-lucide="camera" class="absolute text-slate-300 z-0"></i>
@@ -667,7 +667,7 @@
         
         <div class="space-y-2 border-t pt-4">
           <label class="block text-xs font-bold uppercase text-slate-500">Sube Foto del Refugio</label>
-          <input type="file" id="foto-ref-input" accept="image/*" onchange="procesarImagenesMultiples(this, 'refugios-prev')" class="hidden">
+          <input type="file" id="foto-ref-input" accept="image/*" onchange="procesarImagenUnica(this, 'refugios-prev')" class="hidden">
           <div class="flex items-center gap-4">
             <div class="relative w-24 h-16 border-2 border-dashed rounded-xl flex items-center justify-center bg-slate-50 overflow-hidden group cursor-pointer">
               <i data-lucide="camera" class="absolute text-slate-300 z-0"></i>
@@ -1337,78 +1337,70 @@
     };
 
     // ==========================================
-    // CARGA MÚLTIPLE COMPRIMIDA Y CROPPER OPCIONAL
+    // CARGA ÚNICA COMPRIMIDA PROPORCIONAL Y CROPPER OPCIONAL
     // ==========================================
-    window.procesarImagenesMultiples = async function(input, target) {
+    window.procesarImagenUnica = async function(input, target) {
       if (!input.files || input.files.length === 0) return;
 
-      const files = Array.from(input.files);
+      // Restringir estrictamente a 1 sola imagen
+      const file = input.files[0];
 
-      // Limitar a máximo 3 fotos en total para las mascotas
-      if (target.startsWith('prevs-')) {
-        if (temporalFotosSeleccionadas.length + files.length > 3) {
-          window.mostrarAlerta('Límite de Fotos', 'Puedes subir un máximo de 3 fotos por mascota.', 'info');
-          input.value = '';
-          return;
-        }
-      }
+      await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            // COMPRESIÓN PROPORCIONAL INTELIGENTE (Respeta si es vertical u horizontal)
+            const canvas = document.createElement('canvas');
+            const MAX_SIZE = 800; // Tamaño máximo en su lado más largo
+            let width = img.width;
+            let height = img.height;
 
-      // Procesamiento secuencial (await) para evitar bloqueos de memoria en móviles 
-      // y garantizar que todas las fotos seleccionadas se lean correctamente sin cancelarse
-      for (let i = 0; i < files.length; i++) {
-        let file = files[i];
-        
-        await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-              // COMPRESIÓN ULTRA FUERTE PARA GARANTIZAR QUE 3 FOTOS NO EXCEDAN 1MB EN FIREBASE
-              const canvas = document.createElement('canvas');
-              const MAX_WIDTH = 550;
-              const MAX_HEIGHT = 550;
-              let width = img.width;
-              let height = img.height;
-
-              if (width > height) {
-                if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-              } else {
-                if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+            if (width > height) {
+              if (width > MAX_SIZE) { 
+                height = Math.round(height * (MAX_SIZE / width)); 
+                width = MAX_SIZE; 
               }
-              
-              canvas.width = width;
-              canvas.height = height;
-              const ctx = canvas.getContext('2d');
-              ctx.drawImage(img, 0, 0, width, height);
-              
-              // Calidad 0.5 asegura un peso ultra ligero sin perder detalle clave
-              const compressedBase64 = canvas.toDataURL('image/jpeg', 0.5);
-
-              if(target === 'rescatista' || target === 'rescatista-edit') {
-                temporalFotoRescatista = compressedBase64;
-                const prev = document.getElementById(target === 'rescatista' ? 'prev-rescatista-img' : 'prev-rescatista-edit-img'); 
-                if(prev) { prev.src = compressedBase64; prev.classList.remove('hidden'); }
-              } else if (target === 'refugios-prev') {
-                temporalFotoRefugio = compressedBase64;
-                const prev = document.getElementById('prev-ref-img'); 
-                if(prev) { prev.src = compressedBase64; prev.classList.remove('hidden'); }
-              } else {
-                temporalFotosSeleccionadas.push(compressedBase64);
+            } else {
+              if (height > MAX_SIZE) { 
+                width = Math.round(width * (MAX_SIZE / height)); 
+                height = MAX_SIZE; 
               }
-              resolve();
-            };
-            img.src = e.target.result;
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Calidad 0.6 asegura un peso ultra ligero (~50-100KB) sin deformar la foto
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+
+            if(target === 'rescatista' || target === 'rescatista-edit') {
+              temporalFotoRescatista = compressedBase64;
+              const prev = document.getElementById(target === 'rescatista' ? 'prev-rescatista-img' : 'prev-rescatista-edit-img'); 
+              if(prev) { prev.src = compressedBase64; prev.classList.remove('hidden'); }
+            } else if (target === 'refugios-prev') {
+              temporalFotoRefugio = compressedBase64;
+              const prev = document.getElementById('prev-ref-img'); 
+              if(prev) { prev.src = compressedBase64; prev.classList.remove('hidden'); }
+            } else {
+              // Limpiamos la memoria y forzamos a que solo exista 1 FOTO para la mascota
+              temporalFotosSeleccionadas = [compressedBase64];
+            }
+            resolve();
           };
-          reader.readAsDataURL(file);
-        });
-      }
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
 
-      // Actualizar la interfaz visual una sola vez al terminar de procesar todas las fotos
+      // Actualizar la interfaz visual
       if (target.startsWith('prevs-')) {
         renderizarPrevisualizadoresMascotas(target);
       }
       
-      input.value = ''; // Limpiar el input solo hasta que TODO haya terminado
+      input.value = ''; // Limpiamos para que se pueda cambiar la foto sin atascos
     };
 
     window.abrirCropperOpcional = function(target, index = null) {
@@ -1459,9 +1451,9 @@
 
     window.guardarRecorte = function() {
       if(!cropperInst) return;
-      // Compresión adaptada para mantener concordancia con el límite de Firestore
-      const canvas = cropperInst.getCroppedCanvas({ maxWidth: 550, maxHeight: 550 });
-      const croppedBase64 = canvas.toDataURL('image/jpeg', 0.5);
+      // Compresión adaptada a la misma resolución proporcional (800px)
+      const canvas = cropperInst.getCroppedCanvas({ maxWidth: 800, maxHeight: 800 });
+      const croppedBase64 = canvas.toDataURL('image/jpeg', 0.6);
 
       if (currentCropTarget.startsWith('prevs-') && currentCropIndex !== null) {
         temporalFotosSeleccionadas[currentCropIndex] = croppedBase64;
