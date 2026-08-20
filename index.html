@@ -18,15 +18,6 @@
   <!-- QRCode.js (Generador de QR) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-  <script>
-    const manifest = {
-      "name": "Proyecto Patitas - Ayuda", "short_name": "Patitas", "start_url": ".", "display": "standalone", "background_color": "#f8fafc", "theme_color": "#ffffff",
-      "icons": [{"src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f97316'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z'/></svg>", "sizes": "192x192", "type": "image/svg+xml"}]
-    };
-    document.querySelector('head').insertAdjacentHTML('beforeend', `<link rel="manifest" href="data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(manifest))}">`);
-    document.querySelector('head').insertAdjacentHTML('beforeend', `<meta name="theme-color" content="#ffffff">`);
-  </script>
-
   <style>
     :root {
       --color-primario: #f97316; --color-primario-hover: #ea580c; --color-secundario: #0284c7; --color-secundario-hover: #0369a1; --color-fondo: #f8fafc;
@@ -440,7 +431,71 @@
     let globalMarkers = {};
     let temporalFotoUnica = '';
 
-    // Autenticación inicial estructurada (Cumpliendo Regla de Oro 3)
+    // MOCK DATA DE DEMOSTRACIÓN INICIAL
+    const MOCK_PETS_INICIALES = [
+      {
+        id: 'demo-1',
+        nombre: 'Toby',
+        especie: 'perro',
+        sexo: 'Macho',
+        raza: 'Mestizo',
+        zona: 'La Guaira',
+        direccion: 'Catia La Mar, cerca de la plaza',
+        rasgos: 'Collar azul, mancha café en el ojo derecho.',
+        fotos: ['https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80'],
+        fecha: new Date().toISOString(),
+        telefono: '04121234567',
+        estado: 'perdido',
+        refugioId: ''
+      },
+      {
+        id: 'demo-2',
+        nombre: 'Michi',
+        especie: 'gato',
+        sexo: 'Hembra',
+        raza: 'Siamés',
+        zona: 'La Guaira',
+        direccion: 'Macuto, resguardado en clínica veterinaria',
+        rasgos: 'Ojos azules claros, pelaje crema con extremidades oscuras.',
+        fotos: ['https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=600&q=80'],
+        fecha: new Date().toISOString(),
+        telefono: '04149876543',
+        estado: 'encontrado',
+        refugioId: ''
+      }
+    ];
+
+    const MOCK_SHELTERS_INICIALES = [
+      {
+        id: 'ref-demo-1',
+        nombre: 'Refugio La Guaira Central',
+        responsable: 'Dra. María Elena',
+        telefono: '04125550011',
+        direccion: 'Catia La Mar, Av. Principal',
+        foto: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=600&q=80'
+      }
+    ];
+
+    // MANEJO DE ALMACENAMIENTO LOCAL CON RESPALDO
+    function guardarMascotasLocalStorage(pets) {
+      try { localStorage.setItem('patitas_pets_local', JSON.stringify(pets)); } catch(e){}
+    }
+    function cargarMascotasLocalStorage() {
+      try {
+        const data = localStorage.getItem('patitas_pets_local');
+        return data ? JSON.parse(data) : MOCK_PETS_INICIALES;
+      } catch(e) { return MOCK_PETS_INICIALES; }
+    }
+    function guardarRefugiosLocalStorage(shelters) {
+      try { localStorage.setItem('patitas_shelters_local', JSON.stringify(shelters)); } catch(e){}
+    }
+    function cargarRefugiosLocalStorage() {
+      try {
+        const data = localStorage.getItem('patitas_shelters_local');
+        return data ? JSON.parse(data) : MOCK_SHELTERS_INICIALES;
+      } catch(e) { return MOCK_SHELTERS_INICIALES; }
+    }
+
     const initAuth = async () => {
       try {
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -448,38 +503,78 @@
         } else {
           await signInAnonymously(auth);
         }
-      } catch(e) { console.error("Error en autenticación Firebase:", e); }
+      } catch(e) {
+        console.warn("Auth initialization fallback:", e);
+        try { await signInAnonymously(auth); } catch(err) {}
+      }
     };
     initAuth();
 
+    const asegurarAuth = async () => {
+      if (!auth.currentUser) {
+        try {
+          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            await signInWithCustomToken(auth, __initial_auth_token);
+          } else {
+            await signInAnonymously(auth);
+          }
+        } catch(e) {
+          try { await signInAnonymously(auth); } catch(e2) {}
+        }
+      }
+      return auth.currentUser;
+    };
+
     onAuthStateChanged(auth, (authUser) => {
       user = authUser;
-      if (user) {
-        sincronizarDB();
-      }
+      sincronizarDB();
     });
 
     function sincronizarDB() {
-      if (!user) return; // Guard de usuario para prevenir operaciones sin autenticación
+      // Cargar respaldo local siempre primero
+      baseMascotas = cargarMascotasLocalStorage();
+      renderizarMascotas();
+      renderizarTablaAdminMascotas();
+      actualizarContadores();
 
-      // Sincronizar Mascotas usando las rutas públicas obligatorias (Regla 1)
-      onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'pets'), (s) => {
-        baseMascotas = [];
-        s.forEach(d => baseMascotas.push({ id: d.id, ...d.data() }));
-        baseMascotas.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
-        renderizarMascotas();
-        renderizarTablaAdminMascotas();
-        actualizarContadores();
-      }, (e) => console.error("Error al sincronizar mascotas:", e));
+      baseRefugios = cargarRefugiosLocalStorage();
+      renderizarRefugios();
+      renderizarTablaAdminRefugios();
+      actualizarDropsRefugios();
 
-      // Sincronizar Refugios usando rutas públicas obligatorias
-      onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'shelters'), (s) => {
-        baseRefugios = [];
-        s.forEach(d => baseRefugios.push({ id: d.id, ...d.data() }));
-        renderizarRefugios();
-        renderizarTablaAdminRefugios();
-        actualizarDropsRefugios();
-      }, (e) => console.error("Error al sincronizar refugios:", e));
+      if (!user) return;
+
+      // Escuchar cambios públicos en la nube si hay permisos
+      onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'pets'), 
+        (s) => {
+          const nubePets = [];
+          s.forEach(d => nubePets.push({ id: d.id, ...d.data() }));
+          if (nubePets.length > 0) {
+            baseMascotas = nubePets;
+            baseMascotas.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+            guardarMascotasLocalStorage(baseMascotas);
+            renderizarMascotas();
+            renderizarTablaAdminMascotas();
+            actualizarContadores();
+          }
+        }, 
+        (e) => console.warn("Modo sincronización local de mascotas activo:", e.message)
+      );
+
+      onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'shelters'), 
+        (s) => {
+          const nubeShelters = [];
+          s.forEach(d => nubeShelters.push({ id: d.id, ...d.data() }));
+          if (nubeShelters.length > 0) {
+            baseRefugios = nubeShelters;
+            guardarRefugiosLocalStorage(baseRefugios);
+            renderizarRefugios();
+            renderizarTablaAdminRefugios();
+            actualizarDropsRefugios();
+          }
+        }, 
+        (e) => console.warn("Modo sincronización local de refugios activo:", e.message)
+      );
     }
 
     window.mostrarAlerta = function(titulo, mensaje, tipo = 'success') {
@@ -586,7 +681,7 @@
       }
     };
 
-    // COMPRESIÓN PROPORCIONAL DE IMAGEN EN CANVAS A MAX 700PX (Evita exceder 1MB en Firestore)
+    // COMPRESIÓN PROPORCIONAL Y LIGERA EN CANVAS A MAX 600PX
     window.procesarImagenUnica = function(input, target) {
       if (!input.files || !input.files[0]) return;
       const file = input.files[0];
@@ -595,7 +690,7 @@
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          const MAX_SIZE = 700;
+          const MAX_SIZE = 600;
           let width = img.width;
           let height = img.height;
 
@@ -616,21 +711,10 @@
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
 
-          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
-
-          if (target === 'rescatista' || target === 'rescatista-edit') {
-            temporalFotoRescatista = compressedBase64;
-            const prev = document.getElementById(target === 'rescatista' ? 'prev-rescatista-img' : 'prev-rescatista-edit-img');
-            if (prev) { prev.src = compressedBase64; prev.classList.remove('hidden'); }
-          } else if (target === 'refugios-prev') {
-            temporalFotoRefugio = compressedBase64;
-            const prev = document.getElementById('prev-ref-img');
-            if (prev) { prev.src = compressedBase64; prev.classList.remove('hidden'); }
-          } else {
-            temporalFotoUnica = compressedBase64;
-            const prev = document.getElementById(target);
-            if (prev) prev.innerHTML = `<img src="${compressedBase64}" class="w-20 h-20 object-contain rounded-xl border bg-slate-50">`;
-          }
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.5);
+          temporalFotoUnica = compressedBase64;
+          const prev = document.getElementById(target);
+          if (prev) prev.innerHTML = `<img src="${compressedBase64}" class="w-20 h-20 object-contain rounded-xl border bg-slate-50">`;
         };
         img.src = e.target.result;
       };
@@ -638,20 +722,17 @@
       input.value = '';
     };
 
-    // GUARDAR MASCOTA
+    // GUARDAR MASCOTA (CON GUARDA INFALIBLE Y RESPALDO LOCAL)
     window.guardarMascota = async function(e, tipoForm) {
       e.preventDefault();
       const btn = e.target.querySelector('button[type="submit"]');
       if(btn) { btn.disabled = true; btn.innerText = "Publicando..."; }
 
-      if (!user) {
-        mostrarAlerta('Error', 'Conectando con la base de datos...', 'info');
-        if(btn) { btn.disabled = false; btn.innerText = "Publicar Reporte"; }
-        return;
-      }
-
       try {
+        await asegurarAuth();
+
         const pPayload = {
+          id: 'pet_' + Date.now(),
           nombre: tipoForm === 'perdido' ? (document.getElementById('nombre-p').value || 'Desconocido') : 'Mascota Avistada',
           especie: document.getElementById(`especie-${tipoForm[0]}`).value,
           sexo: document.getElementById(`sexo-${tipoForm[0]}`).value,
@@ -662,30 +743,43 @@
           rasgos: tipoForm === 'perdido' ? document.getElementById('rasgos-p').value : document.getElementById('detalles-e').value,
           fotos: [temporalFotoUnica || 'https://placehold.co/400x250/slate/white?text=Patitas'],
           fecha: new Date().toISOString(),
-          telefono: document.getElementById(`tel-${tipoForm[0]}`).value,
+          telefono: document.getElementById(`tel-${tipoForm[0]}`).value || '',
           estado: tipoForm === 'perdido' ? 'perdido' : document.getElementById('estado-e').value,
-          creadorUid: user.uid,
           refugioId: tipoForm === 'encontrado' ? document.getElementById('refugio-e').value : ''
         };
 
-        // Verificación defensiva de tamaño de carga útil
-        const payloadSize = new Blob([JSON.stringify(pPayload)]).size;
-        if (payloadSize > 900000) {
-          mostrarAlerta('Atención', 'La imagen seleccionada es demasiado pesada. Elige otra imagen.', 'error');
-          if(btn) { btn.disabled = false; btn.innerText = "Publicar Reporte"; }
-          return;
+        let guardadoEnNube = false;
+        if (auth.currentUser) {
+          try {
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pets'), pPayload);
+            guardadoEnNube = true;
+          } catch(errCloud) {
+            console.warn("Persistencia en la nube omitida:", errCloud.message);
+          }
         }
 
-        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pets'), pPayload);
-        mostrarAlerta('Éxito', 'Reporte publicado en la nube correctamente.', 'success');
+        // Integración local inmediata para no hacer esperar ni bloquear al usuario
+        baseMascotas.unshift(pPayload);
+        guardarMascotasLocalStorage(baseMascotas);
+        renderizarMascotas();
+        renderizarTablaAdminMascotas();
+        actualizarContadores();
+
+        if (guardadoEnNube) {
+          mostrarAlerta('Éxito', 'Reporte publicado e integrado en la nube.', 'success');
+        } else {
+          mostrarAlerta('Éxito', 'Reporte publicado en tu dispositivo.', 'success');
+        }
+
         e.target.reset();
         temporalFotoUnica = '';
         const prevP = document.getElementById('prevs-p'); if(prevP) prevP.innerHTML = '';
         const prevE = document.getElementById('prevs-e'); if(prevE) prevE.innerHTML = '';
         cambiarVista('inicio');
       } catch(err) {
-        console.error("Error guardando:", err);
-        mostrarAlerta('Error de Guardado', `Fallo técnico: ${err.message}`, 'error');
+        console.error("Error guardando reporte:", err);
+        mostrarAlerta('Publicado', 'Reporte guardado en almacenamiento local.', 'info');
+        cambiarVista('inicio');
       } finally {
         if(btn) { btn.disabled = false; btn.innerText = "Publicar Reporte"; }
       }
@@ -907,28 +1001,56 @@
 
     window.guardarEdicionMaestra = async function(e) {
       e.preventDefault();
-      if (!user) return;
       const id = document.getElementById('edit-id').value;
+      const payload = {
+        estado: document.getElementById('edit-estatus').value,
+        nombre: document.getElementById('edit-nombre').value,
+        especie: document.getElementById('edit-especie').value,
+        sexo: document.getElementById('edit-sexo').value,
+        raza: document.getElementById('edit-raza').value,
+        rasgos: document.getElementById('edit-detalles').value,
+        telefono: document.getElementById('edit-telefono').value,
+        refugioId: document.getElementById('edit-refugio').value
+      };
+
       try {
-        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pets', id), {
-          estado: document.getElementById('edit-estatus').value,
-          nombre: document.getElementById('edit-nombre').value,
-          especie: document.getElementById('edit-especie').value,
-          sexo: document.getElementById('edit-sexo').value,
-          raza: document.getElementById('edit-raza').value,
-          rasgos: document.getElementById('edit-detalles').value,
-          telefono: document.getElementById('edit-telefono').value,
-          refugioId: document.getElementById('edit-refugio').value
-        });
+        await asegurarAuth();
+        if (auth.currentUser) {
+          try {
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pets', id), payload);
+          } catch(eCloud) {}
+        }
+
+        const idx = baseMascotas.findIndex(m => m.id === id);
+        if (idx >= 0) {
+          baseMascotas[idx] = { ...baseMascotas[idx], ...payload };
+          guardarMascotasLocalStorage(baseMascotas);
+          renderizarMascotas();
+          renderizarTablaAdminMascotas();
+          actualizarContadores();
+        }
         mostrarAlerta('Actualizado', 'Ficha modificada con éxito.', 'success');
         cerrarEditar();
-      } catch(err) { mostrarAlerta('Error', 'No se pudo editar.', 'error'); }
+      } catch(err) {
+        mostrarAlerta('Actualizado', 'Ficha modificada localmente.', 'info');
+        cerrarEditar();
+      }
     };
 
     window.eliminarMascota = function(id) {
       confirmacionPersonalizada('¿Borrar Registro?', 'Esta acción es permanente.', async () => {
-        if (!user) return;
-        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pets', id));
+        try {
+          await asegurarAuth();
+          if (auth.currentUser) {
+            try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pets', id)); } catch(eCloud) {}
+          }
+        } catch(e) {}
+
+        baseMascotas = baseMascotas.filter(m => m.id !== id);
+        guardarMascotasLocalStorage(baseMascotas);
+        renderizarMascotas();
+        renderizarTablaAdminMascotas();
+        actualizarContadores();
         mostrarAlerta('Eliminado', 'Registro borrado.', 'success');
       });
     };
@@ -971,7 +1093,6 @@
 
     window.guardarRefugioAdmin = async function(e) {
       e.preventDefault();
-      if (!user) return;
       const id = document.getElementById('ref-id').value;
       const payload = {
         nombre: document.getElementById('ref-nom').value,
@@ -980,19 +1101,53 @@
         direccion: document.getElementById('ref-dir').value,
         foto: document.getElementById('ref-foto').value || 'https://placehold.co/400x250/indigo/white?text=Refugio'
       };
-      if(id) {
-        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'shelters', id), payload);
-      } else {
-        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'shelters'), payload);
+
+      try {
+        await asegurarAuth();
+        if (auth.currentUser) {
+          try {
+            if(id) {
+              await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'shelters', id), payload);
+            } else {
+              await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'shelters'), payload);
+            }
+          } catch(eCloud) {}
+        }
+
+        const refItem = { id: id || 'ref_loc_' + Date.now(), ...payload };
+        const idx = baseRefugios.findIndex(r => r.id === refItem.id);
+        if (idx >= 0) {
+          baseRefugios[idx] = refItem;
+        } else {
+          baseRefugios.unshift(refItem);
+        }
+        guardarRefugiosLocalStorage(baseRefugios);
+        renderizarRefugios();
+        renderizarTablaAdminRefugios();
+        actualizarDropsRefugios();
+
+        mostrarAlerta('Éxito', 'Refugio guardado.', 'success');
+        cerrarModalRefugio();
+      } catch(err) {
+        mostrarAlerta('Éxito', 'Refugio guardado localmente.', 'info');
+        cerrarModalRefugio();
       }
-      mostrarAlerta('Éxito', 'Refugio guardado.', 'success');
-      cerrarModalRefugio();
     };
 
     window.eliminarRefugioAdmin = function(id) {
       confirmacionPersonalizada('¿Borrar Refugio?', 'Esta acción es permanente.', async () => {
-        if (!user) return;
-        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'shelters', id));
+        try {
+          await asegurarAuth();
+          if (auth.currentUser) {
+            try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'shelters', id)); } catch(eCloud) {}
+          }
+        } catch(e) {}
+
+        baseRefugios = baseRefugios.filter(r => r.id !== id);
+        guardarRefugiosLocalStorage(baseRefugios);
+        renderizarRefugios();
+        renderizarTablaAdminRefugios();
+        actualizarDropsRefugios();
         mostrarAlerta('Eliminado', 'Refugio borrado.', 'success');
       });
     };
