@@ -106,6 +106,7 @@
       <div class="bg-white border p-3 rounded-2xl flex items-center gap-3"><div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="home"></i></div><div><span class="text-[9px] text-slate-500 font-bold uppercase block">Rescatados</span><span id="p-count-rescatados" class="text-lg font-black text-slate-800">0</span></div></div>
       <div class="bg-white border p-3 rounded-2xl flex items-center gap-3"><div class="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl"><i data-lucide="check-circle"></i></div><div><span class="text-[9px] text-slate-500 font-bold uppercase block">Reunidos</span><span id="p-count-reunidos" class="text-lg font-black text-slate-800">0</span></div></div>
       <div class="bg-white border p-3 rounded-2xl flex items-center gap-3"><div class="p-2.5 bg-amber-50 text-amber-600 rounded-xl"><i data-lucide="heart"></i></div><div><span class="text-[9px] text-slate-500 font-bold uppercase block">Adopción</span><span id="p-count-adopcion" class="text-lg font-black text-slate-800">0</span></div></div>
+      <!-- Nuevo Contador Fallecidos -->
       <div class="bg-white border p-3 rounded-2xl flex items-center gap-3"><div class="p-2.5 bg-stone-100 text-stone-600 rounded-xl"><i data-lucide="cross"></i></div><div><span class="text-[9px] text-slate-500 font-bold uppercase block">Fallecidos</span><span id="p-count-fallecidos" class="text-lg font-black text-slate-800">0</span></div></div>
     </div>
 
@@ -148,7 +149,6 @@
         <form id="form-perdido" onsubmit="guardarMascota(event, 'perdido')" class="space-y-6">
           <div class="space-y-2">
             <label class="block text-sm font-semibold">Subir Foto Original (1 Máximo)</label>
-            <!-- ELIMINADO 'multiple' PARA SELECCIONAR SOLO 1 A LA VEZ Y NUEVA FUNCIÓN -->
             <input type="file" id="foto-input-p" accept="image/*" onchange="procesarImagenUnica(this, 'prevs-p')" class="hidden">
             <div onclick="document.getElementById('foto-input-p').click()" class="border-2 border-dashed p-6 text-center cursor-pointer bg-slate-50 rounded-2xl hover:bg-slate-100 transition"><i data-lucide="image" class="mx-auto mb-2 text-slate-400"></i><p class="text-sm">Seleccionar foto</p></div>
             <div id="prevs-p" class="flex justify-center gap-2 pt-2 w-1/3 mx-auto"></div>
@@ -190,7 +190,6 @@
         <form id="form-encontrado" onsubmit="guardarMascota(event, 'encontrado')" class="space-y-6">
           <div class="space-y-2">
             <div class="flex justify-between"><label class="block text-sm font-semibold">Subir Foto Original (1 Máximo)</label></div>
-            <!-- ELIMINADO 'multiple' PARA SELECCIONAR SOLO 1 A LA VEZ Y NUEVA FUNCIÓN -->
             <input type="file" id="foto-input-e" accept="image/*" onchange="procesarImagenUnica(this, 'prevs-e')" class="hidden">
             <div onclick="document.getElementById('foto-input-e').click()" class="border-2 border-dashed p-6 text-center cursor-pointer bg-slate-50 rounded-2xl hover:bg-slate-100 transition relative">
               <i data-lucide="camera" class="mx-auto mb-2 text-slate-400"></i><p class="text-sm">Seleccionar foto</p>
@@ -409,50 +408,47 @@
         <!-- CONTENIDO PESTAÑA 1: MI PERFIL -->
         <div id="tab-perfil" class="admin-tab-content active space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white border rounded-3xl p-6 shadow-sm space-y-4 flex flex-col items-center">
-              <h3 class="font-extrabold text-lg flex items-center gap-1.5 w-full text-left"><i data-lucide="id-card" class="text-indigo-600"></i> Tu Carnet Digital</h3>
-              
-              <!-- NUEVO CARNET VERTICAL (Diseño Premium CR80) -->
-              <div id="carnet-box" class="bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white p-4 rounded-2xl relative overflow-hidden flex flex-col items-center justify-between shadow-2xl border border-amber-500/20 w-full max-w-[240px] mx-auto aspect-[1/1.58]">
-                <!-- Holographic Layers -->
+            <div class="bg-white border rounded-3xl p-6 shadow-sm space-y-4">
+              <h3 class="font-extrabold text-lg flex items-center gap-1.5"><i data-lucide="id-card" class="text-indigo-600"></i> Tu Carnet Digital</h3>
+              <div id="carnet-box" class="bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white p-5 rounded-2xl relative overflow-hidden flex flex-col justify-between aspect-[1.58/1] min-h-[260px] shadow-2xl border border-amber-500/20">
                 <div class="absolute -right-12 -bottom-12 w-48 h-48 bg-gradient-to-br from-orange-500/10 to-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
                 <div class="absolute -left-12 -top-12 w-36 h-36 bg-blue-500/5 rounded-full blur-xl pointer-events-none"></div>
 
-                <!-- Header -->
-                <div class="w-full flex justify-between items-start z-10 mb-2">
-                  <div class="flex items-center gap-1.5">
-                    <div class="p-1.5 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg text-white shadow-md"><i data-lucide="paw-print" class="w-4 h-4"></i></div>
-                    <div class="leading-none">
-                      <h4 class="text-[10px] font-black tracking-widest uppercase bg-gradient-to-r from-orange-400 to-amber-300 bg-clip-text text-transparent">Patitas</h4>
+                <div class="flex justify-between items-start z-10">
+                  <div class="flex items-center gap-2">
+                    <div class="p-2 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl text-white shadow-md"><i data-lucide="paw-print" class="w-6 h-6"></i></div>
+                    <div>
+                      <h4 class="text-sm font-black tracking-widest uppercase bg-gradient-to-r from-orange-400 to-amber-300 bg-clip-text text-transparent leading-none">Proyecto Patitas</h4>
+                      <p class="text-[8px] uppercase tracking-widest font-bold opacity-50 mt-1">Red de Protección Animal</p>
                     </div>
                   </div>
-                  <div id="carnet-status" class="bg-emerald-500 text-white text-[8px] font-black uppercase px-2.5 py-1 rounded-full shadow-md tracking-wider">Activo</div>
+                  <div id="carnet-status" class="bg-emerald-500 text-white text-[9px] font-black uppercase px-3 py-1 rounded-full shadow-md tracking-wider">Activo</div>
                 </div>
-
-                <!-- Center Photo -->
-                <div class="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl overflow-hidden border-2 border-amber-500/30 bg-slate-800 shadow-lg z-10 my-2">
-                  <img id="carnet-foto" src="" class="w-full h-full object-cover">
-                </div>
-
-                <!-- Info -->
-                <div class="w-full text-center z-10 space-y-1 mb-auto">
-                  <h3 id="carnet-nombre" class="text-xl sm:text-2xl font-black text-white tracking-wide leading-tight truncate px-1"></h3>
-                  <p id="carnet-role" class="text-xs sm:text-sm font-black text-orange-400 uppercase tracking-widest leading-none mt-1"></p>
-                  <p id="carnet-refugio" class="text-[10px] font-bold text-slate-300 truncate px-2 mt-1"></p>
-                </div>
-
-                <!-- Footer / QR -->
-                <div class="w-full flex justify-between items-end border-t border-white/10 pt-3 mt-3 z-10">
-                  <div class="text-left space-y-0.5">
-                    <p id="carnet-id" class="text-xs sm:text-sm font-mono font-black text-amber-300 tracking-wider"></p>
-                    <p class="text-[7px] uppercase tracking-widest font-black opacity-50">Identificación Oficial</p>
+                
+                <div class="flex gap-4 items-center mt-3 z-10">
+                  <div class="w-24 h-24 rounded-2xl overflow-hidden border-2 border-amber-500/30 flex-shrink-0 bg-slate-800 shadow-lg">
+                    <img id="carnet-foto" src="" class="w-full h-full object-cover">
                   </div>
-                  <div id="carnet-qr" class="bg-white p-1 rounded-xl shadow-md border border-slate-700 flex-shrink-0 flex items-center justify-center"></div>
+                  <div class="flex-grow min-w-0 space-y-1">
+                    <h3 id="carnet-nombre" class="text-xl font-black truncate text-white tracking-wide leading-none"></h3>
+                    <p id="carnet-role" class="text-xs font-black text-orange-400 uppercase tracking-widest leading-none"></p>
+                    <div class="flex items-center gap-1.5 pt-0.5 opacity-90">
+                      <i data-lucide="tent" class="w-4 h-4 text-indigo-400"></i>
+                      <p id="carnet-refugio" class="text-xs font-bold text-slate-200 truncate"></p>
+                    </div>
+                    <p id="carnet-id" class="text-sm font-mono font-black text-amber-300 tracking-wider pt-0.5"></p>
+                  </div>
+                </div>
+
+                <div class="flex justify-between items-end mt-2 border-t border-white/10 pt-2.5 z-10">
+                  <div>
+                    <p class="text-[8px] uppercase tracking-widest font-black opacity-40 leading-none">Identificación Oficial</p>
+                    <p class="text-[7px] font-semibold opacity-30 mt-0.5">Válida en territorio nacional</p>
+                  </div>
+                  <div id="carnet-qr" class="w-14 h-14 bg-white p-1 rounded-xl shadow-md border border-slate-700"></div>
                 </div>
               </div>
-              <!-- FIN CARNET -->
-
-              <button onclick="imprimirCarnet()" class="w-full max-w-[240px] py-3 bg-slate-100 text-slate-800 font-bold rounded-xl text-sm flex justify-center items-center gap-2 hover:bg-slate-200 transition mt-4"><i data-lucide="printer" class="w-4 h-4"></i> Imprimir Credencial</button>
+              <button onclick="imprimirCarnet()" class="w-full py-2 bg-slate-100 text-slate-800 font-bold rounded-xl text-xs flex justify-center items-center gap-1"><i data-lucide="printer" class="w-4 h-4"></i> Imprimir Credencial (CR80)</button>
             </div>
 
             <!-- Editar Perfil -->
@@ -624,13 +620,13 @@
                 <div class="flex flex-col"><label class="text-[10px] font-bold text-slate-500 uppercase">Detalles / Señas</label><textarea id="ed-det" rows="2" class="input-custom text-sm resize-none"></textarea></div>
             </div>
 
-            <!-- Columna 2: Asignaciones de Control Dinámicas -->
+            <!-- Columna 2: Asignaciones de Control -->
             <div class="space-y-4 bg-orange-50 p-4 rounded-2xl border border-orange-200">
                 <h4 class="font-black text-orange-800 border-b border-orange-200 pb-2 uppercase text-xs flex items-center gap-1.5"><i data-lucide="users-cog" class="w-4 h-4"></i> Equipo Asignado</h4>
                 
-                <div class="flex flex-col"><label class="text-[10px] font-bold text-slate-600 uppercase">Refugio a Cargo</label><select id="ed-ref" onchange="window.actualizarDropdownsPersonal(this.value)" class="input-custom bg-white text-sm"></select></div>
-                <div class="flex flex-col"><label class="text-[10px] font-bold text-slate-600 uppercase">Rescatista Líder</label><select id="ed-resc-asig" class="input-custom bg-white text-sm"><option value="">-- No Asignado --</option></select></div>
-                <div class="flex flex-col"><label class="text-[10px] font-bold text-slate-600 uppercase">Voluntario Apoyo</label><select id="ed-vol-asig" class="input-custom bg-white text-sm"><option value="">-- No Asignado --</option></select></div>
+                <div class="flex flex-col"><label class="text-[10px] font-bold text-slate-600 uppercase">Refugio a Cargo</label><select id="ed-ref" class="input-custom bg-white text-sm"></select></div>
+                <div class="flex flex-col"><label class="text-[10px] font-bold text-slate-600 uppercase">Rescatista Líder (Nombre o ID)</label><input type="text" id="ed-resc-asig" placeholder="Ej: Patricia (PAT-2026...)" class="input-custom text-sm"></div>
+                <div class="flex flex-col"><label class="text-[10px] font-bold text-slate-600 uppercase">Voluntario Apoyo (Nombre o ID)</label><input type="text" id="ed-vol-asig" placeholder="Ej: Zeus" class="input-custom text-sm"></div>
                 
                 <div class="border-t border-orange-200 pt-3 mt-2 flex flex-col">
                   <label class="text-[10px] font-bold text-slate-600 uppercase">Teléfono Contacto Público</label><input type="text" id="ed-tel" class="input-custom text-sm">
@@ -641,7 +637,7 @@
             <div class="space-y-4">
                 <h4 class="font-black text-slate-900 border-b pb-2 uppercase text-xs flex items-center gap-1.5"><i data-lucide="map-pin" class="w-4 h-4"></i> Ajuste Geográfico</h4>
                 <div class="flex gap-2"><input type="text" id="ed-dir" class="input-custom text-xs" placeholder="Buscar..."><button type="button" onclick="buscarDir('ed-dir', 'ed-gps', 'map-ed')" class="bg-slate-800 text-white px-3 rounded-xl font-bold text-xs"><i data-lucide="search" class="w-4 h-4"></i></button></div>
-                <div id="map-ed" class="w-full h-40 bg-slate-200 rounded-xl mb-2 relative z-0"></div>
+                <div id="map-ed" class="w-full h-40 bg-slate-200 rounded-xl relative z-0"></div>
                 <div class="flex gap-2"><input type="text" id="ed-gps" readonly class="input-custom text-xs bg-slate-50"><button type="button" onclick="obtenerGPSConMapa('ed-gps', 'map-ed', 'ed-dir')" class="bg-sky-100 text-sky-700 px-3 py-2 rounded-xl text-xs font-bold min-w-fit">📍</button></div>
             </div>
         </div>
@@ -861,8 +857,6 @@
           const miembros = [];
           s.forEach(d => { if (d.data().refugioId === usuarioActual.refugioId) miembros.push({ id: d.id, ...d.data() }); });
           renderizarTablaMiembrosRefugio(miembros);
-          // Tambien poblamos baseUsuarios para los drops aunque sea solo de su sede
-          baseUsuarios = miembros; 
         });
       }
     }
@@ -876,35 +870,6 @@
         baseRefugios.forEach(r => { sel.innerHTML += `<option value="${r.id}" ${r.id===valActual?'selected':''}>${r.nombre}</option>`; });
       });
     }
-
-    // ACTUALIZADOR DE DROPDOWNS DINÁMICOS DE PERSONAL
-    window.actualizarDropdownsPersonal = function(refId, selectedResc = '', selectedVol = '') {
-      const selectResc = document.getElementById('ed-resc-asig');
-      const selectVol = document.getElementById('ed-vol-asig');
-      if (!selectResc || !selectVol) return;
-      
-      let opts = '<option value="">-- No Asignado --</option>';
-      let personal = refId ? baseUsuarios.filter(u => u.refugioId === refId) : baseUsuarios;
-      
-      personal.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
-      personal.forEach(u => {
-        const val = `${u.nombre || 'Sin nombre'} (${u.idCarnet || 'Indep'})`;
-        opts += `<option value="${val}">${val}</option>`;
-      });
-      
-      selectResc.innerHTML = opts;
-      selectVol.innerHTML = opts;
-      
-      // Preservar valores seleccionados previamente (incluso si se escribieron a mano antes de esta actualización)
-      if (selectedResc) {
-         if (!opts.includes(`value="${selectedResc}"`)) selectResc.innerHTML += `<option value="${selectedResc}">${selectedResc} (Antiguo)</option>`;
-         selectResc.value = selectedResc;
-      }
-      if (selectedVol) {
-         if (!opts.includes(`value="${selectedVol}"`)) selectVol.innerHTML += `<option value="${selectedVol}">${selectedVol} (Antiguo)</option>`;
-         selectVol.value = selectedVol;
-      }
-    };
 
     window.mostrarAlerta = function(titulo, mensaje, tipo = 'success') {
       const container = document.getElementById('custom-toast-container');
@@ -953,12 +918,14 @@
 
     // --- TABLA DE NAVEGACION ADMIN (ACORDEÓN) ---
     window.switchAdminTab = function(tabId) {
+      // Esconder todas las pestañas
       document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
       document.querySelectorAll('.admin-tab-btn').forEach(b => {
         b.classList.remove('bg-slate-900', 'text-white', 'shadow-md');
         b.classList.add('text-slate-600', 'hover:bg-slate-100');
       });
       
+      // Activar la seleccionada
       document.getElementById(tabId).classList.add('active');
       const btn = document.getElementById(`btn-${tabId}`);
       if(btn) {
@@ -966,6 +933,7 @@
         btn.classList.add('bg-slate-900', 'text-white', 'shadow-md');
       }
       
+      // En móviles, colapsar el menú de navegación al seleccionar
       if (window.innerWidth < 768) {
           document.getElementById('admin-tabs-nav').classList.add('hidden');
       }
@@ -1103,18 +1071,18 @@
       const carnetNom = document.getElementById('carnet-nombre'); if (carnetNom) carnetNom.innerText = usuarioActual.nombre || 'Sin Nombre';
       const carnetRole = document.getElementById('carnet-role'); if (carnetRole) carnetRole.innerText = usuarioActual.rol || 'Voluntario';
       const carnetRef = document.getElementById('carnet-refugio'); if (carnetRef) carnetRef.innerText = usuarioActual.refugioNombre || 'Independiente / Particular';
-      const carnetId = document.getElementById('carnet-id'); if (carnetId) carnetId.innerText = `ID: ${usuarioActual.idCarnet || 'Generando...'}`;
+      const carnetId = document.getElementById('carnet-id'); if (carnetId) carnetId.innerText = `N° CARNET: ${usuarioActual.idCarnet || 'Generando...'}`;
       
       const st = usuarioActual.estatus || 'Activo'; const badge = document.getElementById('carnet-status');
-      if (badge) { badge.innerText = st; badge.className = st === 'Activo' ? "bg-emerald-500 text-white text-[8px] font-black uppercase px-2.5 py-1 rounded-full shadow-md tracking-wider" : "bg-red-500 text-white text-[8px] font-black uppercase px-2.5 py-1 rounded-full shadow-md tracking-wider"; }
+      if (badge) { badge.innerText = st; badge.className = st === 'Activo' ? "bg-emerald-500 text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-full shadow-md tracking-wider" : "bg-red-500 text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-full shadow-md tracking-wider"; }
 
-      const carnetFoto = document.getElementById('carnet-foto'); if (carnetFoto) carnetFoto.src = usuarioActual.foto || 'https://placehold.co/400x400/slate/white?text=Foto';
+      const carnetFoto = document.getElementById('carnet-foto'); if (carnetFoto) carnetFoto.src = usuarioActual.foto || 'https://placehold.co/100x100/slate/white?text=Foto';
 
       const qrContainer = document.getElementById('carnet-qr');
       if (qrContainer) {
         qrContainer.innerHTML = ''; const verURL = `${window.location.origin}${window.location.pathname}?verify=${usuarioActual.uid || 'bypass'}`;
         if (typeof QRCode !== 'undefined') {
-          try { carnetQrGenerator = new QRCode(qrContainer, { text: verURL, width: 70, height: 70, colorDark : "#020617", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H }); } 
+          try { carnetQrGenerator = new QRCode(qrContainer, { text: verURL, width: 56, height: 56, colorDark : "#020617", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H }); } 
           catch(e) { qrContainer.innerHTML = `<span class="text-[8px] text-slate-400">QR Error</span>`; }
         } else { qrContainer.innerHTML = `<span class="text-[8px] text-slate-400">QR No Disp.</span>`; }
       }
@@ -1161,15 +1129,9 @@
     window.imprimirCarnet = function() {
       const carnetBox = document.getElementById('carnet-box'); if (!carnetBox) return;
       const w = window.open('', '_blank'); const clonedCard = carnetBox.cloneNode(true);
-      
-      clonedCard.className = clonedCard.className.replace('max-w-[240px]', '');
-      clonedCard.style.width = '53.98mm'; 
-      clonedCard.style.height = '85.6mm'; 
-      clonedCard.style.borderRadius = '3.18mm'; 
-      clonedCard.style.boxShadow = 'none'; 
-      clonedCard.style.border = '1px solid #1e293b';
+      clonedCard.style.width = '85.6mm'; clonedCard.style.height = '53.98mm'; clonedCard.style.borderRadius = '3.18mm'; clonedCard.style.boxShadow = 'none'; clonedCard.style.border = '1px solid #1e293b';
 
-      w.document.write(`<html><head><title>Credencial Proyecto Patitas - ${usuarioActual.nombre || 'Carnet'}</title><script src="https://cdn.tailwindcss.com"><\/script><script src="https://unpkg.com/lucide@latest"><\/script><style>@page { size: 53.98mm 85.6mm; margin: 0; } body { font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #fff; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .print-card { width: 53.98mm; height: 85.6mm; box-sizing: border-box; border-radius: 3.18mm; overflow: hidden; position: relative; background-image: linear-gradient(to bottom right, #020617, #0f172a, #1e1b4b); }</style></head><body><div class="print-card p-3 text-white flex flex-col justify-between items-center">${clonedCard.innerHTML}</div><script>if (typeof lucide !== 'undefined') lucide.createIcons(); window.onload = function() { setTimeout(() => { window.print(); }, 800); }<\/script></body></html>`);
+      w.document.write(`<html><head><title>Credencial Proyecto Patitas - ${usuarioActual.nombre || 'Carnet'}</title><script src="https://cdn.tailwindcss.com"><\/script><script src="https://unpkg.com/lucide@latest"><\/script><style>@page { size: 85.6mm 53.98mm; margin: 0; } body { font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #fff; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .print-card { width: 85.6mm; height: 53.98mm; box-sizing: border-box; border-radius: 3.18mm; overflow: hidden; position: relative; background-image: linear-gradient(to bottom right, #020617, #0f172a, #1e1b4b); }</style></head><body><div class="print-card p-4 text-white flex flex-col justify-between">${clonedCard.innerHTML}</div><script>if (typeof lucide !== 'undefined') lucide.createIcons(); window.onload = function() { setTimeout(() => { window.print(); }, 500); }<\/script></body></html>`);
       w.document.close();
     };
 
@@ -1342,7 +1304,6 @@
     window.procesarImagenUnica = async function(input, target) {
       if (!input.files || input.files.length === 0) return;
 
-      // Restringir estrictamente a 1 sola imagen
       const file = input.files[0];
 
       await new Promise((resolve) => {
@@ -1350,9 +1311,8 @@
         reader.onload = (e) => {
           const img = new Image();
           img.onload = () => {
-            // COMPRESIÓN PROPORCIONAL INTELIGENTE (Respeta si es vertical u horizontal)
             const canvas = document.createElement('canvas');
-            const MAX_SIZE = 800; // Tamaño máximo en su lado más largo
+            const MAX_SIZE = 600; // REDUCIDO A 600PX PARA GARANTIZAR PESO ULTRA-LIGERO
             let width = img.width;
             let height = img.height;
 
@@ -1373,8 +1333,7 @@
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
             
-            // Calidad 0.6 asegura un peso ultra ligero (~50-100KB) sin deformar la foto
-            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.5); // CALIDAD REDUCIDA A 50%
 
             if(target === 'rescatista' || target === 'rescatista-edit') {
               temporalFotoRescatista = compressedBase64;
@@ -1385,7 +1344,6 @@
               const prev = document.getElementById('prev-ref-img'); 
               if(prev) { prev.src = compressedBase64; prev.classList.remove('hidden'); }
             } else {
-              // Limpiamos la memoria y forzamos a que solo exista 1 FOTO para la mascota
               temporalFotosSeleccionadas = [compressedBase64];
             }
             resolve();
@@ -1395,12 +1353,11 @@
         reader.readAsDataURL(file);
       });
 
-      // Actualizar la interfaz visual
       if (target.startsWith('prevs-')) {
         renderizarPrevisualizadoresMascotas(target);
       }
       
-      input.value = ''; // Limpiamos para que se pueda cambiar la foto sin atascos
+      input.value = ''; 
     };
 
     window.abrirCropperOpcional = function(target, index = null) {
@@ -1411,7 +1368,7 @@
       let imgSrc = '';
 
       if (target.startsWith('prevs-')) {
-          imgSrc = temporalFotosSeleccionadas[index];
+          imgSrc = temporalFotosSeleccionadas[index !== null ? index : 0];
       } else if (target === 'rescatista' || target === 'rescatista-edit') {
           imgSrc = temporalFotoRescatista;
       } else if (target === 'refugios-prev') {
@@ -1431,7 +1388,7 @@
         const imgCropCheck = document.getElementById('image-to-crop');
         if (imgCropCheck) {
           cropperInst = new Cropper(imgCropCheck, {
-            aspectRatio: NaN, // RECORTE LIBRE SIN PROPORCIONES FORZADAS
+            aspectRatio: NaN, 
             viewMode: 1,
             background: false
           });
@@ -1451,12 +1408,11 @@
 
     window.guardarRecorte = function() {
       if(!cropperInst) return;
-      // Compresión adaptada a la misma resolución proporcional (800px)
-      const canvas = cropperInst.getCroppedCanvas({ maxWidth: 800, maxHeight: 800 });
-      const croppedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+      const canvas = cropperInst.getCroppedCanvas({ maxWidth: 600, maxHeight: 600 });
+      const croppedBase64 = canvas.toDataURL('image/jpeg', 0.5);
 
-      if (currentCropTarget.startsWith('prevs-') && currentCropIndex !== null) {
-        temporalFotosSeleccionadas[currentCropIndex] = croppedBase64;
+      if (currentCropTarget.startsWith('prevs-')) {
+        temporalFotosSeleccionadas[currentCropIndex !== null ? currentCropIndex : 0] = croppedBase64;
         renderizarPrevisualizadoresMascotas(currentCropTarget);
       } else if (currentCropTarget === 'rescatista' || currentCropTarget === 'rescatista-edit') {
         temporalFotoRescatista = croppedBase64;
@@ -1526,7 +1482,7 @@
         grid.innerHTML += `
           <div class="bg-white border rounded-3xl overflow-hidden flex flex-col hover:shadow-md transition cursor-pointer fade-in" onclick="verDetalleMascota('${m.id}')">
             <div class="h-44 bg-slate-100 relative">
-              <img src="${m.fotos ? m.fotos[0] : 'https://placehold.co/400x250/slate/white?text=Patitas'}" class="w-full h-full object-cover">
+              <img src="${m.fotos && m.fotos.length > 0 ? m.fotos[0] : 'https://placehold.co/400x250/slate/white?text=Patitas'}" class="w-full h-full object-cover">
               <span class="absolute top-3 left-3 ${bColor} text-white font-extrabold text-[10px] px-3 py-1 rounded-full uppercase shadow-md">${bText}</span>
             </div>
             <div class="p-4 flex-grow flex flex-col justify-between">
@@ -1551,59 +1507,64 @@
     };
 
     window.guardarMascota = async function(e, tipoForm) {
-      e.preventDefault(); 
-      const btn = e.target.querySelector('button[type="submit"]'); 
-      bloqBtn(btn, true);
+      e.preventDefault(); const btn = e.target.querySelector('button[type="submit"]'); bloqBtn(btn, true);
+
+      // 1. VERIFICACIÓN ESTRICTA DE AUTENTICACIÓN PARA EVITAR PERMISSION-DENIED
+      if (!user) {
+         window.mostrarAlerta('Conectando...', 'Firebase está asegurando tu conexión. Por favor, intenta publicar de nuevo en un segundo.', 'info');
+         bloqBtn(btn, false, 'Publicar Reporte');
+         return;
+      }
+
+      let fotosArray = [...temporalFotosSeleccionadas];
+      if (fotosArray.length === 0) fotosArray.push('https://placehold.co/400x250/slate/white?text=Proyecto+Patitas');
+
+      const pPayload = {
+        nombre: tipoForm === 'perdido' ? document.getElementById('nombre-p').value : 'Mascota Avistada',
+        especie: document.getElementById(`especie-${tipoForm[0]}`).value,
+        sexo: document.getElementById(`sexo-${tipoForm[0]}`).value,
+        raza: document.getElementById(`raza-${tipoForm[0]}`).value,
+        zona: document.getElementById(`zona-${tipoForm[0]}`).value,
+        gps: document.getElementById(`gps-${tipoForm[0]}`).value || '',
+        direccion: document.getElementById(`dir-texto-${tipoForm[0]}`).value || '',
+        rasgos: tipoForm === 'perdido' ? document.getElementById('rasgos-p').value : document.getElementById('color-e').value + ' - ' + document.getElementById('detalles-e').value,
+        fotos: fotosArray,
+        fecha: new Date().toISOString(),
+        telefono: document.getElementById(`tel-${tipoForm[0]}`).value || '',
+        estado: tipoForm === 'perdido' ? 'perdido' : document.getElementById('estado-e').value,
+        creadorUid: user.uid, // Usamos el ID seguro y obligatorio
+        refugioId: tipoForm === 'encontrado' ? document.getElementById('refugio-e').value : '',
+        rescatistaAsignado: '',
+        voluntarioAsignado: ''
+      };
+
+      const payloadSize = new Blob([JSON.stringify(pPayload)]).size;
+      if (payloadSize > 900000) { 
+           window.mostrarAlerta('Límite Excedido', 'La foto sigue siendo demasiado pesada. Por favor, intenta usar una captura de pantalla.', 'error');
+           bloqBtn(btn, false, 'Publicar Reporte');
+           return;
+      }
 
       try {
-        let fotosArray = [...temporalFotosSeleccionadas];
-        if (fotosArray.length === 0) fotosArray.push('https://placehold.co/400x250/slate/white?text=Proyecto+Patitas');
-
-        const pPayload = {
-          nombre: tipoForm === 'perdido' ? document.getElementById('nombre-p').value : 'Mascota Avistada',
-          especie: document.getElementById(`especie-${tipoForm[0]}`).value,
-          sexo: document.getElementById(`sexo-${tipoForm[0]}`).value,
-          raza: document.getElementById(`raza-${tipoForm[0]}`).value,
-          zona: document.getElementById(`zona-${tipoForm[0]}`).value,
-          gps: document.getElementById(`gps-${tipoForm[0]}`).value,
-          direccion: document.getElementById(`dir-texto-${tipoForm[0]}`).value,
-          rasgos: tipoForm === 'perdido' ? document.getElementById('rasgos-p').value : document.getElementById('color-e').value + ' - ' + document.getElementById('detalles-e').value,
-          fotos: fotosArray,
-          fecha: new Date().toISOString(),
-          telefono: document.getElementById(`tel-${tipoForm[0]}`).value,
-          estado: tipoForm === 'perdido' ? 'perdido' : document.getElementById('estado-e').value,
-          creadorUid: user?.uid || 'anonimo',
-          refugioId: tipoForm === 'encontrado' ? document.getElementById('refugio-e').value : '',
-          rescatistaAsignado: '',
-          voluntarioAsignado: ''
-        };
-
-        // Verificación estricta de peso antes de enviar a Firebase (Límite 1MB)
-        const payloadSize = new Blob([JSON.stringify(pPayload)]).size;
-        if (payloadSize > 950000) { 
-             window.mostrarAlerta('Límite Excedido', 'Las fotos seleccionadas son demasiado pesadas juntas. Por favor, intenta subir solo 1 o 2.', 'error');
-             bloqBtn(btn, false, 'Publicar Reporte');
-             return;
-        }
-
         await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pets'), pPayload);
         window.mostrarAlerta('Reportado', 'La mascota ha sido inscrita exitosamente.', 'success');
         e.target.reset(); temporalFotosSeleccionadas = [];
         const prevBox = document.getElementById(`prevs-${tipoForm[0]}`); if (prevBox) prevBox.innerHTML = '';
         cambiarVista('inicio');
       } catch(err) { 
-        console.error(err);
-        window.mostrarAlerta('Error de Guardado', 'Verifica tu conexión o que las fotos no sean demasiado pesadas.', 'error'); 
-      } finally { 
-        bloqBtn(btn, false, 'Publicar Reporte'); 
-      }
+        console.error("Error exacto en Firebase:", err);
+        // MOSTRAR EL ERROR TÉCNICO EXACTO EN LA PANTALLA
+        window.mostrarAlerta('Error de Guardado', `Fallo técnico: ${err.message}`, 'error'); 
+      } 
+      finally { bloqBtn(btn, false, 'Publicar Reporte'); }
     };
 
     window.verDetalleMascota = function(id) {
       const m = baseMascotas.find(p => p.id === id); if(!m) return;
       mascotaSeleccionadaId = id; cambiarVista('detalle-mascota');
 
-      const dImg = document.getElementById('d-img'); if (dImg) dImg.src = m.fotos[0];
+      const dImg = document.getElementById('d-img');
+      if (dImg) dImg.src = m.fotos && m.fotos.length > 0 ? m.fotos[0] : 'https://placehold.co/400x250/slate/white?text=Proyecto+Patitas';
 
       const dBadge = document.getElementById('d-badge');
       if (dBadge) {
@@ -1641,7 +1602,9 @@
       const minis = document.getElementById('d-minis');
       if (minis) {
         minis.innerHTML = '';
-        m.fotos.forEach(f => { minis.innerHTML += `<img src="${f}" onclick="document.getElementById('d-img').src='${f}'" class="w-16 h-16 object-cover border rounded-xl cursor-pointer hover:border-orange-500">`; });
+        if (m.fotos && m.fotos.length > 0) {
+           m.fotos.forEach(f => { minis.innerHTML += `<img src="${f}" onclick="document.getElementById('d-img').src='${f}'" class="w-16 h-16 object-cover border rounded-xl cursor-pointer hover:border-orange-500">`; });
+        }
       }
 
       const dMapEvtWrap = document.getElementById('d-map-evt-wrap');
@@ -1669,27 +1632,12 @@
       const tb = document.getElementById('tb-mis-mascotas'); if (!tb) return; tb.innerHTML = '';
       const filtroUser = usuarioActual.rol === 'admin' ? baseMascotas : baseMascotas.filter(m => m.creadorUid === user?.uid);
       
-      if (filtroUser.length === 0) { tb.innerHTML = '<tr><td colspan=\"3\" class=\"p-3 text-center text-slate-400\">Sin reportes registrados.</td></tr>'; return; }
+      if (filtroUser.length === 0) { tb.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-slate-400">Sin reportes registrados.</td></tr>'; return; }
 
       filtroUser.forEach(m => {
-        let bColor = 'bg-red-600', bText = 'Buscando';
-        if(m.estado === 'encontrado') { bColor = 'bg-sky-600'; bText = 'Localizado'; }
-        else if (m.estado === 'rescatado') { bColor = 'bg-indigo-600'; bText = 'Rescatado'; }
-        else if (m.estado === 'reunido') { bColor = 'bg-emerald-600'; bText = 'Reunido'; }
-        else if (m.estado === 'adopcion') { bColor = 'bg-amber-500'; bText = 'Adopción'; }
-        else if (m.estado === 'fallecido') { bColor = 'bg-stone-700'; bText = 'Fallecido'; }
-
         tb.innerHTML += `
           <tr class="border-b text-xs hover:bg-slate-50">
-            <td class="p-3">
-              <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-slate-100 border relative shadow-sm">
-                  <img src="${m.fotos && m.fotos[0] ? m.fotos[0] : 'https://placehold.co/100'}" class="w-full h-full object-cover">
-                  <span class="absolute bottom-0 left-0 w-full text-center ${bColor} text-white text-[8px] font-bold uppercase truncate px-1">${bText}</span>
-                </div>
-                <span class="font-bold text-slate-800 text-sm">${m.nombre}</span>
-              </div>
-            </td>
+            <td class="p-3 font-bold text-slate-800">${m.nombre}</td>
             <td class="p-3">
               <select onchange="cambiarEstadoMascota('${m.id}', this.value)" class="p-1 border rounded bg-white text-xs">
                 <option value="perdido" ${m.estado === 'perdido'?'selected':''}>Buscando</option>
@@ -1700,7 +1648,7 @@
                 <option value="fallecido" ${m.estado === 'fallecido'?'selected':''}>Fallecido 🕊️</option>
               </select>
             </td>
-            <td class="p-3 text-right space-x-2 whitespace-nowrap">
+            <td class="p-3 text-right space-x-2">
               <button onclick="editarMascotaForm('${m.id}')" class="text-indigo-600 font-bold hover:underline">Editar</button>
               ${usuarioActual.rol === 'admin' ? `<button onclick="eliminarMascotaGlobal('${m.id}')" class="text-red-600 font-bold hover:underline">Borrar</button>` : ''}
             </td>
@@ -1725,14 +1673,13 @@
       const edDet = document.getElementById('ed-det'); if (edDet) edDet.value = m.rasgos || '';
       const edTel = document.getElementById('ed-tel'); if (edTel) edTel.value = m.telefono || '';
       
+      const edResc = document.getElementById('ed-resc-asig'); if (edResc) edResc.value = m.rescatistaAsignado || '';
+      const edVol = document.getElementById('ed-vol-asig'); if (edVol) edVol.value = m.voluntarioAsignado || '';
+
       document.getElementById('ed-dir').value = m.direccion || '';
       document.getElementById('ed-gps').value = m.gps || '';
       
-      const dropRef = document.getElementById('ed-ref'); 
-      if (dropRef) dropRef.value = m.refugioId || '';
-      
-      // Actualizar listados dinámicos con el refugio seleccionado y pre-seleccionar los valores guardados
-      window.actualizarDropdownsPersonal(m.refugioId || '', m.rescatistaAsignado || '', m.voluntarioAsignado || '');
+      const dropRef = document.getElementById('ed-ref'); if (dropRef) dropRef.value = m.refugioId || '';
 
       const edModal = document.getElementById('modal-editar-mascota');
       if (edModal) edModal.classList.remove('hidden');
@@ -1802,7 +1749,7 @@
             else if(m.estado === 'rescatado') { bc = 'bg-indigo-600'; bt = 'Rescatado 🏠'; }
             else if(m.estado === 'adopcion') { bc = 'bg-amber-500'; bt = 'En Adopción'; }
             else if(m.estado === 'fallecido') { bc = 'bg-stone-700'; bt = 'Fallecido 🕊️'; }
-            masContainer.innerHTML += `<div class="border rounded-2xl overflow-hidden cursor-pointer bg-white flex flex-col shadow-sm" onclick="verDetalleMascota('${m.id}')"><div class="h-32 bg-slate-100 relative"><img src="${m.fotos ? m.fotos[0] : ''}" class="w-full h-full object-cover"><span class="absolute top-2 left-2 ${bc} text-white font-extrabold text-[8px] px-2 py-0.5 rounded-full uppercase">${bt}</span></div><div class="p-3"><h4 class="font-bold text-slate-900 truncate">${m.nombre}</h4><p class="text-[10px] text-orange-600 font-semibold mt-1">${m.zona}</p></div></div>`;
+            masContainer.innerHTML += `<div class="border rounded-2xl overflow-hidden cursor-pointer bg-white flex flex-col shadow-sm" onclick="verDetalleMascota('${m.id}')"><div class="h-32 bg-slate-100 relative"><img src="${m.fotos && m.fotos.length > 0 ? m.fotos[0] : ''}" class="w-full h-full object-cover"><span class="absolute top-2 left-2 ${bc} text-white font-extrabold text-[8px] px-2 py-0.5 rounded-full uppercase">${bt}</span></div><div class="p-3"><h4 class="font-bold text-slate-900 truncate">${m.nombre}</h4><p class="text-[10px] text-orange-600 font-semibold mt-1">${m.zona}</p></div></div>`;
           });
         }
       }
