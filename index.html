@@ -440,6 +440,7 @@
     let globalMarkers = {};
     let temporalFotoUnica = '';
 
+    // Autenticación inicial estructurada (Cumpliendo Regla de Oro 3)
     const initAuth = async () => {
       try {
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -447,7 +448,7 @@
         } else {
           await signInAnonymously(auth);
         }
-      } catch(e) { console.error("Auth error:", e); }
+      } catch(e) { console.error("Error en autenticación Firebase:", e); }
     };
     initAuth();
 
@@ -459,9 +460,9 @@
     });
 
     function sincronizarDB() {
-      if (!user) return;
+      if (!user) return; // Guard de usuario para prevenir operaciones sin autenticación
 
-      // Sincronizar Mascotas usando las rutas públicas obligatorias por contrato (Regla 1)
+      // Sincronizar Mascotas usando las rutas públicas obligatorias (Regla 1)
       onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'pets'), (s) => {
         baseMascotas = [];
         s.forEach(d => baseMascotas.push({ id: d.id, ...d.data() }));
@@ -469,16 +470,16 @@
         renderizarMascotas();
         renderizarTablaAdminMascotas();
         actualizarContadores();
-      }, (e) => console.error("Error pets:", e));
+      }, (e) => console.error("Error al sincronizar mascotas:", e));
 
-      // Sincronizar Refugios usando rutas públicas obligatorias por contrato
+      // Sincronizar Refugios usando rutas públicas obligatorias
       onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'shelters'), (s) => {
         baseRefugios = [];
         s.forEach(d => baseRefugios.push({ id: d.id, ...d.data() }));
         renderizarRefugios();
         renderizarTablaAdminRefugios();
         actualizarDropsRefugios();
-      }, (e) => console.error("Error shelters:", e));
+      }, (e) => console.error("Error al sincronizar refugios:", e));
     }
 
     window.mostrarAlerta = function(titulo, mensaje, tipo = 'success') {
@@ -585,36 +586,76 @@
       }
     };
 
+    // COMPRESIÓN PROPORCIONAL DE IMAGEN EN CANVAS A MAX 700PX (Evita exceder 1MB en Firestore)
     window.procesarImagenUnica = function(input, target) {
-      if(input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          temporalFotoUnica = e.target.result;
-          const prev = document.getElementById(target);
-          if(prev) prev.innerHTML = `<img src="${temporalFotoUnica}" class="w-20 h-20 object-cover rounded-xl border">`;
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_SIZE = 700;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height = Math.round(height * (MAX_SIZE / width));
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width = Math.round(width * (MAX_SIZE / height));
+              height = MAX_SIZE;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+
+          if (target === 'rescatista' || target === 'rescatista-edit') {
+            temporalFotoRescatista = compressedBase64;
+            const prev = document.getElementById(target === 'rescatista' ? 'prev-rescatista-img' : 'prev-rescatista-edit-img');
+            if (prev) { prev.src = compressedBase64; prev.classList.remove('hidden'); }
+          } else if (target === 'refugios-prev') {
+            temporalFotoRefugio = compressedBase64;
+            const prev = document.getElementById('prev-ref-img');
+            if (prev) { prev.src = compressedBase64; prev.classList.remove('hidden'); }
+          } else {
+            temporalFotoUnica = compressedBase64;
+            const prev = document.getElementById(target);
+            if (prev) prev.innerHTML = `<img src="${compressedBase64}" class="w-20 h-20 object-contain rounded-xl border bg-slate-50">`;
+          }
         };
-        reader.readAsDataURL(input.files[0]);
-      }
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+      input.value = '';
     };
 
-    // GUARDAR MASCOTA (Con rutas públicas obligatorias por contrato - Regla 1)
+    // GUARDAR MASCOTA
     window.guardarMascota = async function(e, tipoForm) {
       e.preventDefault();
       const btn = e.target.querySelector('button[type="submit"]');
       if(btn) { btn.disabled = true; btn.innerText = "Publicando..."; }
 
       if (!user) {
-        mostrarAlerta('Error', 'Esperando conexión con la base de datos...', 'info');
+        mostrarAlerta('Error', 'Conectando con la base de datos...', 'info');
         if(btn) { btn.disabled = false; btn.innerText = "Publicar Reporte"; }
         return;
       }
 
       try {
         const pPayload = {
-          nombre: tipoForm === 'perdido' ? document.getElementById('nombre-p').value : 'Mascota Avistada',
+          nombre: tipoForm === 'perdido' ? (document.getElementById('nombre-p').value || 'Desconocido') : 'Mascota Avistada',
           especie: document.getElementById(`especie-${tipoForm[0]}`).value,
           sexo: document.getElementById(`sexo-${tipoForm[0]}`).value,
-          raza: document.getElementById(`raza-${tipoForm[0]}`).value,
+          raza: document.getElementById(`raza-${tipoForm[0]}`).value || 'Mestizo',
           zona: 'La Guaira',
           gps: document.getElementById(`gps-${tipoForm[0]}`).value || '',
           direccion: document.getElementById(`dir-texto-${tipoForm[0]}`).value || '',
@@ -623,15 +664,24 @@
           fecha: new Date().toISOString(),
           telefono: document.getElementById(`tel-${tipoForm[0]}`).value,
           estado: tipoForm === 'perdido' ? 'perdido' : document.getElementById('estado-e').value,
+          creadorUid: user.uid,
           refugioId: tipoForm === 'encontrado' ? document.getElementById('refugio-e').value : ''
         };
+
+        // Verificación defensiva de tamaño de carga útil
+        const payloadSize = new Blob([JSON.stringify(pPayload)]).size;
+        if (payloadSize > 900000) {
+          mostrarAlerta('Atención', 'La imagen seleccionada es demasiado pesada. Elige otra imagen.', 'error');
+          if(btn) { btn.disabled = false; btn.innerText = "Publicar Reporte"; }
+          return;
+        }
 
         await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pets'), pPayload);
         mostrarAlerta('Éxito', 'Reporte publicado en la nube correctamente.', 'success');
         e.target.reset();
         temporalFotoUnica = '';
-        document.getElementById('prevs-p').innerHTML = '';
-        document.getElementById('prevs-e').innerHTML = '';
+        const prevP = document.getElementById('prevs-p'); if(prevP) prevP.innerHTML = '';
+        const prevE = document.getElementById('prevs-e'); if(prevE) prevE.innerHTML = '';
         cambiarVista('inicio');
       } catch(err) {
         console.error("Error guardando:", err);
@@ -931,10 +981,8 @@
         foto: document.getElementById('ref-foto').value || 'https://placehold.co/400x250/indigo/white?text=Refugio'
       };
       if(id) {
-        // Actualizar refugio usando rutas públicas obligatorias por contrato (Regla 1)
         await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'shelters', id), payload);
       } else {
-        // Añadir refugio usando rutas públicas obligatorias por contrato (Regla 1)
         await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'shelters'), payload);
       }
       mostrarAlerta('Éxito', 'Refugio guardado.', 'success');
@@ -944,7 +992,6 @@
     window.eliminarRefugioAdmin = function(id) {
       confirmacionPersonalizada('¿Borrar Refugio?', 'Esta acción es permanente.', async () => {
         if (!user) return;
-        // Eliminar refugio usando rutas públicas obligatorias por contrato (Regla 1)
         await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'shelters', id));
         mostrarAlerta('Eliminado', 'Refugio borrado.', 'success');
       });
